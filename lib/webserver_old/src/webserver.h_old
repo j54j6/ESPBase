@@ -1,0 +1,60 @@
+#ifndef J54J6_WEBSERVER_H
+#define J54J6_WEBSERVER_H
+    #include <ESP8266WebServer.h>
+    #include <ESP8266WiFi.h>
+
+    #include "logging.h"
+    #include "errorHandler.h"
+
+    
+
+    class WebserverHandler : public ErrorSlave {
+        private:
+            const char* className = "webServerhandler";
+            ESP8266WebServer server;
+            ESP8266WebServer* serverptr = &server;
+            ulong callPerSecond = 0;
+            ulong lastCall = 0;
+            int checkDelay = 5;
+            
+
+            void captiveNotFound();
+
+            void internalControl();
+        public:
+            //Constructor
+            WebserverHandler();
+
+            //Class Control
+            bool startWebserver(int port);
+            bool stopWebserver();
+
+            //Class Configuration
+            void addService(const char *url, webService function); //at this time im only able to add function to webserver - may add function to delete function in further updates
+            void addNotFoundService(webService function);
+            void enableCaptive();
+            void disableCaptive();
+            void addCaptive();
+
+
+            //get Stuff
+            ESP8266WebServer* getWebserver();
+            ulong getCallPerSecond();
+            bool getWebserverActive();
+
+            //class run
+            void run();
+
+            //Inherited ErrorHandling by ErrorSlave
+            void startClass();
+            void stopClass();
+            void pauseClass();
+            void restartClass();
+            void continueClass();
+            
+            
+            
+            
+
+    };
+#endif

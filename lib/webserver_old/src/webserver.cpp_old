@@ -1,0 +1,141 @@
+#include "webserver.h"
+
+
+WebserverHandler::WebserverHandler() : server(80)
+{
+    
+}
+
+bool WebserverHandler::startWebserver(int port)
+{
+    if(!this->webServerActive)
+    {
+        #ifdef J54J6_LOGGING_H
+        logger logging;
+        logging.SFLog(className, "startWebserver", "Start Webserver");
+        #endif
+        webServerActive = true;
+        server.begin(port);
+        return true;
+    }
+    else
+    {
+        #ifdef J54J6_LOGGING_H
+        logger logging;
+        logging.SFLog(className, "startWebserver", "Webserver already active - report", 1);
+        #endif
+
+        this->error.error = false;
+        this->error.message = "Webserver already active!";
+        this->error.priority = 2;
+        return false;
+    }    
+}
+
+bool WebserverHandler::stopWebserver()
+{
+    if(this->webServerActive)
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "stopWebserver", "Stop Webserver");
+        #endif
+        webServerActive = false;
+        server.stop();
+        return true;
+    }
+    else
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "stopWebserver", "Webserver already disabled", 1);
+        #endif
+        return false;
+    }
+    return false;
+}
+
+void WebserverHandler::addService(const char *url, webService function)
+{
+    #ifdef J54J6_LOGGING_H
+        logger logging;
+        String message = "Add Service: ";
+        message += url;
+        logging.SFLog(className, "addService", message.c_str());
+    #endif
+    server.on(url, function);
+}
+
+void WebserverHandler::addNotFoundService(webService function)
+{
+    #ifdef J54J6_LOGGING_H
+        logger logging;
+        logging.SFLog(className, "addNotFoundService", "Add NotFound Site!");
+    #endif
+    server.onNotFound(function);
+}
+
+ESP8266WebServer* WebserverHandler::getWebserver()
+{
+    return serverptr;
+}
+
+
+void WebserverHandler::run()
+{
+    if(millis() >= (lastCall + checkDelay))
+    {
+        internalControl();
+        this->server.handleClient();
+        this->lastCall = millis();
+    }
+    
+}
+
+/*
+  Internal Class functions
+*/
+void WebserverHandler::internalControl()
+{
+  callPerSecond = 1000/(millis() - lastCall);
+}
+
+
+ulong WebserverHandler::getCallPerSecond()
+{
+  return this->callPerSecond;
+}
+
+bool WebserverHandler::getWebserverActive()
+{
+    return webServerActive;
+}
+
+
+/*
+    Inherited ErrorHandling by ErrorSlave
+*/
+void WebserverHandler::startClass()
+{
+
+}
+
+void WebserverHandler::stopClass()
+{
+
+}
+
+void WebserverHandler::pauseClass()
+{
+
+}
+
+void WebserverHandler::restartClass()
+{
+
+}
+
+void WebserverHandler::continueClass()
+{
+    
+}
