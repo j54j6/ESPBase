@@ -3,9 +3,8 @@ A little Sketch to Handle all common things for you like Network (WiFi, DNS, MDN
 
 Note: This is my first "complete Project" - I'm a newbie ^^ (2020)
 
-If you find any bugs please report it, i'll fix it as fast as possible... This is my private project in a very early state, i might change some functionalities but i try to add and change all features without changing the general function, you dont need any changes if i update my Baseprogram, only new functionalities or parameters will change. Only if there is no other way than a complete change e.g security fixes i will change complete interfaces but in this case i will write it in README
+If you find any bugs please report it, i'll fix it as fast as possible... This is my private project in a very early state, i might change some functionalities but i try to add and change all features without changing the general function, you dont need any changes if i update my Baseprogram, only new functionalities or parameters will change. Only if there is no other way than a complete change e.g security fixes i will change complete interfaces but in this case i will write it in README and CahngeLog
 
-IMPORTANT: my program has an integrated updater you can update my libary automatically via webinterface (manually or completly automatic) - my servers have a monitoring program to check all needed update parameters (e.g chiptype (at this time only esp8266 can use this sketch (tested with esp8266) and the used version of sketch/free space on our ESP - i dont save any information except default server log content (ip adresses)), there are no personal information recorded! - your sketch will be removed until i find a way to extract your hookup program into another file and add it after update... e.g with a little buildserver in this case you can compile your update and send it to ypur esp via uiupdate.nodework.de
 
 bucket list:
 
