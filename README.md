@@ -58,4 +58,6 @@ what's working:
     Network:
         wifi control (connect/disconnect/disable)
         config creation
+        AP start
+        Captive Portal - only visiting - save not implemented (next update)
 
