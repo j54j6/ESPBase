@@ -2,7 +2,14 @@
 #define J54J6_NETWORK_H
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
-#include <ESP8266WebServer.h>
+
+
+//#include <ESP8266WebServer.h> - removed and replaced by AsyncWebserver
+
+#include <ESPAsyncWebServer.h>
+#include <ESPAsyncTCP.h> //for ESPAsyncWebserver
+
+
 #include <ESP8266mDNS.h>
 #include <DNSServer.h>
 
@@ -76,7 +83,7 @@ class Network : public ErrorSlave
         WiFiManager* wifiManager; //external wifiManager
         Filemanager* FM;
         DNSServer dnsServer;
-        ESP8266WebServer webserver;
+        AsyncWebServer webserver = AsyncWebServer(80);
         
 
         /*
@@ -118,8 +125,8 @@ class Network : public ErrorSlave
 
         void internalControl();
         
-        void serverHandleSetup();
-        void serverHandleCaptiveNotFound();
+        void serverHandleSetup(AsyncWebServerRequest *request);
+        void serverHandleCaptiveNotFound(AsyncWebServerRequest *request);
 
     protected:
         void autoResetLock(); // called by run()
@@ -163,7 +170,7 @@ class Network : public ErrorSlave
         bool stopWebserver();
         void addService(const char *url, webService function);
         void addNotFoundService(webService function);
-        ESP8266WebServer* getWebserver();
+        AsyncWebServer* getWebserver();
         void enableCaptive();
         void disableCaptive();
         void addCaptive();
