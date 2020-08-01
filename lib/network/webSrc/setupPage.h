@@ -171,7 +171,6 @@ const char setupPageBodyPart1[] PROGMEM = R"=====(
 <nav id="wifi">
 )=====";
 
-
 const char setupPageBodyPart2[] PROGMEM = R"=====(
 </nav>
 </div>
@@ -209,6 +208,4 @@ const char setupPageBodyPart2[] PROGMEM = R"=====(
 </html>
 
 )=====";
-
-
 #endif
