@@ -22,7 +22,7 @@
 extern "C" {
   #include "user_interface.h"
 }
-typedef std::function<void()> webService;
+typedef std::function<void(AsyncWebServerRequest *request)> webService;
 class Network : public ErrorSlave
 {
     /*
@@ -125,8 +125,14 @@ class Network : public ErrorSlave
 
         void internalControl();
         
+
+        /*
+            Webservice Setup stuff
+        */
         void serverHandleSetup(AsyncWebServerRequest *request);
         void serverHandleCaptiveNotFound(AsyncWebServerRequest *request);
+        void checkAndTestCredits(AsyncWebServerRequest* request);
+        String replaceNetworks(const String& var);
 
     protected:
         void autoResetLock(); // called by run()
@@ -166,9 +172,9 @@ class Network : public ErrorSlave
         /*
             Webserver functionalities
         */
-        bool startWebserver(int port);
+        bool startWebserver();
         bool stopWebserver();
-        void addService(const char *url, webService function);
+        //void addService(const char *url, webService function); - used with linear webServer
         void addNotFoundService(webService function);
         AsyncWebServer* getWebserver();
         void enableCaptive();
@@ -185,7 +191,7 @@ class Network : public ErrorSlave
                 */
         String getHTMLFormattedWiFiNetworksForSetupHandler();
         int getRSSIasQuality(int RSSI);
-        void checkAndTestCredits();
+        
 
        /*
         Inherited ErrorHandling

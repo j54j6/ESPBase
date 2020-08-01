@@ -273,15 +273,20 @@ void Network::startSetupMode() //fkt Nr. -2
     /*
         Start Webserver
     */
-    //addService("/", std::bind(&Network::serverHandleSetup, this));
-    webserver.on("/", std::bind(&Network::serverHandleSetup, this));
-    webserver.on("/cred_save", std::bind(&Network::checkAndTestCredits, this));
-    webserver.onNotFound(std::bind(&Network::serverHandleCaptiveNotFound, this));
+   
+    webserver.on("/", HTTP_ANY, std::bind(&Network::serverHandleSetup, this, std::placeholders::_1));
+    webserver.onNotFound(std::bind(&Network::serverHandleCaptiveNotFound, this, std::placeholders::_1));
+            //webserver.on("/", HTTP_ANY, &Network::serverHandleSetup);
+    //webserver.on("/cred_save", std::bind(&Network::checkAndTestCredits, this));
+    //webserver.onNotFound(std::bind(&Network::serverHandleCaptiveNotFound, this));
     //addNotFoundService(std::bind(&Network::serverHandleCaptiveNotFound, this));
-    startWebserver(80);
+    startWebserver();
     Serial.println(WiFi.localIP());
     runFunction = -1;
 }
+
+
+
 
 /* Private helper function
     
@@ -562,13 +567,69 @@ void Network::internalBegin()
     }
 }
 
+String Network::replaceNetworks(const String& var) {
+    
+    logger logging;
+    String message = "Called with: ";
+    message += var;
+    logging.SFLog(className, "replacenetwork", message.c_str());
+    if(var == "network_placeholder")
+    {
+        return getHTMLFormattedWiFiNetworksForSetupHandler();
+    }
+    return var;
+}
+
+
 void Network::serverHandleSetup(AsyncWebServerRequest *request)
 {
     #ifdef J54J6_LOGGING_H
         logger logging;
         logging.SFLog(className, "serverHandleSetup", "setupWebHandler called!");
     #endif
-    request->header("Cache-Control");
+    
+    //not working
+    /*
+    String page = setupPageHeader;
+    page += setupPageBodyPart1;
+    page += getHTMLFormattedWiFiNetworksForSetupHandler();
+    page += setupPageBodyPart2;
+    request->send(200, "text/html", page);
+    */
+
+    AsyncResponseStream *response = request->beginResponseStream("text/html");
+    //response->print(setupPageHeader);
+    response->print(setupPageBodyPart1);
+    response->print(getHTMLFormattedWiFiNetworksForSetupHandler().c_str());
+    response->print(setupPageBodyPart2);
+    request->send(response);
+
+    // Older stuff - will removed / ported in coming Updates
+    //Header stuff
+    /*
+    response->addHeader("server", "Cache-Control");
+    response->addHeader("server", "no-cache");
+    response->addHeader("server", "must-revalidate");
+    response->addHeader("server", "Pragma");
+    response->addHeader("Expires", "-1");
+    */
+
+    //website head
+    /*
+    request->send_P(200, "text/html", setupPageHeader);
+    request->beginResponse(200, "text/html", setupPageBodyPart1);
+    request-> (200, "text/html", setupPageBodyPart1);
+    request->send_P(200, "text/html", getHTMLFormattedWiFiNetworksForSetupHandler().c_str());
+    request->send_P(200, "text/html", setupPageBodyPart2);
+    */
+
+    
+    /*response->print(setupPageBodyPart1);
+    response->print(String(getHTMLFormattedWiFiNetworksForSetupHandler()).c_str());
+    response->print(setupPageBodyPart2);*/
+
+
+    /* Header stuff
     request->header("no-cache");
     request->header("no-store");
     request->header("must-revalidate");
@@ -576,18 +637,14 @@ void Network::serverHandleSetup(AsyncWebServerRequest *request)
     request->header("no-cache");
     request->header("Expires");
     request->header("-1");
+    */
+    /* Old Part
     // HTML Content
     request->send(200, "text/html", setupPageHeader);
     request->send(setupPageBodyPart1);
     request->send(String(getHTMLFormattedWiFiNetworksForSetupHandler()).c_str());
     request->send(setupPageBodyPart2);
-    ulong startTime = millis();
-    long maxTime = 50000;
-
-    while(millis() < (startTime+maxTime))
-    {
-        
-    }
+ */
 
 }
 
@@ -704,7 +761,6 @@ void Network::run()
     autoResetLock();
     dnsServer.processNextRequest();
     MDNS.update();
-    webserver.handleClient();
     if(locked || classDisabled)
     {
         return;
@@ -745,7 +801,7 @@ void Network::run()
     Webserver functionalities
 */
 
-bool Network::startWebserver(int port)
+bool Network::startWebserver()
 {
     if(!this->webServerActive)
     {
@@ -754,7 +810,7 @@ bool Network::startWebserver(int port)
         logging.SFLog(className, "startWebserver", "Start Webserver");
         #endif
         webServerActive = true;
-        webserver.begin(port);
+        webserver.begin();
         return true;
     }
     else
@@ -780,7 +836,7 @@ bool Network::stopWebserver()
             logging.SFLog(className, "stopWebserver", "Stop Webserver");
         #endif
         webServerActive = false;
-        webserver.stop();
+        webserver.end();
         return true;
     }
     else
@@ -794,6 +850,7 @@ bool Network::stopWebserver()
     return false;
 }
 
+/*
 void Network::addService(const char *url, webService function)
 {
     #ifdef J54J6_LOGGING_H
@@ -802,8 +859,10 @@ void Network::addService(const char *url, webService function)
         message += url;
         logging.SFLog(className, "addService", message.c_str());
     #endif
-    webserver.on(url, function);
+    webserver.on(url, HTTP_ANY, function);
 }
+*/
+
 
 void Network::addNotFoundService(webService function)
 {
@@ -814,7 +873,7 @@ void Network::addNotFoundService(webService function)
     webserver.onNotFound(function);
 }
 
-ESP8266WebServer* Network::getWebserver()
+AsyncWebServer* Network::getWebserver()
 {
     return &webserver;
 }
@@ -862,9 +921,9 @@ int Network::getRSSIasQuality(int RSSI)
   return quality;
 }
 
-void Network::checkAndTestCredits()
+void Network::checkAndTestCredits(AsyncWebServerRequest* request)
 {
-    webserver.send(200, "text/html", "Danke für Ihre Credits, die gehören jetzt wohl mir XD");
+    request->send(200, "text/html", "Danke für Ihre Credits, die gehören jetzt wohl mir XD");
 }
 
 
