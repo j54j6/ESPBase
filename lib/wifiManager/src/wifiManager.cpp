@@ -174,17 +174,6 @@ void WiFiManager::setLockClass(bool newValue)
 
       logging.SFLog(className, "setLockClass", message.c_str());
   #endif
-  if(newValue)
-  {
-    error.error = true;
-    error.ErrorCode = 214;
-    error.message = "WiFiManager Class locked!";
-    error.priority = 5;
-    #ifdef J54J6_LOGGING_H
-     logger logging;
-     logging.SFLog(className, "setLockClass", "Report lock to ErrorHandler!", 0);
-    #endif
-  }
   lockClass = newValue;
 }
 
