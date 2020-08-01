@@ -35,6 +35,9 @@
         "utility": "cpp",
         "typeinfo": "cpp",
         "string": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "bitset": "cpp",
+        "ctime": "cpp",
+        "regex": "cpp"
     }
 }
