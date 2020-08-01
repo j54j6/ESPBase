@@ -16,11 +16,9 @@ Filemanager FM;
 Network test(&FM, &wifiManager);
 ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
 
-void handleTest()
+void handleTest(AsyncWebServerRequest* request)
 {
-   ESP8266WebServer* webserver = test.getWebserver();
-
-   webserver->send(200, "text/plain", "lololol");
+   request->send(200, "text/plain", "lololol");
 
 }
 
@@ -69,7 +67,7 @@ void setup() {
   FM.mount();
   FM.getSerialFileStructure();
   test.begin();
-  test.addService("/jew", handleTest);
+  //test.addService("/new", handleTest); - not implemented on AsyncWebserver
 }
 
 void loop() {  
