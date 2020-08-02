@@ -58,5 +58,5 @@ what's working:
         wifi control (connect/disconnect/disable)
         config creation
         AP start
-        Captive Portal - only visiting - save not implemented (next update)
+        Captive Portal (register and saving to LittleFS (using Filemanager))
 
