@@ -596,11 +596,19 @@ void Network::checkAndTestCredits()
         webserver.sendHeader("Location", String("http://172.20.0.1?wrongInput=true"), true);
         webserver.send( 302, "text/plain", "");
     }
+    if(webserver.arg("psk").length() < 8 || webserver.arg("psk").length() > 64)
+    {
+        #ifdef J54J6_LOGGING_H
+        logger logging;
+        logging.SFLog(className, "checkAndTestCredits", "psk to long or short");
+        #endif
+        webserver.sendHeader("Location", String("http://172.20.0.1?pskfalse=true"), true);
+        webserver.send( 302, "text/plain", "");
+    }
     else
     {
-        webserver.send(100); //prevent timeout
         long startConnectTime = millis();
-        uint connectTimeout = 20000;
+        uint connectTimeout = 1500;
         wifiManager->setWiFiMode(WIFI_AP_STA);
         wifiManager->startWifiStation(webserver.arg("ssid").c_str(), webserver.arg("psk").c_str(), WIFI_AP_STA);
         #ifdef J54J6_LOGGING_H
@@ -612,7 +620,7 @@ void Network::checkAndTestCredits()
         message += "|";
         logging.SFLog(className, "checkAndTestCredits", message.c_str());
         #endif
-        
+        webserver.send(102);
         while(millis() <= (startConnectTime+connectTimeout))
         {
             if(wifiManager->getWiFiState() == 3)
@@ -625,13 +633,17 @@ void Network::checkAndTestCredits()
                 #endif
                 break;
             }
-            delay(200);
+            else
+            {
+                delay(50);
+            }           
         }
         if(millis() > (startConnectTime+connectTimeout) || wifiManager->getWiFiState() != 3)
         {
             if(wifiManager->getWiFiState() == 1)
             {
                 webserver.sendHeader("Location", String("http://172.20.0.1/?success=nossid"), true);
+                webserver.send(302, "text/plain", "");
                 #ifdef J54J6_LOGGING_H
                     logger logging;
                     logging.SFLog(className, "checkAndTestCredits", "Can't reach SSID anymore", 1);
@@ -640,12 +652,12 @@ void Network::checkAndTestCredits()
             else
             {
                 webserver.sendHeader("Location", String("http://172.20.0.1/?success=false"), true);
+                webserver.send( 302, "text/plain", "");
                 #ifdef J54J6_LOGGING_H
                     logger logging;
                     logging.SFLog(className, "checkAndTestCredits", "SSID or PSK not correct!", 1);
                 #endif
             }
-            webserver.send( 302, "text/plain", "");
         }
         else
         {
@@ -687,10 +699,6 @@ void Network::checkAndTestCredits()
 
 void Network::serverHandleCaptiveNotFound()
 {
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "serverHandleCaptiveNotFound", "captive Handler called!");
-    #endif
     webserver.sendHeader("Location", String("http://172.20.0.1"), true);
     webserver.send( 302, "text/plain", "");
     return;
