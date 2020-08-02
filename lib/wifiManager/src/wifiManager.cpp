@@ -319,7 +319,7 @@ bool WiFiManager::setWiFiConfig(IPAddress local_ip, IPAddress gateway, IPAddress
 /*
   General functionalities
 */
-void WiFiManager::enableWiFi()
+void WiFiManager::enableWiFi(WiFiMode_t mode)
 {
   if(!shieldState)
   {
@@ -330,6 +330,7 @@ void WiFiManager::enableWiFi()
     shieldState = true; //wifi enabled
     wifi_fpm_do_wakeup();
     wifi_fpm_close();
+    WiFi.mode(mode);
   }
   else
   {
@@ -362,6 +363,12 @@ void WiFiManager::disableWiFi()
     #endif
   }
 }
+
+void WiFiManager::setWiFiMode(WiFiMode_t mode)
+{
+  WiFi.mode(mode);
+}
+
 
 bool WiFiManager::startWifiAP(const char *ssid, const char *passwd, int hidden, int channel)
 {
@@ -523,7 +530,7 @@ uint8_t WiFiManager::getConnectedStations()
   Station Stuff
 */
 
-bool WiFiManager::startWifiStation(const char* ssid, const char* passwd, int32_t channel, const uint8_t *bssid, bool connect)
+bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMode_t mode, int32_t channel, const uint8_t *bssid, bool connect)
 {
   if(staActive)
   {
@@ -562,7 +569,7 @@ bool WiFiManager::startWifiStation(const char* ssid, const char* passwd, int32_t
     
   }
   
-  if(WiFi.mode(WIFI_STA))
+  if(WiFi.mode(mode))
   {
     #ifdef J54J6_LOGGING_H
       logger logging;
@@ -577,7 +584,7 @@ bool WiFiManager::startWifiStation(const char* ssid, const char* passwd, int32_t
     #endif
     error.error = true;
     error.ErrorCode = 1;
-    error.message = "WiFi Class ->  Wifi.mode(sta) return false";
+    error.message = "WiFi Class ->  Wifi.mode() return false";
     error.priority = 6;
     setLockClass(true); //lock Class to prevent further Errors in this Class - to prevent this "Error" - just keeo overrideSettingsToPreventError as true
     return false;

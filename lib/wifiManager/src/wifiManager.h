@@ -13,7 +13,6 @@
 #include "logging.h"
 #include "errorHandler.h"
 
-
 #define WiFiCheckDelay 50
 #define FPM_SLEEP_MAX_TIME 0xFFFFFFF
 
@@ -115,8 +114,9 @@ class WiFiManager : public ErrorSlave {
 
 
         //General functionalities
-        void enableWiFi();
+        void enableWiFi(WiFiMode_t mode = WIFI_AP_STA);
         void disableWiFi();
+        void setWiFiMode(WiFiMode_t mode);
 
 
         //AP Stuff
@@ -127,9 +127,8 @@ class WiFiManager : public ErrorSlave {
 
 
         //Station Stuff
-        bool startWifiStation(const char* ssid, const char* passwd, int32_t channel = 0, const uint8_t *bssid = (const uint8_t* )__null, bool connect = true);
+        bool startWifiStation(const char* ssid, const char* passwd, WiFiMode_t mode = WIFI_STA, int32_t channel = 0, const uint8_t *bssid = (const uint8_t* )__null, bool connect = true);
         bool stopWifiStation(bool wifioff = true);
-
 
         //State functionalities
         bool wifiSTAIsConnected();

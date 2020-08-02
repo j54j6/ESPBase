@@ -140,9 +140,57 @@ function showPw()
     }
 }
 
-function message()
-{    
-window.alert('Die eigegebenen Anmeldedaten werden geprüft')
+function message(functionType = 0)
+{
+if(functionType == 0)
+{
+	window.alert('Die eigegebenen Anmeldedaten werden geprüft');
+}
+else if(functionType == 1)
+{
+    window.alert('SSID oder Passwort fehlen!');
+}
+else if(functionType == 2)
+{
+    window.alert('Das eingegebene Passwort scheint nicht korrekt zu sein!');
+}
+else if(functionType == 3)
+{
+    window.alert('Netzwerk erfolgreich eingerichtet - AP wird geschlossen');
+}
+else if(functionType == 4)
+{
+    window.alert('Die SSID kann nicht mehr erreicht werden! - \nBitte aktualisieren Sie die Webseite und versuchen es erneut');
+}
+else
+{
+	window.alert('SSID oder Passwort fehlen!');
+}
+}
+
+function getGetParameter()
+{
+	const queryString = window.location.search;
+	const urlParams = new URLSearchParams(queryString);
+	const wrongEntry = urlParams.get('wrongInput');
+    const successEntry = urlParams.get('success');
+	
+	if(wrongEntry == "true")
+	{
+		message(1);
+	}
+    else if(successEntry == 'false')
+    {
+        message(2);
+    }
+    else if(successEntry == 'true')
+    {
+        message(3);
+    }
+    else if(successEntry == 'nossid')
+    {
+        message(4);
+    }
 }
 
 </script>
@@ -150,7 +198,7 @@ window.alert('Die eigegebenen Anmeldedaten werden geprüft')
 )=====";
 
 const char setupPageBodyPart1[] PROGMEM = R"=====(
-<body>
+<body onload="getGetParameter()">
 <div class=head>
 <div class="header">
 <div class="logo">
