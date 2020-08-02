@@ -72,7 +72,6 @@ void setup() {
 
 void loop() {  
   test.run();
-
   wifiLed.run();
   errorLed.run();
   workLed.run();
