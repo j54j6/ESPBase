@@ -69,7 +69,7 @@ void setup() {
   FM.mount();
   FM.getSerialFileStructure();
   test.begin();
-  test.addService("/jew", handleTest);
+  test.addService("/new", handleTest);
 }
 
 void loop() {  

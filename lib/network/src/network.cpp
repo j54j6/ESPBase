@@ -577,14 +577,6 @@ void Network::serverHandleSetup()
     webserver.sendContent(setupPageBodyPart1);
     webserver.sendContent(String(getHTMLFormattedWiFiNetworksForSetupHandler()).c_str());
     webserver.sendContent(setupPageBodyPart2);
-    ulong startTime = millis();
-    long maxTime = 50000;
-
-    while(millis() < (startTime+maxTime))
-    {
-        
-    }
-
 }
 
 void Network::serverHandleCaptiveNotFound()
