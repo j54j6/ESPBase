@@ -151,6 +151,8 @@ class Network : public ErrorSlave
 
         //set Stuff
         void setClassDisabled(bool newVal);
+        bool saveCredentials(const String* ssid, const String* psk, const char* File);
+
 
         //Run
         void run(); //Handler function need to be called in arduino>loop()

@@ -579,6 +579,106 @@ void Network::serverHandleSetup()
     webserver.sendContent(setupPageBodyPart2);
 }
 
+void Network::checkAndTestCredits()
+{
+    #ifdef J54J6_LOGGING_H
+        logger logging;
+        logging.SFLog(className, "checkAndTestCredits", "credits will be checked");
+    #endif
+    webserver.send(102); //prevent timeout
+
+    if(!webserver.hasArg("ssid") || webserver.arg("ssid") == "" || !webserver.hasArg("psk") || webserver.arg("psk") == "")
+    {
+        #ifdef J54J6_LOGGING_H
+        logger logging;
+        logging.SFLog(className, "checkAndTestCredits", "psk or ssid not set");
+        #endif
+        webserver.sendHeader("Location", String("http://172.20.0.1?wrongInput=true"), true);
+        webserver.send( 302, "text/plain", "");
+    }
+    else
+    {
+        webserver.send(100); //prevent timeout
+        long startConnectTime = millis();
+        uint connectTimeout = 20000;
+        wifiManager->setWiFiMode(WIFI_AP_STA);
+        wifiManager->startWifiStation(webserver.arg("ssid").c_str(), webserver.arg("psk").c_str(), WIFI_AP_STA);
+        #ifdef J54J6_LOGGING_H
+        logger logging;
+        String message = "Try connect with SSID: |";
+        message += webserver.arg("ssid").c_str();
+        message += "| and PSk: |";
+        message += webserver.arg("psk").c_str();
+        message += "|";
+        logging.SFLog(className, "checkAndTestCredits", message.c_str());
+        #endif
+        
+        while(millis() <= (startConnectTime+connectTimeout))
+        {
+            if(wifiManager->getWiFiState() == 3)
+            {
+                webserver.sendHeader("Location", String("http://172.20.0.1/?success=true"), true);
+                webserver.send( 302, "text/plain", "");
+                #ifdef J54J6_LOGGING_H
+                    logger logging;
+                    logging.SFLog(className, "checkAndTestCredits", "Connection successfull");
+                #endif
+                break;
+            }
+            delay(200);
+        }
+        if(millis() > (startConnectTime+connectTimeout) || wifiManager->getWiFiState() != 3)
+        {
+            if(wifiManager->getWiFiState() == 1)
+            {
+                webserver.sendHeader("Location", String("http://172.20.0.1/?success=nossid"), true);
+                #ifdef J54J6_LOGGING_H
+                    logger logging;
+                    logging.SFLog(className, "checkAndTestCredits", "Can't reach SSID anymore", 1);
+                #endif
+            }
+            else
+            {
+                webserver.sendHeader("Location", String("http://172.20.0.1/?success=false"), true);
+                #ifdef J54J6_LOGGING_H
+                    logger logging;
+                    logging.SFLog(className, "checkAndTestCredits", "SSID or PSK not correct!", 1);
+                #endif
+            }
+            webserver.send( 302, "text/plain", "");
+        }
+        else
+        {
+            if(wifiManager->getWiFiState() == 3)
+            {
+                #ifdef J54J6_LOGGING_H
+                    logger logging;
+                    logging.SFLog(className, "checkAndTestCredits", "successfully connected to Network - save");
+                #endif
+                webserver.sendHeader("Location", String("http://172.20.0.1/?success=true"), true);
+                webserver.send( 302, "text/plain", "");
+                if(!saveCredentials(&webserver.arg("ssid"), &webserver.arg("psk"), configFile))
+                {
+                    #ifdef J54J6_LOGGING_H
+                        logger logging;
+                        logging.SFLog(className, "checkAndTestCredits", "Can't save WiFi credentials - saveCredentials returns false ", 2);
+                    #endif
+                }
+                if(FM->changeJsonValueFile(configFile, "wiFiConfigured", "true"))
+                {
+                    #ifdef J54J6_LOGGING_H
+                        logging.SFLog(className, "checkAndTestCredits", "Can't change to configured Network - FM::changeJsonValueFile returns false!", 2);
+                    #endif
+                }
+                #ifdef J54J6_LOGGING_H
+                    logging.SFLog(className, "checkAndTestCredits", "Credentials successfully saved!");
+                #endif
+            }
+        }   
+    }    
+}
+
+
 void Network::serverHandleCaptiveNotFound()
 {
     #ifdef J54J6_LOGGING_H
@@ -678,7 +778,40 @@ void Network::setClassDisabled(bool newVal)
   this->classDisabled = newVal;
 }
 
-
+bool Network::saveCredentials(const String* ssid, const String* psk, const char* File)
+{
+  if(!FM->fExist(File))
+  {
+    #ifdef J54J6_LOGGING_H
+      logger logging;
+      logging.SFLog(className, "saveCredentials", "Can't save credentials - File doesn't exist!", 2);
+    #endif
+    return false;
+  }
+  else
+  {
+    if(!FM->changeJsonValueFile(File, "ssid", ssid->c_str()))
+    {
+      #ifdef J54J6_LOGGING_H
+          logger logging;
+          logging.SFLog(className, "saveCredentials", "Can't change Json Valie ssid! - function return false", 2);
+      #endif
+    }
+    if(!FM->changeJsonValueFile(File, "psk", psk->c_str()))
+    {
+      #ifdef J54J6_LOGGING_H
+          logger logging;
+          logging.SFLog(className, "saveCredentials", "Can't change Json Valie psk! - function return false", 2);
+      #endif
+    }
+    #ifdef J54J6_LOGGING_H
+        logger logging;
+        logging.SFLog(className, "saveCredentials", "Credentials successfully saved");
+    #endif
+    return true;
+  }
+  return false;
+}
 
 /*
     RUN - add to loop() function!
@@ -850,14 +983,6 @@ int Network::getRSSIasQuality(int RSSI)
   }
   return quality;
 }
-
-void Network::checkAndTestCredits()
-{
-    webserver.send(200, "text/html", "Danke für Ihre Credits, die gehören jetzt wohl mir XD");
-}
-
-
-
 
 
 /*
