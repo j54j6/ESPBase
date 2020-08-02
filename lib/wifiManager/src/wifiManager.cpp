@@ -530,15 +530,27 @@ uint8_t WiFiManager::getConnectedStations()
   Station Stuff
 */
 
-bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMode_t mode, int32_t channel, const uint8_t *bssid, bool connect)
+bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMode_t mode, bool restart, int32_t channel, const uint8_t *bssid, bool connect)
 {
   if(staActive)
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "startWifiStation", "Station already enabled - SKIP", 1);
-    #endif
-    return true;
+    if(!restart)
+    {
+      #ifdef J54J6_LOGGING_H
+        logger logging;
+        logging.SFLog(className, "startWifiStation", "Station already enabled - SKIP", 1);
+      #endif
+      return true;
+    }
+    else
+    {
+      #ifdef J54J6_LOGGING_H
+        logger logging;
+        logging.SFLog(className, "startWifiStation", "Station Already enabled - Restart!", 1);
+      #endif
+      delay(50);
+    }
+    
   }
 
   if(!this->shieldState) //if wifiIsDisabled and overrideSettings is enabled - enableWifi and then start WifiAP

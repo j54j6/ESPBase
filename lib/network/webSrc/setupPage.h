@@ -162,6 +162,10 @@ else if(functionType == 4)
 {
     window.alert('Die SSID kann nicht mehr erreicht werden! - \nBitte aktualisieren Sie die Webseite und versuchen es erneut');
 }
+else if(functionType == 5)
+{
+    window.alert('Das Passwort muss zwischen 8 und 64 Zeichen lang sein');
+}
 else
 {
 	window.alert('SSID oder Passwort fehlen!');
@@ -174,6 +178,8 @@ function getGetParameter()
 	const urlParams = new URLSearchParams(queryString);
 	const wrongEntry = urlParams.get('wrongInput');
     const successEntry = urlParams.get('success');
+    const wrongPsk = urlParams.get('pskfalse');
+    
 	
 	if(wrongEntry == "true")
 	{
@@ -190,6 +196,10 @@ function getGetParameter()
     else if(successEntry == 'nossid')
     {
         message(4);
+    }
+    else if(wrongPsk == 'true')
+    {
+        message(5);
     }
 }
 
