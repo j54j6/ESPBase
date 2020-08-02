@@ -44,7 +44,9 @@ void getPerformance()
       String message = "\nWiFi-Manager: ";
       message += wifiPerformace;
       message += "x/s \n";
-      message += "Network: ";
+      message += "WiFi-State: ";
+      message += wifiManager.getWiFiState();
+      message += "\nNetwork: ";
       message += networkPerformance;
       message += "x/s";
       logging.SFLog("Main", "getPerformance", message.c_str(), 0);
@@ -59,6 +61,9 @@ void setup() {
   Serial.println("Start");
   Serial.println("");
 
+  WiFi.persistent(false);
+  WiFi.setAutoConnect(false);
+  WiFi.stopSmartConfig();
   workLed.ledOn();
   wifiManager.setClassName("wifiManager");
   test.setClassName("network");
