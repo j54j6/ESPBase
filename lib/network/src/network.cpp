@@ -657,22 +657,28 @@ void Network::checkAndTestCredits()
                 #endif
                 webserver.sendHeader("Location", String("http://172.20.0.1/?success=true"), true);
                 webserver.send( 302, "text/plain", "");
+                bool tmp = false;
                 if(!saveCredentials(&webserver.arg("ssid"), &webserver.arg("psk"), configFile))
                 {
                     #ifdef J54J6_LOGGING_H
                         logger logging;
                         logging.SFLog(className, "checkAndTestCredits", "Can't save WiFi credentials - saveCredentials returns false ", 2);
                     #endif
+                    tmp = true;
                 }
-                if(FM->changeJsonValueFile(configFile, "wiFiConfigured", "true"))
+                if(!FM->changeJsonValueFile(configFile, "wiFiConfigured", "true"))
                 {
                     #ifdef J54J6_LOGGING_H
                         logging.SFLog(className, "checkAndTestCredits", "Can't change to configured Network - FM::changeJsonValueFile returns false!", 2);
                     #endif
+                    tmp = true;
                 }
-                #ifdef J54J6_LOGGING_H
-                    logging.SFLog(className, "checkAndTestCredits", "Credentials successfully saved!");
-                #endif
+                if(!tmp)
+                {
+                    #ifdef J54J6_LOGGING_H
+                        logging.SFLog(className, "checkAndTestCredits", "Credentials successfully saved!");
+                    #endif
+                }
             }
         }   
     }    
