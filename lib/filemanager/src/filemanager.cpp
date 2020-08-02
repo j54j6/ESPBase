@@ -1175,7 +1175,7 @@ bool Filemanager::changeJsonValueFile(const char* Filename, const char* key, con
     if(!checkForInit())
     {
         #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getCreationTime", "Error Init. Check!", 2);
+            logger::SFLog(className, "changeJsonValueFile", "Error Init. Check!", 2);
         #endif
         return false;
     }
@@ -1184,13 +1184,24 @@ bool Filemanager::changeJsonValueFile(const char* Filename, const char* key, con
     bool val1 = writeJsonFile(Filename, jsonFile, "w");
     if(!val1)
     {
+        #ifdef J54J6_LOGGING_H //use logging Libary if included
+            logger::SFLog(className, "changeJsonValueFile", "Can't write in JSON File", 2);
+        #endif
         return false;
     }
+
     jsonFile = readJsonFile(Filename);
     if(newValue == jsonFile[key])
     {
         return true;
     }
+    #ifdef J54J6_LOGGING_H //use logging Libary if included
+        String message = "Strings does not match: Key: ";
+        message += key;
+        message += " returned from File: ";
+        message += String(jsonFile[key].as<String>());
+        logger::SFLog(className, "changeJsonValueFile", message.c_str(), 2);
+    #endif
     return false;
 
 }
