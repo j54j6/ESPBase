@@ -1,10 +1,13 @@
 #ifndef J54J6_NETWORK_H
 #define J54J6_NETWORK_H
+
+
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 
 
 //#include <ESP8266WebServer.h> - removed and replaced by AsyncWebserver
+
 
 #include <ESPAsyncWebServer.h>
 #include <ESPAsyncTCP.h> //for ESPAsyncWebserver
@@ -37,7 +40,7 @@ class Network : public ErrorSlave
                 1000 - 1500 = User space - for extra functionalities (use addFunctionalities(int number, void function())) - planned feature
 
     */
-    private:
+    private:        
         /*
             General Class stuff
         */

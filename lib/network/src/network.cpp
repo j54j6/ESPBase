@@ -573,11 +573,11 @@ String Network::replaceNetworks(const String& var) {
     String message = "Called with: ";
     message += var;
     logging.SFLog(className, "replacenetwork", message.c_str());
-    if(var == "network_placeholder")
+    if(var == "networkPlaceholder")
     {
         return getHTMLFormattedWiFiNetworksForSetupHandler();
     }
-    return var;
+    return String();
 }
 
 
@@ -597,12 +597,14 @@ void Network::serverHandleSetup(AsyncWebServerRequest *request)
     request->send(200, "text/html", page);
     */
 
+   /*
     AsyncResponseStream *response = request->beginResponseStream("text/html");
     //response->print(setupPageHeader);
     response->print(setupPageBodyPart1);
     response->print(getHTMLFormattedWiFiNetworksForSetupHandler().c_str());
     response->print(setupPageBodyPart2);
     request->send(response);
+    */
 
     // Older stuff - will removed / ported in coming Updates
     //Header stuff
@@ -645,7 +647,30 @@ void Network::serverHandleSetup(AsyncWebServerRequest *request)
     request->send(String(getHTMLFormattedWiFiNetworksForSetupHandler()).c_str());
     request->send(setupPageBodyPart2);
  */
+    //AsyncWebServerResponse test = 
+    //request->send()
 
+    /* Working but no cycles supported ->networks
+    request->send_P(200, "text/html", setupSite, std::bind(&Network::replaceNetworks, this, std::placeholders::_1));
+    */
+
+    /* Store data error
+    AsyncResponseStream *response = request->beginResponseStream("text/html");
+    response->print(setupPageHeader);
+    response->print(setupPageBodyPart1);
+    response->print(getHTMLFormattedWiFiNetworksForSetupHandler());
+    response->print(setupPageBodyPart2);
+
+    request->send(response);
+    */
+
+    AsyncResponseStream *response = request->beginResponseStream("text/html");
+    response->print("This");
+    response->print("Is");
+    response->print("a");
+    response->print("test");
+
+    request->send(response);
 }
 
 void Network::serverHandleCaptiveNotFound(AsyncWebServerRequest *request)
@@ -889,11 +914,7 @@ String Network::getHTMLFormattedWiFiNetworksForSetupHandler()
 {
     String part;
     int amountNetworks = WiFi.scanNetworks();
-    if(amountNetworks == 0)
-    {
-        part = "<li>Keine netzwerke gefunden!</li>";
-        return part;
-    }
+
     for(int i = 0; i < amountNetworks; i++)
     {
       part += "<li><a href='#passwordField' onclick='c(this)'>";
@@ -904,6 +925,11 @@ String Network::getHTMLFormattedWiFiNetworksForSetupHandler()
       part += getRSSIasQuality(WiFi.RSSI(i));
       part += "%</span></li>";
       part += "<br/>";
+    }
+    if(amountNetworks == 0)
+    {
+        part = "<li>Keine netzwerke gefunden!</li>";
+        return part;
     }
     return part;
 }
