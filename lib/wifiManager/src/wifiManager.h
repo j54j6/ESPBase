@@ -127,7 +127,7 @@ class WiFiManager : public ErrorSlave {
 
 
         //Station Stuff
-        bool startWifiStation(const char* ssid, const char* passwd, WiFiMode_t mode = WIFI_STA, int32_t channel = 0, const uint8_t *bssid = (const uint8_t* )__null, bool connect = true);
+        bool startWifiStation(const char* ssid, const char* passwd, WiFiMode_t mode = WIFI_STA, bool restart = true, int32_t channel = 0, const uint8_t *bssid = (const uint8_t* )__null, bool connect = true);
         bool stopWifiStation(bool wifioff = true);
 
         //State functionalities
