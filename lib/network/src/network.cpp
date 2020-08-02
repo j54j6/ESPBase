@@ -562,42 +562,31 @@ void Network::internalBegin()
     }
 }
 
-void Network::serverHandleSetup(AsyncWebServerRequest *request)
+void Network::serverHandleSetup()
 {
     #ifdef J54J6_LOGGING_H
         logger logging;
         logging.SFLog(className, "serverHandleSetup", "setupWebHandler called!");
     #endif
-    request->header("Cache-Control");
-    request->header("no-cache");
-    request->header("no-store");
-    request->header("must-revalidate");
-    request->header("Pragma");
-    request->header("no-cache");
-    request->header("Expires");
-    request->header("-1");
+    webserver.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    webserver.sendHeader("Pragma", "no-cache");
+    webserver.sendHeader("Expires", "-1");
+    webserver.setContentLength(CONTENT_LENGTH_UNKNOWN);
     // HTML Content
-    request->send(200, "text/html", setupPageHeader);
-    request->send(setupPageBodyPart1);
-    request->send(String(getHTMLFormattedWiFiNetworksForSetupHandler()).c_str());
-    request->send(setupPageBodyPart2);
-    ulong startTime = millis();
-    long maxTime = 50000;
-
-    while(millis() < (startTime+maxTime))
-    {
-        
-    }
-
+    webserver.send(200, "text/html", setupPageHeader);
+    webserver.sendContent(setupPageBodyPart1);
+    webserver.sendContent(String(getHTMLFormattedWiFiNetworksForSetupHandler()).c_str());
+    webserver.sendContent(setupPageBodyPart2);
 }
 
-void Network::serverHandleCaptiveNotFound(AsyncWebServerRequest *request)
+void Network::serverHandleCaptiveNotFound()
 {
     #ifdef J54J6_LOGGING_H
         logger logging;
         logging.SFLog(className, "serverHandleCaptiveNotFound", "captive Handler called!");
     #endif
-    request->redirect(String("http://172.20.0.1"));
+    webserver.sendHeader("Location", String("http://172.20.0.1"), true);
+    webserver.send( 302, "text/plain", "");
     return;
 }
 
