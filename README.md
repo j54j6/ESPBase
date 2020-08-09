@@ -13,8 +13,8 @@ postponed work:
     
 Current work:
 
-    -> Finish WiFi Setup and DNS/MDNS Handling
-    -> Add MQTT Handling
+    -> Finish WiFi Setup and DNS/MDNS Handling - finished
+    -> Add MQTT Handling - WIP
     -> Wrap current global sketch content into single Class
 
 
