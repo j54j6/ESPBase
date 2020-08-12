@@ -7,8 +7,6 @@
 #include <WiFiClient.h>
 
 
-
-
 #include "led.h"
 #include "logging.h"
 #include "errorHandler.h"
@@ -71,6 +69,10 @@ class WiFiManager : public ErrorSlave {
 
         //internal Class function
         void internalControl();
+
+        //WiFi Object - for mqtt
+        WiFiClient localWiFiClient;
+        
     public:
         //Constructor
         WiFiManager(); //no LED only voidLed
@@ -99,6 +101,8 @@ class WiFiManager : public ErrorSlave {
         String getBSSID();
         uint8_t* getBSSIDAsInt();
         int32_t getRSSI();
+
+        WiFiClient* getWiFiClient();
 
         //set Stuff
         void setShieldState(bool newState);

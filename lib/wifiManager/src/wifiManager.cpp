@@ -120,6 +120,10 @@ int32_t WiFiManager::getRSSI()
   return WiFi.RSSI();
 }
 
+WiFiClient* WiFiManager::getWiFiClient()
+{
+  return &localWiFiClient;
+}
 /*
   Set stuff
 */
