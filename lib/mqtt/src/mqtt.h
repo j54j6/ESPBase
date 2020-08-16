@@ -5,24 +5,44 @@
 #include <mqtt.h>
 
 #include "wifiManager.h"
+#include "filemanager.h"
+
 #include "errorHandler.h"
+#include "logging.h"
 
 class J54J6_MQTT : public ErrorSlave {
     private:
+        const char* configFallback[1][2] = {
+            {"", ""}
+        };
+        int configFileLength = 0;
+        
+        const char* className = "MQTT";
+
         const char* configFile = "/config/mqtt.json";
         MQTTClient mqttHandlerClient;
+
+        Filemanager* FM;
+        WiFiManager* wifiManager;
         int default_port = 1883;
         bool MQTTActive = false;
 
     protected:
-
+        //extra stuff
+        bool configCheck();
     public:
-        J54J6_MQTT();
+        J54J6_MQTT(Filemanager* FM, WiFiManager* wifiManager);
 
         //Init MQTTClient - start listener
         void begin(const char* hostname);
         void begin(const char* hostname, int port = 1883);
 
+
+        //Destruct
+        ~J54J6_MQTT() {
+            MQTTActive = false;
+        };
+        
         //Get Stuff
         bool connected();
 
@@ -68,7 +88,7 @@ class J54J6_MQTT : public ErrorSlave {
         bool publish(const char topic[], const char payload[], int length);
         bool publish(const char topic[], const char payload[], int length, bool retained, int qos);
 
-
+ 
         //Subscribe
         bool subscribe(const String &topic);
         bool subscribe(const String &topic, int qos); 
@@ -99,8 +119,7 @@ class J54J6_MQTT : public ErrorSlave {
         void stopClass();
         void pauseClass();
         void restartClass();
-        void continueClass();
-        
+        void continueClass();        
 };
 
 
