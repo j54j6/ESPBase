@@ -25,6 +25,8 @@ class NetworkIdent {
         void searchForDeviceName(const char* deviceName);
         void searchForFunctionalities(const char* functionalitiy);
 
+        void sendUdpMessage(const char* workload, 
+
         void returnMyDeviceName();
         void returnMyFuntionalitiy();
         void returnMyIP();
