@@ -1317,6 +1317,7 @@ DynamicJsonDocument Filemanager::readJsonFile(const char* Filename)
     DeserializationError error = deserializeJson(jsonDocument, output);
     if(error)
     {
+        this->error = true;
         return jsonDocument;
     }
     return jsonDocument;
