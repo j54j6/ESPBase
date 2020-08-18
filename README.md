@@ -5,7 +5,7 @@ A little Sketch to Handle all common things for you like Network (WiFi, DNS, MDN
 
 Note: This is my first "complete Project" - I'm a newbie ^^ (2020) - im not finished until now but i work every day on this project
 
-If you find any bugs please report it, i'll fix it as fast as possible... This is my private project in a very early state, i might change some functionalities but i try to add and change all features without changing the general function, you dont need any changes if i update my Baseprogram, only new functionalities or parameters will change. Only if there is no other way than a complete change e.g security fixes i will change complete interfaces but in this case i will write it in README and CahngeLog
+If you find any bugs please report it, i'll fix it as fast as possible... This is my private project in a very early state, i might change some functionalities but i try to add and change all features without changing the general function, you dont need any changes if i update my Baseprogram, only new functionalities or parameters will change. Only if there is no other way than a complete change e.g security fixes i will change complete interfaces but in this case i will write it in README and ChangeLog
 
 postponed work:
 
@@ -14,7 +14,7 @@ postponed work:
 Current work:
 
     -> Finish WiFi Setup and DNS/MDNS Handling - finished
-    -> Add MQTT Handling - WIP
+    -> Add MQTT Handling (for this NetworkIdent added)- WIP
     -> Wrap current global sketch content into single Class
 
 
