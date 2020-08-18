@@ -46,7 +46,7 @@ bool J54J6_MQTT::configCheck()
         #ifdef J54J6_LOGGING_H
             logger logging;
             logging.SFLog(className, "configCheck", "Config check successfull");
-            #endif
+        #endif
         return true;
     }
 }
