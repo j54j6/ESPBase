@@ -45,6 +45,7 @@ bucket list:
     General: Mod store for this system (e.g for LED control or thermometer)
     Button: detect push sequences (eg. long - short -long - short)
     General: Create a wrapper class for hook up functionality
+    General: Add modular Config Website for devices - every module (class) can add own website-part (module) to be configured
 
 what's working:
 
