@@ -87,7 +87,7 @@ bool NetworkIdent::addService(const char* newServiceName, int usedPort)
     {
         #ifdef J54J6_LOGGING_H
             logger logging;
-            logging.SFLog(className, "addService", "Can't add Service - already exist or other Error - see above at Info");
+            logging.SFLog(className, "addService", "Can't add Service - already exist or other Error - see Info above!");
         #endif
         return false;
     }
