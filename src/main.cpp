@@ -4,6 +4,7 @@
 #include "network.h"
 #include "led.h"
 #include "button.h"
+#include "NetworkIdent.h"
 #include "../lib/network/webSrc/setupPage.h"
 
 
@@ -15,6 +16,7 @@ WiFiManager wifiManager(&wifiLed);
 Filemanager FM;
 Network test(&FM, &wifiManager);
 ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
+NetworkIdent networkIdent(&wifiManager, &FM, "TestDevice");
 
 void handleTest()
 {
@@ -68,6 +70,7 @@ void setup() {
   wifiManager.setClassName("wifiManager");
   test.setClassName("network");
   mainHandler.addNewNode(test.getINode(), "network");
+  mainHandler.addNewNode(networkIdent.getINode(), "NetworkIdent");
   
   //Serial.println(mainHandler.verifyAmountOfNodes());
   delay(2000);
@@ -86,4 +89,22 @@ void loop() {
   wifiManager.run();
   errorHandle();
   getPerformance();
+
+  if(wifiManager.getWiFiState() == WL_CONNECTED)
+  {
+    static ulong lastCall = 0;
+    int delay = 3000;
+    static int count = 0;
+
+    if(count < 20 && millis() >= (lastCall + delay))
+    {
+      lastCall = millis();
+      logger logging;
+      logging.SFLog("main", "main", "Send UDP!");
+
+      networkIdent.searchForService("Webserver");
+    }
+    
+  }
+
 }
