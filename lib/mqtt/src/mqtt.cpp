@@ -79,7 +79,7 @@ void J54J6_MQTT::run()
     {
         this->error.error = true;
         this->error.ErrorCode = 365;
-        this->error.message = mqttHandlerClient.
+        this->error.message = "";
     }
     delay(10); //need to fix several stability problems look at https://github.com/256dpi/arduino-mqtt?utm_source=platformio&utm_medium=piohome#notes
 }
