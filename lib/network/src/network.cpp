@@ -169,7 +169,23 @@ bool Network::createSetupFile() //Fkt. Nr 120
 
 void Network::startWorking() //fkt. Nr. -3
 {
+    String staSSID = FM->readJsonFileValue(configFile, "ssid");
+    String staPSK = FM->readJsonFileValue(configFile, "psk");
+    
 
+    #ifdef J54J6_LOGGING_H
+        logger logging;
+        logging.SFLog(className, "startSetupMode", "AP successfully started");
+        String message = "Credentials: \n";
+        message += " SSID: ";
+        message += staSSID;
+        message += "\n PSK: ";
+        message += staPSK;
+        logging.SFLog(className, "startSetupMode", message.c_str());
+    #endif
+
+    wifiManager->startWifiStation(staSSID.c_str(), staPSK.c_str());
+    runFunction = 0;
 }
 
 void Network::startSetupMode() //fkt Nr. -2
@@ -608,7 +624,7 @@ void Network::checkAndTestCredits()
     else
     {
         long startConnectTime = millis();
-        uint connectTimeout = 1500;
+        uint connectTimeout = 5000;
         wifiManager->setWiFiMode(WIFI_AP_STA);
         wifiManager->startWifiStation(webserver.arg("ssid").c_str(), webserver.arg("psk").c_str(), WIFI_AP_STA);
         #ifdef J54J6_LOGGING_H
