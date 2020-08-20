@@ -124,6 +124,12 @@ WiFiClient* WiFiManager::getWiFiClient()
 {
   return &localWiFiClient;
 }
+
+String WiFiManager::getLocalIP()
+{
+  return WiFi.localIP().toString();
+}
+
 /*
   Set stuff
 */
@@ -536,12 +542,16 @@ uint8_t WiFiManager::getConnectedStations()
 
 bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMode_t mode, bool restart, int32_t channel, const uint8_t *bssid, bool connect)
 {
+  #ifdef J54J6_LOGGING_H
+    logger logging;
+    logging.SFLog(className, "startWifiStation", "Start Wifi Station");
+  #endif
+
   if(staActive)
   {
     if(!restart)
     {
       #ifdef J54J6_LOGGING_H
-        logger logging;
         logging.SFLog(className, "startWifiStation", "Station already enabled - SKIP", 1);
       #endif
       return true;
@@ -607,7 +617,6 @@ bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMo
   }
 
   #ifdef J54J6_LOGGING_H
-    logger logging;
     logging.SFLog(className, "startWifiStation", "WiFi Station successfully started");
   #endif
   staActive = true;

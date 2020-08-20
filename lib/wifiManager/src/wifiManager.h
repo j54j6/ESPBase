@@ -88,6 +88,7 @@ class WiFiManager : public ErrorSlave {
         int getCheckDelay();
         ulong getCallPerSecond();
         classErrorReport getCurrentErrorState();
+        
 
         bool getWiFiAutoConnect();
         bool getWiFiAutoReconnect();
@@ -103,6 +104,9 @@ class WiFiManager : public ErrorSlave {
         int32_t getRSSI();
 
         WiFiClient* getWiFiClient();
+
+        String getLocalIP();
+
 
         //set Stuff
         void setShieldState(bool newState);
