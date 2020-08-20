@@ -1117,11 +1117,18 @@ bool Filemanager::writeJsonFile(const char* Filename,  const char* jsonPattern[]
     if(!checkForInit())
     {
         #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getCreationTime", "Error Init. Check!", 2);
+            logger::SFLog(className, "writeJsonFile", "Error Init. Check!", 2);
         #endif
         return false;
     }
 
+    if(amountOfData == 0)
+    {
+        #ifdef J54J6_LOGGING_H //use logging Libary if included
+            logger::SFLog(className, "writeJsonFile", "no Data given (AmountData = 0) - SKIP", 1);
+        #endif
+        return true;
+    }
     const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
     DynamicJsonDocument jsonDocument(capacity);
     String jsonOutput;
@@ -1310,6 +1317,7 @@ DynamicJsonDocument Filemanager::readJsonFile(const char* Filename)
     DeserializationError error = deserializeJson(jsonDocument, output);
     if(error)
     {
+        this->error = true;
         return jsonDocument;
     }
     return jsonDocument;

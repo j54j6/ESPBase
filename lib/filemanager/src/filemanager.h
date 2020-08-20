@@ -23,6 +23,8 @@
             File internalFileHandle;
             Dir actualDir;
         public: 
+            bool error = false;
+            
             Filemanager(bool tryAutoFix = false); //Autofix is at this time intended to help prevent syntax fails - e.g open file without mounted FS 
             bool begin(); //start/mount Filesystem - same like mount()
             bool mount(); //link to begin()
