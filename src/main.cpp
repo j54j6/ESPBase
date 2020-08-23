@@ -78,6 +78,9 @@ void setup() {
   FM.getSerialFileStructure();
   test.begin();
   test.addService("/new", handleTest);
+
+  networkIdent.begin(63547);
+  networkIdent.begin(6445);
 }
 
 void loop() {  
@@ -89,6 +92,7 @@ void loop() {
   wifiManager.run();
   errorHandle();
   getPerformance();
+  networkIdent.loop();
 
   if(wifiManager.getWiFiState() == WL_CONNECTED)
   {
@@ -103,6 +107,7 @@ void loop() {
       logging.SFLog("main", "main", "Send UDP!");
 
       networkIdent.searchForService("Webserver");
+      count++;
     }
     
   }

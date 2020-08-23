@@ -11,11 +11,12 @@
 
 struct udpPacketResolve {
     IPAddress remoteIP;
-    int remotePort;
-    int paketSize;
-    char udpContent[512];
+    int remotePort = -1;
+    int paketSize = 0;
+    char udpContent[512] = "NULL";
 };
 
+typedef std::function<void()> handlerFunction;
 class NetworkIdent : public ErrorSlave {
     private:
         bool classDisabled = false;

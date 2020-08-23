@@ -7,6 +7,8 @@ NetworkIdent::NetworkIdent(WiFiManager* wifiManager, Filemanager* FM, const char
     this->port = port;
     this->wifiManager = wifiManager;
     this->FM = FM;
+
+    this->begin(networkIdentPort);
 }
 
 //set stuff
@@ -49,6 +51,17 @@ bool NetworkIdent::begin(int port)
         error.priority = 5;
         return false;
     }
+    else
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            String message = "UDP handler started - ";
+            message += "Listening on Port: ";
+            message += port;
+            logging.SFLog(className, "begin", message.c_str());
+        #endif
+    }
+    
     udpListenerStarted = true;
     return true;
 }
@@ -375,6 +388,12 @@ void NetworkIdent::loop()
                 lastContent.udpContent[numbersReaded] = 0;
             }
         }
+    }
+
+    //NetworkIdent is enabled when class is used - NetworkIdent part
+    if(lastContent.udpContent == "webserver")
+    {
+        Serial.println("Webserver send!");
     }
     return;
 }
