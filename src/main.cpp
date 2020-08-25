@@ -17,6 +17,7 @@ Filemanager FM;
 Network test(&FM, &wifiManager);
 ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
 NetworkIdent networkIdent(&wifiManager, &FM, "TestDevice");
+NetworkIdent identTest(&wifiManager, &FM, "TestDevice");
 
 void handleTest()
 {
@@ -80,7 +81,9 @@ void setup() {
   test.addService("/new", handleTest);
 
   networkIdent.begin(63547);
-  networkIdent.begin(6445);
+  identTest.begin(256);
+
+
 }
 
 void loop() {  

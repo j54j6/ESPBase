@@ -1,10 +1,9 @@
 #include "NetworkIdent.h"
 
 //Constructor
-NetworkIdent::NetworkIdent(WiFiManager* wifiManager, Filemanager* FM, const char* deviceName, int port)
+NetworkIdent::NetworkIdent(WiFiManager* wifiManager, Filemanager* FM, const char* deviceName)
 {
     this->deviceIdentName = deviceName;
-    this->port = port;
     this->wifiManager = wifiManager;
     this->FM = FM;
 
@@ -39,7 +38,7 @@ udpPacketResolve* NetworkIdent::getLastUDPPacketLoop()
 bool NetworkIdent::begin(int port)
 {
     createConfigFile();
-    if(udpHandler.begin(this->port) == 0)
+    if(udpHandler.begin(port) == 0)
     {
         #ifdef J54J6_LOGGING_H
             logger logging;
@@ -382,18 +381,29 @@ void NetworkIdent::loop()
             lastContent.remoteIP = udpHandler.remoteIP();
             lastContent.remotePort = udpHandler.remotePort();
 
-            int numbersReaded = udpHandler.read(lastContent.udpContent, 512);
+            char cacheUDP[512];
+            int numbersReaded = udpHandler.read(cacheUDP, 512);
             if(numbersReaded > 0)
             {
                 lastContent.udpContent[numbersReaded] = 0;
             }
+            lastContent.udpContent = cacheUDP;
         }
     }
 
     //NetworkIdent is enabled when class is used - NetworkIdent part
-    if(lastContent.udpContent == "webserver")
+    if(lastContent.udpContent != "NULL")
     {
-        Serial.println("Webserver send!");
+        Serial.println(".............");
+        Serial.print("address: ");
+        Serial.println(lastContent.remoteIP.toString().c_str());
+        Serial.print("Port: ");
+        Serial.println(lastContent.remotePort);
+        Serial.print("Packet Size: ");
+        Serial.println(lastContent.paketSize);
+        Serial.println(lastContent.udpContent);
+        Serial.println(".............");
+        lastContent.resetPack();
     }
     return;
 }

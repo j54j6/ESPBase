@@ -13,7 +13,15 @@ struct udpPacketResolve {
     IPAddress remoteIP;
     int remotePort = -1;
     int paketSize = 0;
-    char udpContent[512] = "NULL";
+    String udpContent = "NULL";
+
+    void resetPack()
+    {
+        this->paketSize = 0;
+        this->remoteIP = IPAddress(0,0,0,0);
+        this->udpContent = "NULL";
+        this->remotePort = -1;
+    }
 };
 
 typedef std::function<void()> handlerFunction;
@@ -24,7 +32,6 @@ class NetworkIdent : public ErrorSlave {
         const char* className = "NetworkIdent";
         const char* deviceIdentName = "notSet";
         const char* serviceListPath = "/config/networkIdent/services.json"; //saved as {serviceType, port}
-        int port;
         bool udpListenerStarted = false;
         int networkIdentPort = 63547;
         
@@ -38,7 +45,7 @@ class NetworkIdent : public ErrorSlave {
 
         udpPacketResolve lastContent;
     public:
-        NetworkIdent(WiFiManager* wifiManager, Filemanager* FM, const char* deviceName, int port = 63547);
+        NetworkIdent(WiFiManager* wifiManager, Filemanager* FM, const char* deviceName);
 
         //set stuff
         void setDeviceName(const char* newDeviceName);
