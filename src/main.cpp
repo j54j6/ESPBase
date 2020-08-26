@@ -96,6 +96,7 @@ void loop() {
   errorHandle();
   getPerformance();
   networkIdent.loop();
+  identTest.loop();
 
   if(wifiManager.getWiFiState() == WL_CONNECTED)
   {
@@ -103,7 +104,7 @@ void loop() {
     int delay = 3000;
     static int count = 0;
 
-    if(count < 20 && millis() >= (lastCall + delay))
+    if(count < 5 && millis() >= (lastCall + delay))
     {
       lastCall = millis();
       logger logging;

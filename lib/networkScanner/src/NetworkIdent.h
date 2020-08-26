@@ -1,5 +1,6 @@
 #ifndef J54J6_NetworkIdent
 #define J54J6_NetworkIdent
+
 #include <WiFiClient.h>
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
@@ -8,21 +9,8 @@
 #include "errorHandler.h"
 #include "filemanager.h"
 #include "wifiManager.h"
+#include "udpManager.h"
 
-struct udpPacketResolve {
-    IPAddress remoteIP;
-    int remotePort = -1;
-    int paketSize = 0;
-    String udpContent = "NULL";
-
-    void resetPack()
-    {
-        this->paketSize = 0;
-        this->remoteIP = IPAddress(0,0,0,0);
-        this->udpContent = "NULL";
-        this->remotePort = -1;
-    }
-};
 
 typedef std::function<void()> handlerFunction;
 class NetworkIdent : public ErrorSlave {
@@ -30,20 +18,14 @@ class NetworkIdent : public ErrorSlave {
         bool classDisabled = false;
 
         const char* className = "NetworkIdent";
-        const char* deviceIdentName = "notSet";
         const char* serviceListPath = "/config/networkIdent/services.json"; //saved as {serviceType, port}
-        bool udpListenerStarted = false;
         int networkIdentPort = 63547;
         
         const char* serviceConfigBlueprint[1][2] = {{"NetworkIdent", "63547"}}; //port of network scanner
 
-
         IPAddress broadcastIP = IPAddress(255,255,255,255); //only for first Time later this Address will dynamically changed per subnet
-        WiFiUDP udpHandler;
         Filemanager* FM;
-        WiFiManager* wifiManager;
 
-        udpPacketResolve lastContent;
     public:
         NetworkIdent(WiFiManager* wifiManager, Filemanager* FM, const char* deviceName);
 
