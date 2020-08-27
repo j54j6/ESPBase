@@ -13,6 +13,15 @@
 
 
 typedef std::function<void()> handlerFunction;
+
+struct networkIdentResolve  {
+    bool result = false;
+    IPAddress fromIP;
+    int fromPort = -1;
+    macAdress fromMAC;
+};
+
+
 class NetworkIdent : public ErrorSlave {
     private:
         bool classDisabled = false;
@@ -25,36 +34,31 @@ class NetworkIdent : public ErrorSlave {
 
         IPAddress broadcastIP = IPAddress(255,255,255,255); //only for first Time later this Address will dynamically changed per subnet
         Filemanager* FM;
+        WiFiManager* wifiManager;
+        udpManager udpControl = udpManager(this->wifiManager, this->networkIdentPort);
 
     public:
-        NetworkIdent(WiFiManager* wifiManager, Filemanager* FM, const char* deviceName);
+        NetworkIdent(Filemanager* FM, WiFiManager* wifiManager);
 
-        //set stuff
-        void setDeviceName(const char* newDeviceName);
-        //get stuff
-        const char* getDeviceIdentName();
-        int getLocalOutPort();
-        udpPacketResolve* getLastUDPPacketLoop();
-        
         //control
-        bool begin(int port = -1);
-        void stop();
+        bool beginListen();
+        void stopListen();
 
 
-        bool createConfigFile();
-        bool checkForService(const char* serviceName);
-        bool addService(const char* newServiceName, int usedPort);
-        bool delService(const char* serviceName);
+        bool addService(const char* serviceName, int port);
+        bool delService(const char* ServiceName);
 
-        void searchForDeviceName(const char* deviceName);
-        void searchForService(const char* service);
 
-        void sendUdpMessage(const char* workload, IPAddress ip, int port);
+        //send stuff
+        void sendServiceList();
+        void sendIP();
+        void sendHostname();
+        void sendMAC();
 
-        void returnMyDeviceName();
-        //void returnMyServices();
-        void returnMyIP();
 
+        //helper
+        bool createConfig();
+        
         //loop
         void loop();
 

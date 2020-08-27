@@ -34,7 +34,7 @@ struct udpPacketResolve {
         {
             output += udpContent[i];
         }
-        return output;
+        return output; 
     }
 };
 
@@ -63,6 +63,7 @@ class udpManager : public ErrorSlave {
 
         //control
         bool begin();
+        void stop();
         void sendUdpMessage(const char* workload, IPAddress ip, int port);
 
 

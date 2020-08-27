@@ -47,6 +47,12 @@ bool udpManager::begin()
     return true;
 }
 
+
+void udpManager::stop()
+{
+    udpHandler.stop();
+}
+
 void udpManager::sendUdpMessage(const char* workload, IPAddress ip, int port)
 {
     if(wifiManager->getWiFiState() == WL_CONNECTED)
