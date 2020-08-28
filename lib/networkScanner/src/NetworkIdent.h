@@ -57,7 +57,7 @@ class NetworkIdent : public ErrorSlave {
 
 
         //helper
-        bool createConfig();
+        bool createConfigFile();
         
         //loop
         void loop();
