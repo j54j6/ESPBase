@@ -247,11 +247,42 @@ void NetworkIdent::loop()
     {
         return;
     }
-
     udpPacketResolve* lastResolve = udpControl.getLastUDPPacketLoop();
-    if(lastResolve->udpContent.indexOf("serviceSearch "))
 
+    if(lastResolve->udpContent == "NULL")
+    {
+        return;
+    }
+
+    StaticJsonDocument<425> cacheDocument;
     
+
+    DeserializationError error = deserializeJson(cacheDocument, lastResolve->udpContent);
+
+    if(error)
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            String message = "Can't parse last UDP Content to Json - Json returned: \n!";
+            message += error.c_str();
+            message += "\n";
+            logging.SFLog(className, "loop", message.c_str());
+        #endif
+    }
+
+    if(cacheDocument.containsKey("serviceSearchRequest"))
+    {
+        if(checkForService(cacheDocument["serviceSearchRequest"]))
+        {
+            const char* successMessage = "{\"serviceSearchAnswer\" : \"TRUE\"}";
+            udpControl.sendUdpMessage(successMessage, lastResolve->remoteIP, lastResolve->remotePort);
+        }
+        else
+        {
+
+        }
+
+    }
 }
 
 
@@ -259,41 +290,41 @@ void NetworkIdent::loop()
 /*
     Inherited overwritten functionalities
 */
-void udpManager::startClass()
+void NetworkIdent::startClass()
 {
     if(this->classDisabled)
     {
         this->classDisabled = false;
-        this->begin();
+        this->beginListen();
     }
     else
     {
-        this->begin();
+        this->beginListen();
     }
 }
 
-void udpManager::stopClass()
+void NetworkIdent::stopClass()
 {
     if(!this->classDisabled)
     {
         this->classDisabled = true;
-        this->run();
+        this->stopListen();
         Serial.println("locked!");
         return;
     }
 }
 
-void udpManager::pauseClass()
+void NetworkIdent::pauseClass()
 {
     this->stopClass();
 }
 
-void udpManager::restartClass()
+void NetworkIdent::restartClass()
 {
     this->startClass();
 }
 
-void udpManager::continueClass()
+void NetworkIdent::continueClass()
 {
     this->startClass();
 }

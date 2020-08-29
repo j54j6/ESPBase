@@ -78,7 +78,7 @@ void udpManager::run()
     {
         return;
     }
-
+    lastContent.resetPack();
     if(wifiManager->getWiFiState() == WL_CONNECTED && udpListenerStarted == true)
     {
         int packetSize = udpHandler.parsePacket();

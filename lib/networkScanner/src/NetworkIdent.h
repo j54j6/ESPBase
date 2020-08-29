@@ -25,8 +25,8 @@ struct networkIdentResolve  {
 
 /*
     SendCodes:
-        - serviceSearchRequest - e.g message = {"serviceSearchRequest", "requestService"}
-        
+        - serviceSearchRequest - e.g message = {"serviceSearchRequest", "requestService"} - in loop lastConent will tried to parse as Json (all incoming from port <<networkIdentPort>> )
+
 */  
 
 class NetworkIdent : public ErrorSlave {
@@ -45,6 +45,7 @@ class NetworkIdent : public ErrorSlave {
         udpManager udpControl = udpManager(this->wifiManager, this->networkIdentPort);
 
     public:
+        //Constructor
         NetworkIdent(Filemanager* FM, WiFiManager* wifiManager);
 
         //control
