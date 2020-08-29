@@ -23,6 +23,12 @@ struct networkIdentResolve  {
 };
 
 
+/*
+    SendCodes:
+        - serviceSearchRequest - e.g message = {"serviceSearchRequest", "requestService"}
+        
+*/  
+
 class NetworkIdent : public ErrorSlave {
     private:
         bool classDisabled = false;

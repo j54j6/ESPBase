@@ -248,7 +248,10 @@ void NetworkIdent::loop()
         return;
     }
 
-    udpPacketResolve lastResolve = udpControl.getLastUDPPacketLoop();
+    udpPacketResolve* lastResolve = udpControl.getLastUDPPacketLoop();
+    if(lastResolve->udpContent.indexOf("serviceSearch "))
+
+    
 }
 
 
