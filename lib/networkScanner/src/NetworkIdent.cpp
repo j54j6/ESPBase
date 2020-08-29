@@ -4,6 +4,8 @@ NetworkIdent::NetworkIdent(Filemanager* FM, WiFiManager* wifiManager)
 {
     this->FM = FM;
     this->wifiManager = wifiManager;
+
+    
 }
 
 bool NetworkIdent::beginListen()
@@ -32,18 +34,156 @@ void NetworkIdent::stopListen()
     udpControl.stop();
 }
 
+
+bool NetworkIdent::checkForService(const char* serviceName)
+{
+    if(!FM->fExist(serviceListPath))
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "checkForService", "Can't check for Service - serviceFile doesn't exist!", 2);
+        #endif
+        return false;
+    }
+
+    const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
+    DynamicJsonDocument cacheDocument(capacity);
+
+    cacheDocument = FM->readJsonFile(serviceListPath);
+
+    if(cacheDocument.containsKey(serviceName))
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "checkForService", "Service exist! - return true");
+        #endif
+        return true;
+    }
+    else
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "checkForService", "Can't find Service in serviceList - return false");
+        #endif
+        return false;
+    }
+}
+
+
 bool NetworkIdent::addService(const char* serviceName, int port)
 {
     FM->begin();
     if(FM->fExist(serviceListPath))
     {
+        const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
+        DynamicJsonDocument cacheDocument(capacity);
 
+        cacheDocument = FM->readJsonFile(serviceListPath);
+
+        cacheDocument.add(serviceName);
+        cacheDocument.add(port);
+
+        FM->writeJsonFile(serviceListPath, cacheDocument);
+        if(checkForService(serviceName))
+        {
+            return true;
+        }
+        else
+        {
+            #ifdef J54J6_LOGGING_H
+                logger logging;
+                logging.SFLog(className, "addService", "An Error occured while adding the Service please check! -  Service can't be added", 2);
+            #endif
+            return false;
+        }
+
+    }
+    else
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "beginListen", "Can't check for Service - ServiceList File doesn't exist!", 1);
+        #endif
+        return false;
     }
 }
 
 
+bool NetworkIdent::delService(const char* serviceName)
+{
+    if(!FM->fExist(serviceListPath))
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "delService", "Can't delete Service, serviceList doesn't exist!", 1);
+        #endif
+        return false;
+    }
+
+    if(!checkForService(serviceName))
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "delService", "Can't delete Service, serviceList doesn't contains the specified Service!", 1);
+        #endif
+        return false;
+    }
+
+    const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
+    DynamicJsonDocument cacheDocument(capacity);
+
+    cacheDocument = FM->readJsonFile(serviceListPath);
+
+    cacheDocument.remove(serviceName);
+
+    if(checkForService(serviceName))
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "delService", "An Error occured while deleting the Service - please check!", 2);
+        #endif
+        return false;
+    }
+    #ifdef J54J6_LOGGING_H
+        logger logging;
+        logging.SFLog(className, "delService", "Service successfully deleted!");
+    #endif
+    return true;
+}
 
 
+//send stuff
+
+void NetworkIdent::sendServiceList(IPAddress ip, int port)
+{
+    String serviceListFileContent;
+    if(FM->fExist(serviceListPath))
+    {
+        serviceListFileContent = FM->readFile(serviceListPath); //read out the raw File as const char*
+    }
+    else
+    {
+        serviceListFileContent = "noServices";
+    }
+
+    udpControl.sendUdpMessage(serviceListFileContent.c_str(), ip, port);
+    
+}
+
+void NetworkIdent::sendIP(IPAddress ip, int port)
+{
+    udpControl.sendUdpMessage(WiFi.localIP().toString().c_str(), ip, port);
+}
+
+void NetworkIdent::sendHostname(IPAddress ip, int port)
+{
+    udpControl.sendUdpMessage(WiFi.hostname().c_str(), ip, port);
+}
+
+void NetworkIdent::sendMAC(IPAddress ip, int port)
+{
+    udpControl.sendUdpMessage(WiFi.macAddress().c_str(), ip, port);
+}
 
 bool NetworkIdent::createConfigFile()
 {
@@ -97,4 +237,60 @@ bool NetworkIdent::createConfigFile()
         #endif
     }
     return false;
+}
+
+
+
+void NetworkIdent::loop()
+{
+    if(classDisabled)
+    {
+        return;
+    }
+
+    udpPacketResolve lastResolve = udpControl.getLastUDPPacketLoop();
+}
+
+
+
+/*
+    Inherited overwritten functionalities
+*/
+void udpManager::startClass()
+{
+    if(this->classDisabled)
+    {
+        this->classDisabled = false;
+        this->begin();
+    }
+    else
+    {
+        this->begin();
+    }
+}
+
+void udpManager::stopClass()
+{
+    if(!this->classDisabled)
+    {
+        this->classDisabled = true;
+        this->run();
+        Serial.println("locked!");
+        return;
+    }
+}
+
+void udpManager::pauseClass()
+{
+    this->stopClass();
+}
+
+void udpManager::restartClass()
+{
+    this->startClass();
+}
+
+void udpManager::continueClass()
+{
+    this->startClass();
 }

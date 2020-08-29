@@ -16,8 +16,7 @@ WiFiManager wifiManager(&wifiLed);
 Filemanager FM;
 Network test(&FM, &wifiManager);
 ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
-NetworkIdent networkIdent(&wifiManager, &FM, "TestDevice");
-NetworkIdent identTest(&wifiManager, &FM, "TestDevice");
+NetworkIdent networkIdent(&FM, &wifiManager);
 
 void handleTest()
 {
@@ -80,10 +79,6 @@ void setup() {
   test.begin();
   test.addService("/new", handleTest);
 
-  networkIdent.begin(63547);
-  identTest.begin(256);
-
-
 }
 
 void loop() {  
@@ -96,7 +91,6 @@ void loop() {
   errorHandle();
   getPerformance();
   networkIdent.loop();
-  identTest.loop();
 
   if(wifiManager.getWiFiState() == WL_CONNECTED)
   {

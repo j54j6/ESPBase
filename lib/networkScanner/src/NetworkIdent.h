@@ -4,6 +4,7 @@
 #include <WiFiClient.h>
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
+#include <ArduinoJson.h>
 
 #include "logging.h"
 #include "errorHandler.h"
@@ -44,17 +45,20 @@ class NetworkIdent : public ErrorSlave {
         bool beginListen();
         void stopListen();
 
-
-        bool addService(const char* serviceName, int port);
-        bool delService(const char* ServiceName);
+        bool checkForService(const char* serviceName); //check if the serviceList-Json File contains a key with <<serviceName>>
+        bool addService(const char* serviceName, int port); //try to add service to JsonFile
+        bool delService(const char* ServiceName); //delete key from Json File - delete service
 
 
         //send stuff
-        void sendServiceList();
-        void sendIP();
-        void sendHostname();
-        void sendMAC();
+        void sendServiceList(IPAddress ip, int port);
+        void sendIP(IPAddress ip, int port);
+        void sendHostname(IPAddress ip, int port);
+        void sendMAC(IPAddress ip, int port);
 
+
+        //search Stuff
+        networkIdentResolve searchForService(const char* serviceName);
 
         //helper
         bool createConfigFile();
