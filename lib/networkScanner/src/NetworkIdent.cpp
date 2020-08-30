@@ -240,9 +240,19 @@ bool NetworkIdent::createConfigFile()
 }
 
 
+void NetworkIdent::searchForService(const char* serviceName, IPAddress ip, int port)
+{
+    String message = "{\"serviceSearchRequest\" : \"";
+    message += serviceName;
+    message += "\"}";
+
+    udpControl.sendUdpMessage(message.c_str(), ip, port);
+}
+
 
 void NetworkIdent::loop()
 {
+    udpControl.run();
     if(classDisabled)
     {
         return;
@@ -256,7 +266,10 @@ void NetworkIdent::loop()
 
     StaticJsonDocument<425> cacheDocument;
     
-
+    Serial.println("-------------------------");
+    Serial.print("Message: ");
+    Serial.println(lastResolve->udpContent);
+    Serial.println("-------------------------");
     DeserializationError error = deserializeJson(cacheDocument, lastResolve->udpContent);
 
     if(error)
@@ -282,6 +295,11 @@ void NetworkIdent::loop()
 
         }
 
+    }
+
+    if(cacheDocument.containsKey("serviceSearchAnswer"))
+    {
+        Serial.println("Answer: ");
     }
 }
 

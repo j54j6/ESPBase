@@ -41,7 +41,7 @@ struct udpPacketResolve {
 class udpManager : public ErrorSlave {
     private:
         const char* className = "udpManager";
-        static bool classDisabled;
+        bool classDisabled = false;
         bool udpListenerStarted = false;
         int listenPort;
 

@@ -26,7 +26,7 @@ struct networkIdentResolve  {
 /*
     SendCodes:
         - serviceSearchRequest - e.g message = {"serviceSearchRequest", "requestService"} - in loop lastConent will tried to parse as Json (all incoming from port <<networkIdentPort>> )
-
+        -> serviceSearchAnswer
 */  
 
 class NetworkIdent : public ErrorSlave {
@@ -65,7 +65,7 @@ class NetworkIdent : public ErrorSlave {
 
 
         //search Stuff
-        networkIdentResolve searchForService(const char* serviceName);
+        void searchForService(const char* serviceName, IPAddress ip = IPAddress(255,255,255,255), int port = 63547);
 
         //helper
         bool createConfigFile();

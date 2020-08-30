@@ -78,6 +78,7 @@ void setup() {
   FM.getSerialFileStructure();
   test.begin();
   test.addService("/new", handleTest);
+  networkIdent.beginListen();
 
 }
 
@@ -104,7 +105,7 @@ void loop() {
       logger logging;
       logging.SFLog("main", "main", "Send UDP!");
 
-      networkIdent.searchForService("Webserver");
+      networkIdent.searchForService("webserver");
       count++;
     }
     

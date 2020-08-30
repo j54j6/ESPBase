@@ -3,12 +3,22 @@
 udpManager::udpManager(WiFiManager* wifiManager, int port)
 {
     this->listenPort = port;
-    this->classDisabled = false;
 }
 
 int udpManager::getListenPort()
 {
     return listenPort;
+}
+
+
+int udpManager::getLocalOutPort()
+{
+    return udpHandler.localPort();
+}
+
+udpPacketResolve* udpManager::getLastUDPPacketLoop()
+{
+    return &lastContent;
 }
 
 bool udpManager::begin()
