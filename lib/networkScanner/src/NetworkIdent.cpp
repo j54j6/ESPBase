@@ -240,13 +240,58 @@ bool NetworkIdent::createConfigFile()
 }
 
 
+String NetworkIdent::formatMessage(bool request, const char* serviceName, const char* MAC, const char* ip, int servicePort)
+{
+    /*
+    {
+        "type": "request",
+        "serviceName" : "notSet",
+        "mac" : "<<MACAddress>>",
+        "ip" : "<<IPAddress>>",
+        "servicePort" : "<<port>>"
+    }
+    */
+
+    String output = "{\"type\" : \"";
+    if(request)
+    {
+        output += "request";
+    }
+    else
+    {
+        output += "answer";
+        
+    }
+    output += "\",";
+    output += "\"serviceName\" : \"";
+    output += serviceName;
+    output += "\", ";
+    output += "\"mac\" : \"";
+    output += MAC;
+    output += "\", ";
+    output += "\"ip\" : \"";
+    output += ip;
+    output += "\", ";
+    output += "\"servicePort\" : \"";
+    output += servicePort;
+    output += "\" ";
+    output += "}";
+
+
+    return output;
+}
+
+networkAnswerResolve NetworkIdent::getReceivedParameters(DynamicJsonDocument* lastLoopDoc)
+{
+
+}
+
+
 void NetworkIdent::searchForService(const char* serviceName, IPAddress ip, int port)
 {
-    String message = "{\"serviceSearchRequest\" : \"";
-    message += serviceName;
-    message += "\"}";
-
+    String message = formatMessage(true, serviceName);
     udpControl.sendUdpMessage(message.c_str(), ip, port);
+
 }
 
 
@@ -284,47 +329,8 @@ void NetworkIdent::loop()
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "loop", "no Error");
-        #endif
+        
     }
-
-    if(cacheDocument.containsKey("serviceSearchRequest"))
-    {
-        if(checkForService(cacheDocument["serviceSearchRequest"]))
-        {
-            const char* successMessage = "{\"serviceSearchAnswer\" : \"TRUE\"}";
-            udpControl.sendUdpMessage(successMessage, lastResolve->remoteIP, lastResolve->remotePort);
-        }
-        else
-        {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "loop", "Requestet Service does not exist!");
-            #endif 
-        }
-
-    }
-    
-    if(cacheDocument.containsKey("serviceSearchAnswer"))
-    {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            String message = "UDP serviceRequestAnswer: \n";
-            message += "UDP packet Answer: \n";
-            message += lastResolve->udpContent;
-            logging.SFLog(className, "loop", message.c_str());
-        #endif 
-    }
-    else
-    {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "loop", "UDP Packet does not contains any useable Key!");
-        #endif 
-    }
-
 }
 
 

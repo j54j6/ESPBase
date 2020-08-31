@@ -22,22 +22,35 @@ struct networkIdentResolve  {
     macAdress fromMAC;
 };
 
+struct networkAnswerResolve {
+    bool changed = false;
+    bool request = false; //if true this is an request, false its an Answer
+    String serviceName = "n.S";
+    String mac = "n.S";
+    IPAddress ip = IPAddress(0,0,0,0);
+    int servicePort = -1;
+
+    void resetPack()
+    {
+        this->changed = false;
+        this->request = false;
+        this->serviceName = "n.S";
+        this->mac = "n.S";
+        this->ip = IPAddress(0,0,0,0);
+        this->servicePort = -1;
+    }
+};
+
 
 /*
-    Sendtype:
-        - serviceSearchRequest - e.g message = {"serviceSearchRequest", "requestService"} - in loop lastConent will tried to parse as Json (all incoming from port <<networkIdentPort>> )
-        -> serviceSearchAnswer - e.g message += {}
-
-        - serviceGetIpForServiceRequest - e.g message = {"serviceGetIpForServiceRequest" :  "requestService<<ServiceName>>"}
-        -> serviceGetIPForServiceAnswer - e.g message = {"serviceGetIpForServiceAnswer" :  <<IP>>AsString}
-
-        - serviceGetMACForServiceRequest - e.g message = {"serviceGetMACForServiceRequest" : "requestService<<Service>>"}
-        -> serviceGetMACForServiceAnswer - e.g message = {serviceGetMacForServiceAnswer" : "<<MAC>>AsString()"}
-
-        - serviceGetHostnameForServiceRequest - e.g message = {"serviceGetHostnameServiceRequest" : requestService<<Service>>}
-        -> serviceGetHostnameForServiceAnswer - e.g message = {"serviceGetHostnameForServiceAnswer" : "<<hostName>>asString"}
-
-
+    JsonBlueprint:
+        {
+            "Type: " : "Request",
+            "serviceName" : "<<serviceName>>",
+            "MAC" : "<<MAC-Address>>",
+            "IP" : "<<ipAddress>> ", //ip of target to prevent delivering to wrong device if broadcast way used - else empty (normal case)
+            "servicePort" : "<<Port>>"
+        }
 */  
 
 class NetworkIdent : public ErrorSlave {
@@ -80,6 +93,17 @@ class NetworkIdent : public ErrorSlave {
 
         //helper
         bool createConfigFile();
+
+        /*
+            Preformat and returns a formatted message to send and use with NetworkIdent
+
+            if request = true
+                you will send an request, you need to add an serviceName if not there will be "notSet" as Service
+            if request = false
+                yoou will send an answerMessage for a request - in this case you don't need a serviceName, it will be dropped
+        */
+        String formatMessage(bool request = false, const char* serviceName = "n.S", const char* MAC = "n.S", const char* ip = "n.S", int port = -1);
+        networkAnswerResolve getReceivedParameters(DynamicJsonDocument* lastLoopDoc);
         
         //loop
         void loop();

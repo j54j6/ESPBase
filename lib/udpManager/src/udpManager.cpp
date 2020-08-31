@@ -109,6 +109,8 @@ void udpManager::run()
     }
 
     //NetworkIdent is enabled when class is used - NetworkIdent part
+
+    /* for debugging  
     if(lastContent.udpContent != "NULL")
     {
         Serial.println(".............");
@@ -120,8 +122,8 @@ void udpManager::run()
         Serial.println(lastContent.paketSize);
         Serial.println(lastContent.udpContent);
         Serial.println(".............");
-        lastContent.resetPack();
     }
+    */
     return;
 }
 

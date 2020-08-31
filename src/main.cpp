@@ -60,37 +60,65 @@ void getPerformance()
 
 void setup() {
   Serial.begin(921600);
-  Serial.println("Start");
-  Serial.println("");
 
+  //Disable WifiAutoConnect and onboard WifiConfig
   WiFi.persistent(false);
   WiFi.setAutoConnect(false);
   WiFi.stopSmartConfig();
+
+  //default enable workLed
   workLed.ledOn();
+
+  //define className shown in ErrorHandler
   wifiManager.setClassName("wifiManager");
   test.setClassName("network");
+
+  //add modules to dedicated ErrorHandler
   mainHandler.addNewNode(test.getINode(), "network");
   mainHandler.addNewNode(networkIdent.getINode(), "NetworkIdent");
   
   //Serial.println(mainHandler.verifyAmountOfNodes());
+
+  //preMount Filesystem
   FM.mount();
+
+  //get Filestructure - only for dev
   FM.getSerialFileStructure();
+
+  //start Network
   test.begin();
+
+  //add webservice to webserver@Network
   test.addService("/new", handleTest);
+
+  //start Listening on UDP-NetworkIdentPort
   networkIdent.beginListen();
 
 }
 
-void loop() {  
-  test.run();
-
+void loop() {
+  //LED's
   wifiLed.run();
   errorLed.run();
   workLed.run();
+
+  //Network
+  test.run();
+
+  //wifiManager
   wifiManager.run();
+
+
+  //dedicated ErrorHandler
   errorHandle();
-  getPerformance();
+
+  //performanceControl
+  //getPerformance();
+
+
+  //NetworkIdent
   networkIdent.loop();
+
 
   if(wifiManager.getWiFiState() == WL_CONNECTED)
   {
