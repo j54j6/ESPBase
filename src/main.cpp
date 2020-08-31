@@ -22,7 +22,7 @@ void handleTest()
 {
    ESP8266WebServer* webserver = test.getWebserver();
 
-   webserver->send(200, "text/plain", "lololol");
+   webserver->send(200, "text/plain", "Das ist eine Testnachricht");
 
 }
 

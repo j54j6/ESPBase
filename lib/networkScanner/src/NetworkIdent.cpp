@@ -282,6 +282,13 @@ void NetworkIdent::loop()
             logging.SFLog(className, "loop", message.c_str());
         #endif
     }
+    else
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "loop", "no Error");
+        #endif
+    }
 
     if(cacheDocument.containsKey("serviceSearchRequest"))
     {
@@ -292,14 +299,30 @@ void NetworkIdent::loop()
         }
         else
         {
-
+            #ifdef J54J6_LOGGING_H
+                logger logging;
+                logging.SFLog(className, "loop", "Requestet Service does not exist!");
+            #endif 
         }
 
+    }
+    else
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "loop", "UDP Packet does not contains any useable Key!");
+        #endif 
     }
 
     if(cacheDocument.containsKey("serviceSearchAnswer"))
     {
-        Serial.println("Answer: ");
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            String message = "UDP serviceRequestAnswer: \n";
+            message += "UDP packet Answer: \n";
+            message += lastResolve->udpContent;
+            logging.SFLog(className, "loop", message.c_str());
+        #endif 
     }
 }
 
