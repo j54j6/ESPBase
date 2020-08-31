@@ -306,14 +306,7 @@ void NetworkIdent::loop()
         }
 
     }
-    else
-    {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "loop", "UDP Packet does not contains any useable Key!");
-        #endif 
-    }
-
+    
     if(cacheDocument.containsKey("serviceSearchAnswer"))
     {
         #ifdef J54J6_LOGGING_H
@@ -324,6 +317,14 @@ void NetworkIdent::loop()
             logging.SFLog(className, "loop", message.c_str());
         #endif 
     }
+    else
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "loop", "UDP Packet does not contains any useable Key!");
+        #endif 
+    }
+
 }
 
 

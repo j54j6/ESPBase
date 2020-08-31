@@ -27,6 +27,13 @@ struct networkIdentResolve  {
     SendCodes:
         - serviceSearchRequest - e.g message = {"serviceSearchRequest", "requestService"} - in loop lastConent will tried to parse as Json (all incoming from port <<networkIdentPort>> )
         -> serviceSearchAnswer
+        
+        - serviceGetIpForServiceRequest - e.g message = {"serviceGetIpForServiceRequest" :  "requestService<<ServiceName>>"}
+        -> serviceGetIPForServiceAnswer - e.g message = {"serviceGetIpForServiceAnswer" :  <<IP>>AsString}
+
+        - serviceGetMACForServiceRequest - e.g message = {"serviceGetMACForServiceRequest" : "requestService<<Service>>"}
+        -> serviceGetMACForServiceAnswer - e.g message = {serviceGetMacForServiceAnswer" : "<<MAC>>AsString()"}
+
 */  
 
 class NetworkIdent : public ErrorSlave {

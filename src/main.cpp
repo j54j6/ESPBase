@@ -73,7 +73,6 @@ void setup() {
   mainHandler.addNewNode(networkIdent.getINode(), "NetworkIdent");
   
   //Serial.println(mainHandler.verifyAmountOfNodes());
-  delay(2000);
   FM.mount();
   FM.getSerialFileStructure();
   test.begin();
