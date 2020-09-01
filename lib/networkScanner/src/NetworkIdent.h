@@ -103,7 +103,7 @@ class NetworkIdent : public ErrorSlave {
                 yoou will send an answerMessage for a request - in this case you don't need a serviceName, it will be dropped
         */
         String formatMessage(bool request = false, const char* serviceName = "n.S", const char* MAC = "n.S", const char* ip = "n.S", int port = -1);
-        networkAnswerResolve getReceivedParameters(DynamicJsonDocument* lastLoopDoc);
+        networkAnswerResolve getReceivedParameters(StaticJsonDocument<425>* lastLoopDoc);
         
         //loop
         void loop();

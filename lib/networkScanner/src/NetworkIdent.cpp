@@ -281,8 +281,36 @@ String NetworkIdent::formatMessage(bool request, const char* serviceName, const 
     return output;
 }
 
-networkAnswerResolve NetworkIdent::getReceivedParameters(DynamicJsonDocument* lastLoopDoc)
+networkAnswerResolve NetworkIdent::getReceivedParameters(StaticJsonDocument<425>* lastLoopDoc)
 {
+    /*
+        Blueprint of networkAnswerResolve
+
+        bool changed = false;
+        bool request = false; //if true this is an request, false its an Answer
+        String serviceName = "n.S";
+        String mac = "n.S";
+        IPAddress ip = IPAddress(0,0,0,0);
+        int servicePort = -1;
+
+    */
+
+   networkAnswerResolve outputDoc;
+
+   outputDoc.changed = true;
+   if(lastLoopDoc['type'] == "request")
+   {
+       outputDoc.request = true;
+   }
+   else
+   {
+       outputDoc.request = false;
+   }
+
+   outputDoc.serviceName = lastLoopDoc['serviceName'];
+   outputDoc.mac =  lastLoopDoc['mac'];
+   outputDoc.ip = lastLoopDoc['ip'];
+   outputDoc.servicePort = lastLoopDoc['servicePort'];
 
 }
 
@@ -329,7 +357,9 @@ void NetworkIdent::loop()
     }
     else
     {
-        
+        //readout of lastUDPPacketLop if there are any new Data
+        getReceivedParameters(&cacheDocument);
+
     }
 }
 
