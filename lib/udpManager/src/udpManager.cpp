@@ -70,6 +70,15 @@ void udpManager::sendUdpMessage(const char* workload, IPAddress ip, int port)
         udpHandler.beginPacket(ip, port);
         udpHandler.write(workload);
         udpHandler.endPacket();
+        
+        Serial.println("------------------------------");
+        Serial.print("IP: ");
+        Serial.println(ip.toString());
+        Serial.print("Port: ");
+        Serial.println(port);
+        Serial.print("Workload: ");
+        Serial.println(workload);
+        Serial.println("------------------------------");
     }
     else
     {

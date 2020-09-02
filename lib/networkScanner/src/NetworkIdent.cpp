@@ -10,6 +10,7 @@ NetworkIdent::NetworkIdent(Filemanager* FM, WiFiManager* wifiManager)
 
 bool NetworkIdent::beginListen()
 {
+    createConfigFile();
     if(udpControl.begin())
     {
         #ifdef J54J6_LOGGING_H
@@ -51,6 +52,10 @@ bool NetworkIdent::checkForService(const char* serviceName)
 
     cacheDocument = FM->readJsonFile(serviceListPath);
 
+    Serial.println("---------------------------------------------");
+    Serial.println(FM->readFile(serviceListPath));
+    Serial.println("---------------------------------------------");
+    
     if(cacheDocument.containsKey(serviceName))
     {
         #ifdef J54J6_LOGGING_H
@@ -79,9 +84,11 @@ bool NetworkIdent::addService(const char* serviceName, int port)
         DynamicJsonDocument cacheDocument(capacity);
 
         cacheDocument = FM->readJsonFile(serviceListPath);
-
         cacheDocument.add(serviceName);
-        cacheDocument.add(port);
+
+        JsonObject tempJsonObejct = cacheDocument.to<JsonObject>();
+
+        tempJsonObejct[serviceName] = port;
 
         FM->writeJsonFile(serviceListPath, cacheDocument);
         if(checkForService(serviceName))
@@ -260,7 +267,6 @@ String NetworkIdent::formatMessage(bool request, const char* serviceName, const 
     else
     {
         output += "answer";
-        
     }
     output += "\",";
     output += "\"serviceName\" : \"";
@@ -277,41 +283,7 @@ String NetworkIdent::formatMessage(bool request, const char* serviceName, const 
     output += "\" ";
     output += "}";
 
-
     return output;
-}
-
-networkAnswerResolve NetworkIdent::getReceivedParameters(StaticJsonDocument<425>* lastLoopDoc)
-{
-    /*
-        Blueprint of networkAnswerResolve
-
-        bool changed = false;
-        bool request = false; //if true this is an request, false its an Answer
-        String serviceName = "n.S";
-        String mac = "n.S";
-        IPAddress ip = IPAddress(0,0,0,0);
-        int servicePort = -1;
-
-    */
-
-   networkAnswerResolve outputDoc;
-
-   outputDoc.changed = true;
-   if(lastLoopDoc['type'] == "request")
-   {
-       outputDoc.request = true;
-   }
-   else
-   {
-       outputDoc.request = false;
-   }
-
-   outputDoc.serviceName = lastLoopDoc['serviceName'];
-   outputDoc.mac =  lastLoopDoc['mac'];
-   outputDoc.ip = lastLoopDoc['ip'];
-   outputDoc.servicePort = lastLoopDoc['servicePort'];
-
 }
 
 
@@ -336,7 +308,7 @@ void NetworkIdent::loop()
     {
         return;
     }
-
+    
     StaticJsonDocument<425> cacheDocument;
     
     Serial.println("-------------------------");
@@ -357,10 +329,63 @@ void NetworkIdent::loop()
     }
     else
     {
-        //readout of lastUDPPacketLop if there are any new Data
-        getReceivedParameters(&cacheDocument);
+        //check for any constructions
+        const char* serviceNameCached = cacheDocument["serviceName"];
+        if(cacheDocument["type"] == "request")
+        {
+            //request stuff
+            if(checkForService(cacheDocument["serviceName"]))
+            {
+                #ifdef J54J6_LOGGING_H
+                    
+                    logger logging;
+                    String message = "Service ";
+                    message += serviceNameCached;
+                    message += "exist - return true";
+                    logging.SFLog(className, "loop", message.c_str(), 1);
+                #endif
+                udpControl.sendUdpMessage(formatMessage(false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), int(FM->readJsonFileValue(serviceListPath, serviceNameCached))).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+            }
+            else
+            {
+                #ifdef J54J6_LOGGING_H
+                    logger logging;
+                    String message = "Service ";
+                    message += serviceNameCached;
+                    message += "doesn't exist - return false";
+                    logging.SFLog(className, "loop", message.c_str(), 1);
+                #endif
+                
+                udpControl.sendUdpMessage(formatMessage(false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), int(FM->readJsonFileValue(serviceListPath, serviceNameCached))).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                Serial.print("UDP Message: \n");
+                Serial.println(formatMessage(false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), int(FM->readJsonFileValue(serviceListPath, serviceNameCached))).c_str());
+                Serial.println(udpControl.getLastUDPPacketLoop()->remoteIP.toString().c_str());
+                Serial.println(this->networkIdentPort);
+            }
+            
 
+
+        }
+        else if(cacheDocument["type"] == "answer")
+        {
+            //answer stuff
+        }
+        else
+        {
+            #ifdef J54J6_LOGGING_H
+                logger logging;
+                const char* cachedType = cacheDocument["type"];
+                String message = "Syntax of UDP Packet is wrong - packet-type: \n!";
+                message += "Type: ";
+                message += cachedType;
+                message += "\n";
+                logging.SFLog(className, "loop", message.c_str(), 1);
+            #endif
+        }
+        
+        
     }
+    return;
 }
 
 

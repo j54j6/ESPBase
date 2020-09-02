@@ -60,7 +60,6 @@ void getPerformance()
 
 void setup() {
   Serial.begin(921600);
-
   //Disable WifiAutoConnect and onboard WifiConfig
   WiFi.persistent(false);
   WiFi.setAutoConnect(false);
@@ -82,6 +81,8 @@ void setup() {
   //preMount Filesystem
   FM.mount();
 
+  //FM.remove("/config/networkIdent/services.json");
+
   //get Filestructure - only for dev
   FM.getSerialFileStructure();
 
@@ -93,6 +94,9 @@ void setup() {
 
   //start Listening on UDP-NetworkIdentPort
   networkIdent.beginListen();
+
+  networkIdent.addService("NetworkIdent", 63547);
+  networkIdent.addService("webserver", 8080);
 
 }
 
@@ -118,24 +122,5 @@ void loop() {
 
   //NetworkIdent
   networkIdent.loop();
-
-
-  if(wifiManager.getWiFiState() == WL_CONNECTED)
-  {
-    static ulong lastCall = 0;
-    int delay = 3000;
-    static int count = 0;
-
-    if(count < 5 && millis() >= (lastCall + delay))
-    {
-      lastCall = millis();
-      logger logging;
-      logging.SFLog("main", "main", "Send UDP!");
-
-      networkIdent.searchForService("webserver");
-      count++;
-    }
-    
-  }
 
 }

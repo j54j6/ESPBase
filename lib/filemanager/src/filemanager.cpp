@@ -1318,6 +1318,12 @@ DynamicJsonDocument Filemanager::readJsonFile(const char* Filename)
     if(error)
     {
         this->error = true;
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            String message = "Can't readout JsonDoc from File - Error: \n ";
+            message += error.c_str();
+            logging.SFLog(className, "readJsonFile", message.c_str(), 2);
+        #endif
         return jsonDocument;
     }
     return jsonDocument;
