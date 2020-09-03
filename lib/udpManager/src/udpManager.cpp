@@ -67,18 +67,29 @@ void udpManager::sendUdpMessage(const char* workload, IPAddress ip, int port)
 {
     if(wifiManager->getWiFiState() == WL_CONNECTED)
     {
-        udpHandler.beginPacket(ip, port);
-        udpHandler.write(workload);
-        udpHandler.endPacket();
+        if(udpHandler.beginPacket(ip.toString().c_str(), port) == 1)
+        {
+            udpHandler.write(workload);
+            udpHandler.endPacket();
         
-        Serial.println("------------------------------");
-        Serial.print("IP: ");
-        Serial.println(ip.toString());
-        Serial.print("Port: ");
-        Serial.println(port);
-        Serial.print("Workload: ");
-        Serial.println(workload);
-        Serial.println("------------------------------");
+            Serial.println("------------------------------");
+            Serial.print("IP: ");
+            Serial.println(ip.toString());
+            Serial.print("Port: ");
+            Serial.println(port);
+            Serial.print("Workload: ");
+            Serial.println(workload);
+            Serial.println("------------------------------");
+        }
+        else
+        {
+            #ifdef J54J6_LOGGING_H
+                logger logging;
+                logging.SFLog(className, "sendUdpMessage", "Can't send UDP Message - beginPacket - return false (0)", 2);
+            #endif
+        }
+        
+        
     }
     else
     {
