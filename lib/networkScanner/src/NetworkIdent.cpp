@@ -51,16 +51,15 @@ bool NetworkIdent::checkForService(const char* serviceName)
     DynamicJsonDocument cacheDocument(capacity);
 
     cacheDocument = FM->readJsonFile(serviceListPath);
-
-    Serial.println("---------------------------------------------");
-    Serial.println(FM->readFile(serviceListPath));
-    Serial.println("---------------------------------------------");
-    
+        
     if(cacheDocument.containsKey(serviceName))
     {
         #ifdef J54J6_LOGGING_H
             logger logging;
-            logging.SFLog(className, "checkForService", "Service exist! - return true");
+            String message = "Service \"";
+            message += serviceName;
+            message += "\" exist! - return true";
+            logging.SFLog(className, "checkForService", message.c_str());
         #endif
         return true;
     }
@@ -68,7 +67,10 @@ bool NetworkIdent::checkForService(const char* serviceName)
     {
         #ifdef J54J6_LOGGING_H
             logger logging;
-            logging.SFLog(className, "checkForService", "Can't find Service in serviceList - return false");
+            String message = "Can't find Service \"";
+            message += serviceName;
+            message += "\" in serviceList - return false";
+            logging.SFLog(className, "checkForService", message.c_str());
         #endif
         return false;
     }
@@ -80,13 +82,21 @@ bool NetworkIdent::addService(const char* serviceName, int port)
     FM->begin();
     if(FM->fExist(serviceListPath))
     {
+        if(checkForService(serviceName))
+        {
+            #ifdef J54J6_LOGGING_H
+                logger logging;
+                logging.SFLog(className, "addService", "Service already exist - SKIP", 0);
+            #endif 
+            return true;
+        }
+
         const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
         DynamicJsonDocument cacheDocument(capacity);
 
         cacheDocument = FM->readJsonFile(serviceListPath);
         cacheDocument.add(serviceName);
-
-        JsonObject tempJsonObejct = cacheDocument.to<JsonObject>();
+        JsonObject tempJsonObejct = cacheDocument.as<JsonObject>();
 
         tempJsonObejct[serviceName] = port;
 
@@ -242,6 +252,7 @@ bool NetworkIdent::createConfigFile()
             logger logging;
             logging.SFLog(className, "createConfigFile", "File already exist - SKIP!");
         #endif
+        return true;
     }
     return false;
 }
