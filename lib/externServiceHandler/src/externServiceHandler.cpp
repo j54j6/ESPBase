@@ -25,7 +25,7 @@ ExternServiceHandler::ExternServiceHandler(Filemanager* FM, WiFiManager* wifiMan
 
 int ExternServiceHandler::getServiceDestPort(const char* serviceName)
 {
-    if(networkIdent->checkForService(serviceName))
+    if(FM->fExist(getFilename(serviceName).c_str()))
     {
         
     }
@@ -51,6 +51,19 @@ bool ExternServiceHandler::delService(const char* serviceName)
 {
 
 }
+
+
+//helper functions
+String ExternServiceHandler::getFilename(const char* serviceName)
+{
+    String cacheName = serviceName;
+    cacheName.replace(" ", "");
+
+    String rfilename = serviceAddressListFile;
+    rfilename += cacheName;
+    rfilename += ".json";
+}
+
 
 
 /*

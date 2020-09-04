@@ -1,5 +1,7 @@
 #ifndef J54J6_SERVICEHANDLER_H
 #define J54J6_SERVICEHANDLER_H
+#include <Arduino.h>
+
 
 #include "errorHandler.h"
 #include "NetworkIdent.h"
@@ -10,7 +12,7 @@ class ExternServiceHandler : public ErrorSlave {
     private:
         const char* className = "ExternServiceHandler";
         bool classDisabled = false;
-        const char* serviceAddressListFile = "/config/serviceHandler/registered/services.json";
+        const char* serviceAddressListFile = "/config/serviceHandler/registered/";
 
         //handler
         Filemanager* FM;
@@ -26,6 +28,8 @@ class ExternServiceHandler : public ErrorSlave {
         bool manAddService(const char* serviceName, int port, IPAddress ip, bool checkConnect = true, const char* MAC = "n.S"); //manually write Service into File e.g for webInterface 
         bool delService(const char* serviceName);
 
+        //helper functions
+        String getFilename(const char* servicename);
 
          /*
         Inherited ErrorHandling
