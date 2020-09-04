@@ -1486,3 +1486,134 @@ bool Filemanager::returnAsBool(const char* val)
     
     
 }
+
+bool Filemanager::checkForKeyInJSONFile(const char* filename, const char* key)
+{
+    if(!fExist(filename))
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "checkForKeyInJSONFile", "Can't check for Service - serviceFile doesn't exist!", 2);
+        #endif
+        return false;
+    }
+
+    const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
+    DynamicJsonDocument cacheDocument(capacity);
+
+    cacheDocument = readJsonFile(filename);
+        
+    if(cacheDocument.containsKey(key))
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            String message = "Service \"";
+            message += key;
+            message += "\" exist! - return true";
+            logging.SFLog(className, "checkForKeyInJSONFile", message.c_str());
+        #endif
+        return true;
+    }
+    else
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            String message = "Can't find Service \"";
+            message += key;
+            message += "\" in serviceList - return false";
+            logging.SFLog(className, "checkForKeyInJSONFile", message.c_str());
+        #endif
+        return false;
+    }
+}
+
+
+bool Filemanager::appendJsonKey(const char* filename, const char* newKey, const char* newVal)
+{
+    begin();
+    if(fExist(filename))
+    {
+        if(checkForKeyInJSONFile(filename, newKey))
+        {
+            #ifdef J54J6_LOGGING_H
+                logger logging;
+                logging.SFLog(className, "appendJsonKey", "Service already exist - SKIP", 0);
+            #endif 
+            return true;
+        }
+
+        const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
+        DynamicJsonDocument cacheDocument(capacity);
+
+        cacheDocument = readJsonFile(filename);
+        cacheDocument.add(newKey);
+        JsonObject tempJsonObejct = cacheDocument.as<JsonObject>();
+
+        tempJsonObejct[newKey] = newVal;
+
+        writeJsonFile(filename, cacheDocument);
+        if(checkForKeyInJSONFile(filename, newKey))
+        {
+            return true;
+        }
+        else
+        {
+            #ifdef J54J6_LOGGING_H
+                logger logging;
+                logging.SFLog(className, "appendJsonKey", "An Error occured while adding the Service please check! -  Service can't be added", 2);
+            #endif
+            return false;
+        }
+
+    }
+    else
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "appendJsonKey", "Can't check for Service - filename doesn't exist!", 1);
+        #endif
+        return false;
+    }
+}
+
+bool Filemanager::delJsonKeyFromFile(const char* filename, const char* key)
+{
+    if(fExist(filename))
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "delJsonKeyFromFile", "Can't delete Key, filename doesn't exist!", 1);
+        #endif
+        return false;
+    }
+
+    if(!checkForKeyInJSONFile(filename, key))
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "delJsonKeyFromFile", "Can't delete Key, serviceList doesn't contains the specified Key! - SKIP", 1);
+        #endif
+        return true;
+    }
+
+    const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
+    DynamicJsonDocument cacheDocument(capacity);
+
+    cacheDocument = readJsonFile(filename);
+
+    cacheDocument.remove(key);
+
+    if(checkForKeyInJSONFile(filename, key))
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "delJsonKeyFromFile", "An Error occured while deleting the Key - please check!", 2);
+        #endif
+        return false;
+    }
+    #ifdef J54J6_LOGGING_H
+        logger logging;
+        logging.SFLog(className, "delJsonKeyFromFile", "Key successfully deleted!");
+    #endif
+    return true;
+}
