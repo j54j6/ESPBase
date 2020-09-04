@@ -141,9 +141,9 @@ bool NetworkIdent::delService(const char* serviceName)
     {
         #ifdef J54J6_LOGGING_H
             logger logging;
-            logging.SFLog(className, "delService", "Can't delete Service, serviceList doesn't contains the specified Service!", 1);
+            logging.SFLog(className, "delService", "Can't delete Service, serviceList doesn't contains the specified Service! - SKIP", 1);
         #endif
-        return false;
+        return true;
     }
 
     const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
