@@ -5,7 +5,6 @@
 #include "led.h"
 #include "button.h"
 #include "NetworkIdent.h"
-//#include "udpManager.h"
 #include "../lib/network/webSrc/setupPage.h"
 
 
@@ -20,7 +19,7 @@ ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
 NetworkIdent networkIdent(&FM, &wifiManager);
 
 udpManager udpManage(&wifiManager, 63547);
-WiFiUDP testUdp;
+
 void handleTest()
 {
    ESP8266WebServer* webserver = test.getWebserver();
@@ -100,10 +99,6 @@ void setup() {
 
   networkIdent.addService("NetworkIdent", 63547);
   networkIdent.addService("webserver", 8080);
-
-  
-  
-  testUdp.begin(63547);
 }
 
 void loop() {
@@ -128,18 +123,4 @@ void loop() {
 
   //NetworkIdent
   networkIdent.loop();
-
-  static int counter = 0;
-  int delay = 2000;
-  static int lastCall = 0;
-
-  if(counter < 3 && wifiManager.getWiFiState() == WL_CONNECTED)
-  {
-    if(millis() >= lastCall + delay)
-    {
-      counter++;
-      udpManage.sendUdpMessage("this is a test Message", IPAddress(255,255,255,255), 63547);
-      lastCall = millis();
-    }
-  }
 }
