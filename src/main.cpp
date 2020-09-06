@@ -5,6 +5,7 @@
 #include "led.h"
 #include "button.h"
 #include "NetworkIdent.h"
+#include "externServiceHandler.h"
 #include "../lib/network/webSrc/setupPage.h"
 
 
@@ -19,6 +20,8 @@ ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
 NetworkIdent networkIdent(&FM, &wifiManager);
 
 udpManager udpManage(&wifiManager, 63547);
+
+ExternServiceHandler extServices(&FM, &wifiManager, &networkIdent);
 
 void handleTest()
 {
@@ -83,8 +86,6 @@ void setup() {
   //preMount Filesystem
   FM.mount();
 
-  //FM.remove("/config/networkIdent/services.json");
-
   //get Filestructure - only for dev
   FM.getSerialFileStructure();
 
@@ -97,11 +98,15 @@ void setup() {
   //start Listening on UDP-NetworkIdentPort
   networkIdent.beginListen();
 
-  networkIdent.addService("NetworkIdent", 63547);
-  networkIdent.addService("webserver", 8080);
+  networkIdent.addService("NetworkIdent", "63547");
+  networkIdent.addService("webserver", "8080");
+  
 }
 
 void loop() {
+  //Button
+  ButtonClicks button = mainButton.run();
+
   //LED's
   wifiLed.run();
   errorLed.run();
@@ -123,4 +128,12 @@ void loop() {
 
   //NetworkIdent
   networkIdent.loop();
+
+  //external Service Handler
+  extServices.loop();
+
+  if(wifiManager.getWiFiState() == WL_CONNECTED && button.longClick == 1)
+  {
+    extServices.autoAddService("mqttBroker");
+  }
 }
