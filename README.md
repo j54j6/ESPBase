@@ -1,5 +1,5 @@
 # ESPBase
-This project is not finished yet - Only registration works until now
+This project is not finished yet
 
 Current dev in dev_linearWeb!
 
@@ -14,8 +14,8 @@ postponed work:
 Current work:
 
     -> Finish WiFi Setup and DNS/MDNS Handling - finished
-    -> Add MQTT Handling (for this NetworkIdent added)- WIP
-    -> Wrap current global sketch content into single Class
+    -> Add MQTT Handling - WIP (90% finished)
+    -> Wrap current global sketch content into single Class - WIP
 
 
 bucket list:
@@ -51,11 +51,13 @@ what's working:
 
     Filemanager
         create and read Json Strings or Objects
-        Save stuff to SPIFFS (char, String, Json)
+        create Config FIles and edit them
+        Save stuff to LittleFS (char, String, Json, whatever)
         Save pretty Json from unformatted String or Json
         delete Files
         create Files
         Rename Files
+        all a filemanager need to do
 
     LED
         Create LED Object(s)
@@ -72,4 +74,9 @@ what's working:
         config creation
         AP start
         Captive Portal (register and saving to LittleFS (using Filemanager))
+        MQTT
+        Webserver + custom service add
+        ServiceSearch (NetworkIdent by j54j6) - later as JServiceManager
+        udp Communication
+    
 
