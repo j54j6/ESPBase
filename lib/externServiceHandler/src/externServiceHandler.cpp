@@ -283,9 +283,12 @@ short ExternServiceHandler::autoAddService(const char* serviceName)
                                     String data = FM->readFile(getFilename(lastRequest.serviceName).c_str());
 
                                     //for debug
+                                    /*
                                     Serial.println("--------------------------------");
                                     Serial.println(data);
                                     Serial.println("--------------------------------");
+                                    */
+
 
                                     lastRequest.reset();
                                     autoAddRunning = false;
@@ -380,11 +383,12 @@ short ExternServiceHandler::autoAddService(const char* serviceName)
                                     String data = FM->readFile(getFilename(lastRequest.serviceName, true).c_str());
 
                                     //for debug
+                                    /*
                                     Serial.println("--------------------------------");
                                     Serial.println(data);
                                     Serial.println("--------------------------------");
+                                    */
 
-                                    
                                     lastRequest.reset();
                                     autoAddRunning = false;
                                     

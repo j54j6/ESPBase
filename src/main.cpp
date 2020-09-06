@@ -94,13 +94,12 @@ void setup() {
 
   //add webservice to webserver@Network
   test.addService("/new", handleTest);
+  test.startWebserver(80);
 
   //start Listening on UDP-NetworkIdentPort
   networkIdent.beginListen();
 
   networkIdent.addService("NetworkIdent", "63547");
-  networkIdent.addService("webserver", "8080");
-  
 }
 
 void loop() {
@@ -131,9 +130,4 @@ void loop() {
 
   //external Service Handler
   extServices.loop();
-
-  if(wifiManager.getWiFiState() == WL_CONNECTED && button.longClick == 1)
-  {
-    extServices.autoAddService("mqttBroker");
-  }
 }

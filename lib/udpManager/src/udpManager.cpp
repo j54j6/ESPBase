@@ -72,6 +72,7 @@ void udpManager::sendUdpMessage(const char* workload, IPAddress ip, int port)
             udpHandler.write(workload);
             udpHandler.endPacket();
         
+            /*
             Serial.println("------------------------------");
             Serial.print("IP: ");
             Serial.println(ip.toString());
@@ -80,6 +81,7 @@ void udpManager::sendUdpMessage(const char* workload, IPAddress ip, int port)
             Serial.print("Workload: ");
             Serial.println(workload);
             Serial.println("------------------------------");
+            */
         }
         else
         {
