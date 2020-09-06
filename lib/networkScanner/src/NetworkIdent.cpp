@@ -419,7 +419,9 @@ void NetworkIdent::loop()
                 {
                     udpControl.sendUdpMessage(formatMessage(false, true, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()), cacheDocument["id"]).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
                 }
-                
+                Serial.println("################Sended workload from textFormatter##########################");
+                Serial.println(formatMessage(false, true, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()), cacheDocument["id"]).c_str());
+                Serial.println("######################################################################");
                 //udpControl.sendUdpMessage(formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str())).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
             }
             else
