@@ -25,6 +25,7 @@ bucket list:
     mini "sketch store" for simple devices e.g mqtt thermometers/you tell me...
     communitystore integration
     launch blog website nodework.de
+    Network: add SSDP
     Network: captive Portal for easy SignUp
     Network: MDNS Support
     Network: DNS Support
