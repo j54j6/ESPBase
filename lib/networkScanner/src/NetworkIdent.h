@@ -113,7 +113,7 @@ class NetworkIdent : public ErrorSlave {
                 there will be an id appenden out of millis() + random(int) to use multiple requests the same time by the id you can difference it e.g if you want multiple devices for the same service (implemented later)
 
         */
-        String formatMessage(bool request = false, bool generateId = false, const char* serviceName = "n.S", const char* MAC = "n.S", const char* ip = "n.S", const char* port = "-1", const char* id = "n.S");
+        String formatMessage(bool request = false, bool generateId = false, String serviceName = "n.S", String MAC = "n.S", String ip = "n.S", String port = "-1", String id = "n.S");
         
 
         //get stuff

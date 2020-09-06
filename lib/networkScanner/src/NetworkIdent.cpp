@@ -264,7 +264,7 @@ bool NetworkIdent::createConfigFile()
 }
 
 
-String NetworkIdent::formatMessage(bool request, bool generateId, const char* serviceName, const char* MAC, const char* ip, const char* servicePort, const char* givenID)
+String NetworkIdent::formatMessage(bool request, bool generateId, String serviceName, String MAC, String ip, String servicePort, String givenID)
 {
     /*
     {
@@ -326,7 +326,7 @@ String NetworkIdent::formatMessage(bool request, bool generateId, const char* se
     }
     else
     {
-        if(strcmp(givenID, "n.S") == 0)
+        if(givenID == "n.S")
         {
             output += "\",";
             output += "\"id\" : \"";
@@ -440,12 +440,12 @@ void NetworkIdent::loop()
                 String fmsg;
                 if(!cacheDocument.containsKey("id"))
                 {
-                    fmsg = formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()));
+                    fmsg = formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress(), wifiManager->getLocalIP(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()));
                     udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
                 }
                 else
                 {
-                    fmsg = formatMessage(false, true, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()), cacheDocument["id"]);
+                    fmsg = formatMessage(false, true, cacheDocument["serviceName"], WiFi.macAddress(), wifiManager->getLocalIP(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()), cacheDocument["id"]);
                     udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
                 }
                 Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
