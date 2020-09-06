@@ -417,18 +417,19 @@ void NetworkIdent::loop()
                 #endif
                 Serial.print("serviceNameCached: ");
                 Serial.println(serviceNameCached);
+                String fmsg;
                 if(!cacheDocument.containsKey("id"))
                 {
-                    String message = formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()));
-                    udpControl.sendUdpMessage(message.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                    fmsg = formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()));
+                    udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
                 }
                 else
                 {
-                    String message = formatMessage(false, true, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()), cacheDocument["id"]);
-                    udpControl.sendUdpMessage(message.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                    fmsg = formatMessage(false, true, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()), cacheDocument["id"]);
+                    udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
                 }
                 Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-                Serial.println(message);
+                Serial.println(fmsg);
                 Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 //udpControl.sendUdpMessage(formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str())).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
             }
