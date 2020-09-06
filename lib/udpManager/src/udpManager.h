@@ -36,6 +36,17 @@ struct udpPacketResolve {
         }
         return output; 
     }
+
+    void clean()
+    {
+        String cache;
+
+        for(int i = 0; i < this->paketSize; i++)
+        {
+            cache += udpContent[i];
+        }
+        this->udpContent = cache;
+    }
 };
 
 class udpManager : public ErrorSlave {

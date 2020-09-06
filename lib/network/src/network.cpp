@@ -180,7 +180,7 @@ void Network::startWorking() //fkt. Nr. -3
         message += " SSID: ";
         message += staSSID;
         message += "\n PSK: ";
-        message += staPSK;
+        message += "don't hope that I log any passwords ;)";
         logging.SFLog(className, "startSetupMode", message.c_str());
     #endif
 

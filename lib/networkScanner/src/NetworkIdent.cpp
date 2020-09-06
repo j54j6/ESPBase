@@ -364,6 +364,11 @@ void NetworkIdent::loop()
         return;
     }
     udpPacketResolve* lastResolve = udpControl.getLastUDPPacketLoop();
+    if(lastResolve->udpContent != "NULL")
+    {
+        lastResolve->clean(); //delete fragments at the end of document
+    }
+    
 
     if(lastResolve->udpContent == "NULL")
     {
@@ -372,11 +377,12 @@ void NetworkIdent::loop()
     
     
     //for debug only
+    
     Serial.println("---------------------------------");
     Serial.println("UDP Content: ");
     Serial.println(lastResolve->udpContent);
     Serial.println("---------------------------------");
-
+    
 
     DeserializationError error = deserializeJson(cacheDocument, lastResolve->udpContent);
 
@@ -413,15 +419,17 @@ void NetworkIdent::loop()
                 Serial.println(serviceNameCached);
                 if(!cacheDocument.containsKey("id"))
                 {
-                    udpControl.sendUdpMessage(formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str())).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                    String message = formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()));
+                    udpControl.sendUdpMessage(message.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
                 }
                 else
                 {
-                    udpControl.sendUdpMessage(formatMessage(false, true, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()), cacheDocument["id"]).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                    String message = formatMessage(false, true, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()), cacheDocument["id"]);
+                    udpControl.sendUdpMessage(message.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
                 }
-                Serial.println("################Sended workload from textFormatter##########################");
-                Serial.println(formatMessage(false, true, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()), cacheDocument["id"]).c_str());
-                Serial.println("######################################################################");
+                Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                Serial.println(message);
+                Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 //udpControl.sendUdpMessage(formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str())).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
             }
             else
