@@ -106,6 +106,8 @@
             float getFreeSpace(short mode);
             void getSerialFileStructure(const char* path = "/");
             bool returnAsBool(const char* val);
-
+            bool checkForKeyInJSONFile(const char* filename, const char* key);
+            bool appendJsonKey(const char* filename, const char* newKey, const char* newVal);
+            bool delJsonKeyFromFile(const char* filename, const char* key);
     };
 #endif

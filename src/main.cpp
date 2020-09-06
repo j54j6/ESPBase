@@ -5,6 +5,7 @@
 #include "led.h"
 #include "button.h"
 #include "NetworkIdent.h"
+#include "externServiceHandler.h"
 #include "../lib/network/webSrc/setupPage.h"
 
 
@@ -16,13 +17,17 @@ WiFiManager wifiManager(&wifiLed);
 Filemanager FM;
 Network test(&FM, &wifiManager);
 ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
-NetworkIdent networkIdent(&wifiManager, &FM, "TestDevice");
+NetworkIdent networkIdent(&FM, &wifiManager);
+
+udpManager udpManage(&wifiManager, 63547);
+
+ExternServiceHandler extServices(&FM, &wifiManager, &networkIdent);
 
 void handleTest()
 {
    ESP8266WebServer* webserver = test.getWebserver();
 
-   webserver->send(200, "text/plain", "lololol");
+   webserver->send(200, "text/plain", "Das ist eine Testnachricht");
 
 }
 
@@ -60,51 +65,69 @@ void getPerformance()
 
 void setup() {
   Serial.begin(921600);
-  Serial.println("Start");
-  Serial.println("");
-
+  //Disable WifiAutoConnect and onboard WifiConfig
   WiFi.persistent(false);
   WiFi.setAutoConnect(false);
   WiFi.stopSmartConfig();
+
+  //default enable workLed
   workLed.ledOn();
+
+  //define className shown in ErrorHandler
   wifiManager.setClassName("wifiManager");
   test.setClassName("network");
+
+  //add modules to dedicated ErrorHandler
   mainHandler.addNewNode(test.getINode(), "network");
   mainHandler.addNewNode(networkIdent.getINode(), "NetworkIdent");
   
   //Serial.println(mainHandler.verifyAmountOfNodes());
-  delay(2000);
+
+  //preMount Filesystem
   FM.mount();
+
+  //get Filestructure - only for dev
   FM.getSerialFileStructure();
+
+  //start Network
   test.begin();
+
+  //add webservice to webserver@Network
   test.addService("/new", handleTest);
+  test.startWebserver(80);
+
+  //start Listening on UDP-NetworkIdentPort
+  networkIdent.beginListen();
+
+  networkIdent.addService("NetworkIdent", "63547");
 }
 
-void loop() {  
-  test.run();
+void loop() {
+  //Button
+  ButtonClicks button = mainButton.run();
 
+  //LED's
   wifiLed.run();
   errorLed.run();
   workLed.run();
+
+  //Network
+  test.run();
+
+  //wifiManager
   wifiManager.run();
+
+
+  //dedicated ErrorHandler
   errorHandle();
-  getPerformance();
 
-  if(wifiManager.getWiFiState() == WL_CONNECTED)
-  {
-    static ulong lastCall = 0;
-    int delay = 3000;
-    static int count = 0;
+  //performanceControl
+  //getPerformance();
 
-    if(count < 20 && millis() >= (lastCall + delay))
-    {
-      lastCall = millis();
-      logger logging;
-      logging.SFLog("main", "main", "Send UDP!");
 
-      networkIdent.searchForService("Webserver");
-    }
-    
-  }
+  //NetworkIdent
+  networkIdent.loop();
 
+  //external Service Handler
+  extServices.loop();
 }

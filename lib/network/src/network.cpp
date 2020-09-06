@@ -180,7 +180,7 @@ void Network::startWorking() //fkt. Nr. -3
         message += " SSID: ";
         message += staSSID;
         message += "\n PSK: ";
-        message += staPSK;
+        message += "don't hope that I log any passwords ;)";
         logging.SFLog(className, "startSetupMode", message.c_str());
     #endif
 
@@ -514,24 +514,7 @@ void Network::internalBegin()
 
 
     //Start Setup - all files are created
-    if(wifiManager->setWiFiConfig(apIpAddress, apIpGateway, apNetMsk, dnsIP))
-    {
-        #ifdef J54J6_LOGGING_H
-            logging.SFLog(className, "internalBegin", "WiFiConfig set!", 0);
-        #endif
-    }
-    else
-    {
-        #ifdef J54J6_LOGGING_H
-            logging.SFLog(className, "internalBegin", "can't set WiFiConfig!", 2);
-        #endif
-        error.error = false;
-        error.ErrorCode = 14;
-        error.message = "Can't set WiFi Config!";
-        error.priority = 2;
-    }
-
-
+    
     if(wifiManager->setWiFiHostname(this->hostName))
     {
         #ifdef J54J6_LOGGING_H
@@ -560,6 +543,27 @@ void Network::internalBegin()
             message += res;
             logging.SFLog(className, "internalBegin", message.c_str());
         #endif
+
+        //define WiFi IP Stuff
+        if(wifiManager->setWiFiConfig(apIpAddress, apIpGateway, apNetMsk, dnsIP))
+        {
+            #ifdef J54J6_LOGGING_H
+                logging.SFLog(className, "internalBegin", "WiFiConfig set!", 0);
+            #endif
+        }
+        else
+        {
+            #ifdef J54J6_LOGGING_H
+                logging.SFLog(className, "internalBegin", "can't set WiFiConfig!", 2);
+            #endif
+            error.error = false;
+            error.ErrorCode = 14;
+            error.message = "Can't set WiFi Config!";
+            error.priority = 2;
+        }
+
+
+
         runFunction = -2; //startSetupMode()
         return;
     }
