@@ -30,12 +30,14 @@ struct networkSearchCacheValueHolder {
     long id = 0;
     ulong createdAt = 0;
     int deleteAfter = 20000; //10 seconds default delay
+    bool isFallback = false;
     
     void reset() {
         searchType = 0;
         serviceName = "n.S";
         id = 0;
         createdAt = 0;
+        isFallback = false;
 
         #ifdef J54J6_LOGGING_H
             logger logging;
@@ -45,11 +47,11 @@ struct networkSearchCacheValueHolder {
 
     void loop()
     {
-        if(serviceName == "n.S")
+        if(strcmp(serviceName, "n.S") == 0)
         {
             return;
         }
-        if(millis() >= (createdAt + deleteAfter))
+        if(millis() >= (createdAt + deleteAfter) && strcmp(this->serviceName, "n.S") != 0)
         {
             reset();
         }
@@ -63,9 +65,6 @@ class ExternServiceHandler : public ErrorSlave {
         bool classDisabled = false;
         const char* serviceAddressListFile = "/config/serviceHandler/registered/";
 
-        int maxReponseTime = 30000; //max time an ID(process) is saved in idList - after this delay (in ms) - the id will be deleted and handler does not listen for this package - in this case you need to resend it
-
-
         //you can handle up to 10 requests at the same "time" - bec. of only one core there is more like you can wait for up to 10 answers of other devices at the same time ^^ (later implemented (in V1.5+))
         networkSearchCacheValueHolder lastRequest;
         //int counter = 0;
@@ -77,9 +76,17 @@ class ExternServiceHandler : public ErrorSlave {
 
 
         //ControlFlow Vars
-        bool autoAddWait = false;
+
+        /*
+            autoAddService
+        */
+        bool autoAddRunning = false; //is AutoAdd already running
+        
         ulong autoAddLastCall;
         int checkDelay = 3000;
+        short timeoutAfter = 30000; //time after request will be deleted - (autoAdd returns 0) - lastRequest will cleared
+
+
 
     public:
         ExternServiceHandler(Filemanager* FM, WiFiManager* wifiManager, NetworkIdent* networkIdent);
@@ -87,7 +94,7 @@ class ExternServiceHandler : public ErrorSlave {
         int getServiceDestPort(const char* serviceName); //look in configFile for preDefined Service Port if nothing found autoAdd is used
         IPAddress getServiceIP(const char* serviceName); //look in configFile for preDefined Service Address if nothing found autoAdd is used
         String getServiceMACAddress(const char* serviceName); //look in configFile for preDefined Service MAC Address if nothing foud autoAdd is used
-        bool autoAddService(const char* serviceName = "n.S"); //search and add service to config if found in network
+        short autoAddService(const char* serviceName = "n.S"); //search and add service to config if found in network - return 0 if failed, returns 1 if successfull, returns 2 while working return 3 when main and fallback is defined - "Cant add new one"
         bool manAddService(const char* serviceName = "n.S", int port = -1, IPAddress ip = IPAddress(0,0,0,0), bool fallback = false, bool checkConnect = true, const char* MAC = "n.S"); //manually write Service into File e.g for webInterface 
         bool delService(const char* serviceName); //delete an external Service manually or if implemented e.g after 3 times of non reach
 

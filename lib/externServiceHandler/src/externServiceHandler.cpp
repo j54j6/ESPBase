@@ -123,82 +123,334 @@ String ExternServiceHandler::getServiceMACAddress(const char* serviceName)
 }
 
 
-bool ExternServiceHandler::autoAddService(const char* serviceName)
+short ExternServiceHandler::autoAddService(const char* serviceName)
 {
-    if(!autoAddWait) //autoAddWait only because of the correct Log Message - theoretically i can check it here...
+    if(!autoAddRunning && strcmp(serviceName, "n.S") != 0) //init. autoAdd and set all Variables
     {
-        if(FM->fExist(getFilename(serviceName).c_str()))
+        //check if service already is registered - main Cfg
+        if(!FM->fExist(getFilename(serviceName).c_str()))
         {
+            //init main CFG create
             #ifdef J54J6_LOGGING_H
                 logger logging;
-                logging.SFLog(className, "autoAddService", "Service Cfg already exist - no autoConf needed! - return true", 1);
+                String message = "Init. creation of mainCFG for Service \"";
+                message += serviceName;
+                message += "\"";
+                logging.SFLog(className, "autoAddService", message.c_str(), 0);
             #endif
-            return true;
+
+            networkIdent->searchForService(serviceName);
+            lastRequest.createdAt = millis();
+            lastRequest.deleteAfter = timeoutAfter;
+            lastRequest.id = networkIdent->getLastGeneratedId(); 
+            lastRequest.searchType = 4; //autoAdd function is used
+            lastRequest.serviceName = serviceName;
+            autoAddRunning = true; //start autoAdd loop part
+            return 2;
         }
         else
         {
-            networkIdent->searchForService(serviceName);
-            lastRequest.id = networkIdent->getLastGeneratedId();
-            lastRequest.createdAt = millis();
-            lastRequest.serviceName = serviceName;
-            lastRequest.searchType = 3;
-            autoAddWait = true;
-            autoAddLastCall = millis();
-        }
-        
-    }
-    else
-    {
-        if(millis() < (lastRequest.createdAt + lastRequest.deleteAfter - 100))
-        {
-            
-            if(millis() > (autoAddLastCall + checkDelay))
+            if(!FM->fExist(getFilename(serviceName, true).c_str()))
             {
-                autoAddLastCall = millis();
-                if(FM->fExist(getFilename(lastRequest.serviceName).c_str()))
-                {
-                    #ifdef J54J6_LOGGING_H
-                        logger logging;
-                        String message = "Service \"";
-                        message += lastRequest.serviceName;
-                        message += "\" successfully added";
-                        logging.SFLog(className, "autoAddService", message.c_str(), 0);
-                    #endif
-                    lastRequest.reset();
-                    autoAddWait = false;
-                    return true;
-                }
-                return false;
+                #ifdef J54J6_LOGGING_H
+                    logger logging;
+                    String message = "Init. creation of FallbackCFG for Service \"";
+                    message += serviceName;
+                    message += "\"";
+                    logging.SFLog(className, "autoAddService", message.c_str(), 0);
+                #endif
+
+                //init main CFG create
+                networkIdent->searchForService(serviceName);
+                lastRequest.createdAt = millis();
+                lastRequest.deleteAfter = timeoutAfter;
+                lastRequest.id = networkIdent->getLastGeneratedId(); 
+                lastRequest.searchType = 4; //autoAdd function is used
+                lastRequest.serviceName = serviceName;
+                lastRequest.isFallback = true;
+                autoAddRunning = true; //start autoAdd loop part
+                return 2;
             }
             else
             {
-                delay(10);
-                return false;
-            }
-            
-        }
+                #ifdef J54J6_LOGGING_H
+                    logger logging;
+                    String message = "Can't create CFG for Service \"";
+                    message += serviceName;
+                    message += "\" - Fallback and Main already defined";
+                    logging.SFLog(className, "autoAddService", message.c_str(), 0);
+                #endif
+                return 3;
+            } 
+        }        
+    }
+    else if(!autoAddRunning && strcmp(serviceName, "n.S") != 0) //serviceName is not "n.S"
+    {
         #ifdef J54J6_LOGGING_H
             logger logging;
-            String message = "Service \"";
-            message += lastRequest.serviceName;
-            message += "\" can't be added - timeout";
-            logging.SFLog(className, "autoAddService", message.c_str(), 1);
+            logging.SFLog(className, "autoAddService", "Can't add Service \"n.S\" - it's a placeholder!", 1);
         #endif
-        lastRequest.reset();
-        autoAddWait = false;
-        return false;
+        return 0;
     }
-    return false;
-}
+    else //autoAdd already running - do loop stuff to check for any responses and add new service if needed
+    {
+        if(lastRequest.id == 0) //lastRequest is > timeout - disable autoRun
+        {
+            #ifdef J54J6_LOGGING_H
+                logger logging;
+                logging.SFLog(className, "autoAddService", "Can't add Service - timeout reached! - return false", 1);
+            #endif
+            autoAddRunning = false;
+            return 0;
+        }
+        else if(lastRequest.id != 0 && lastRequest.searchType != 4) //lasRequest was not set by function AutoAdd
+        {
+            #ifdef J54J6_LOGGING_H
+                logger logging;
+                logging.SFLog(className, "autoAddService", "Schedule Problem - lastRequest not set by autoAdd - wrong searchType - disable autoAdd loop and return false", 1);
+            #endif
+            autoAddRunning = false;
+            return 0;
+        }
+        
+        //working normal
+        if(lastRequest.id != 0 && lastRequest.searchType == 4)
+        {
+            StaticJsonDocument<425> lastFetched = networkIdent->getLastData();
+
+            /*
+                Check if lastFetched Data have the right Syntax and Values needed to add new Service
+            */
+            if(!lastFetched.containsKey("id") || !lastFetched.containsKey("serviceName") || !lastFetched.containsKey("ip") || !lastFetched.containsKey("mac") || !lastFetched.containsKey("servicePort"))
+            {
+                return 2;
+            }
+            else
+            {
+                //lastReceived Packet does contain all needed keys to create a new Service - check for id and serviceName
+                String castedLastRequestID = String(lastRequest.id);
+                String castedLastReceivedID = lastFetched["id"];
+
+                castedLastReceivedID.replace(" ", "");
+                castedLastRequestID.replace(" ", "");
+
+                if(castedLastRequestID == castedLastReceivedID)
+                {
+                    //same id - start adding new service
+                    if(!lastRequest.isFallback)
+                    {
+                        /*
+                            Creating main Service Cfg
+                        */
+                        if(!FM->fExist(getFilename(lastRequest.serviceName, false).c_str()))
+                        {
+                            //create mainServiceCfg
+                            #ifdef J54J6_LOGGING_H
+                                logger logging;
+                                logging.SFLog(className, "autoAddService", "Creating new Service Main CFG");
+                            #endif
+
+                            if(!FM->createFile(getFilename(lastRequest.serviceName).c_str()))
+                            {
+                                #ifdef J54J6_LOGGING_H
+                                    logger logging;
+                                    logging.SFLog(className, "autoAddService", "Can't create new File - create File returns false! - ERROR!", 2);
+                                #endif
+                                error.error = true;
+                                error.ErrorCode = 378;
+                                error.message = "Can't create new File - createFile() returns false!";
+                                error.priority = 5;
+                                lastRequest.reset();
+                                autoAddRunning = false;
+                                return 0;
+                            }
+                            else
+                            {
+                                bool ipAdded = FM->appendJsonKey(getFilename(lastRequest.serviceName).c_str(), "ip", lastFetched["ip"]);
+                                bool macAdded = FM->appendJsonKey(getFilename(lastRequest.serviceName).c_str(), "mac", lastFetched["mac"]);
+                                bool portAdded = FM->appendJsonKey(getFilename(lastRequest.serviceName).c_str(), "port", lastFetched["servicePort"]);
+
+                                if(ipAdded && macAdded && portAdded)
+                                {
+                                    #ifdef J54J6_LOGGING_H
+                                        logger logging;
+                                        String message = "New Service Main CFG \"";
+                                        message += lastRequest.serviceName;
+                                        message += "\" successfully added - return true";
+                                        logging.SFLog(className, "autoAddService", message.c_str());
+                                    #endif
+
+                                    String data = FM->readFile(getFilename(lastRequest.serviceName).c_str());
+
+                                    //for debug
+                                    Serial.println("--------------------------------");
+                                    Serial.println(data);
+                                    Serial.println("--------------------------------");
+
+                                    lastRequest.reset();
+                                    autoAddRunning = false;
+
+                                   
+                                    return 1;
+                                }
+                                else
+                                {
+                                    #ifdef J54J6_LOGGING_H
+                                        logger logging;
+                                        String message = "New Service Main CFG \"";
+                                        message += lastRequest.serviceName;
+                                        message += "\" can't be added - Error while insert JSON- return false";
+                                        logging.SFLog(className, "autoAddService", message.c_str(), 2);
+                                    #endif
+                                    lastRequest.reset();
+                                    autoAddRunning = false;
+                                    return 0;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            /*
+                                File already exist - check if configured too (contains any key/value) and end autoAdd
+                            */
+                            if(strcmp(FM->readJsonFileValue(getFilename(lastRequest.serviceName).c_str(), "serviceName"), "") != 0) //file has config
+                            {
+                                #ifdef J54J6_LOGGING_H
+                                    logger logging;
+                                    logging.SFLog(className, "autoAddService", "Can't create Servicefile - service already configured - stop AutoAdd - return true", 1);
+                                #endif
+                                autoAddRunning = 0;
+                                return 1;
+                            }
+                            else
+                            {
+                                #ifdef J54J6_LOGGING_H
+                                    logger logging;
+                                    logging.SFLog(className, "autoAddService", "Can't create Servicefile - servicefile already exist - but not correct configured! - stop AutoAdd - return false", 2);
+                                #endif
+                                autoAddRunning = 0;
+                                return 0;
+                            }   
+                        }
+                    }
+                    else 
+                    {
+                        /*
+                            Creating Fallback Service CFG
+                        */
+
+                        if(!FM->fExist(getFilename(lastRequest.serviceName, true).c_str()))
+                        {
+                            //create mainServiceCfg
+                            #ifdef J54J6_LOGGING_H
+                                logger logging;
+                                logging.SFLog(className, "autoAddService", "Creating new Service Fallback CFG");
+                            #endif
+
+                            if(!FM->createFile(getFilename(lastRequest.serviceName, true).c_str()))
+                            {
+                                #ifdef J54J6_LOGGING_H
+                                    logger logging;
+                                    logging.SFLog(className, "autoAddService", "Can't create new File - create File returns false! - ERROR!", 2);
+                                #endif
+                                error.error = true;
+                                error.ErrorCode = 378;
+                                error.message = "Can't create new File (fallback service) - createFile() returns false!";
+                                error.priority = 5;
+                                lastRequest.reset();
+                                autoAddRunning = false;
+                                return 0;
+                            }
+                            else
+                            {
+                                bool ipAdded = FM->appendJsonKey(getFilename(lastRequest.serviceName, true).c_str(), "ip", lastFetched["ip"]);
+                                bool macAdded = FM->appendJsonKey(getFilename(lastRequest.serviceName, true).c_str(), "mac", lastFetched["mac"]);
+                                bool portAdded = FM->appendJsonKey(getFilename(lastRequest.serviceName, true).c_str(), "port", lastFetched["servicePort"]);
+
+                                if(ipAdded && macAdded && portAdded)
+                                {
+                                    #ifdef J54J6_LOGGING_H
+                                        logger logging;
+                                        String message = "New Service Fallback CFG \"";
+                                        message += lastRequest.serviceName;
+                                        message += "\" successfully added - return true";
+                                        logging.SFLog(className, "autoAddService", message.c_str());
+                                    #endif
+
+                                    String data = FM->readFile(getFilename(lastRequest.serviceName, true).c_str());
+
+                                    //for debug
+                                    Serial.println("--------------------------------");
+                                    Serial.println(data);
+                                    Serial.println("--------------------------------");
+
+                                    
+                                    lastRequest.reset();
+                                    autoAddRunning = false;
+                                    
+                                    
+                                    
+                                    return 1;
+                                }
+                                else
+                                {
+                                    #ifdef J54J6_LOGGING_H
+                                        logger logging;
+                                        String message = "New Service Fallback CFG \"";
+                                        message += lastRequest.serviceName;
+                                        message += "\" can't be added - Error while insert JSON- return false";
+                                        logging.SFLog(className, "autoAddService", message.c_str(), 2);
+                                    #endif
+                                    lastRequest.reset();
+                                    autoAddRunning = false;
+                                    return 0;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            /*
+                                File already exist - check if configured too (contains any key/value) and end autoAdd
+                            */
+                            if(strcmp(FM->readJsonFileValue(getFilename(lastRequest.serviceName, true).c_str(), "serviceName"), "") != 0)
+                            {
+                                #ifdef J54J6_LOGGING_H
+                                    logger logging;
+                                    logging.SFLog(className, "autoAddService", "Can't create Service Fallback file - service already configured - stop AutoAdd - return true", 1);
+                                #endif
+                                autoAddRunning = 0;
+                                return 1;
+                            }
+                            else
+                            {
+                                #ifdef J54J6_LOGGING_H
+                                    logger logging;
+                                    logging.SFLog(className, "autoAddService", "Can't create Service Fallback file - servicefile already exist - but not correct configured! - stop AutoAdd - return false", 2);
+                                #endif
+                                autoAddRunning = 0;
+                                return 0;
+                            }   
+                        }
+                    }//create main or fallback cfg - else end - create fallback(else)
+                    
+                } //id of lastRequest and lastFetched are matching if ot - do nothing
+
+            }//lastFetched contains all keys (else block) 
+
+        }//check for correct id and searchType - if not match - do nothing   
+
+    } //loop stuff - else
+return 2;
+} //autoAdd end
 
 bool ExternServiceHandler::manAddService(const char* serviceName, int port, IPAddress ip, bool fallback, bool checkConnect, const char* MAC)
 {
-   
+   return false;
 }
 
 bool ExternServiceHandler::delService(const char* serviceName)
 {
-
+    return false;
 }
 
 
@@ -224,121 +476,12 @@ String ExternServiceHandler::getFilename(const char* serviceName, bool fallback)
 //loop
 void ExternServiceHandler::loop()
 {
-    if(lastRequest.id != 0) //there is an request < 10 seconds old
-    {
-        StaticJsonDocument<425> lastFetched = networkIdent->getLastData();
-        if(lastFetched.containsKey("type"))
-        {
-            if(lastFetched["type"] == "answer")
-            {
-                if(lastFetched.containsKey("id") && lastFetched.containsKey("serviceName"))
-                {
-                    String m1 = lastFetched["id"];
-                    String m2 = lastFetched["serviceName"];
-                    m1.replace(" ", "");
-                    m2.replace(" ", "");
-
-                    if(m1 == String(lastRequest.id) && m2 == String(lastRequest.serviceName))
-                    {
-                        if(lastFetched.containsKey("ip") && lastFetched.containsKey("mac") && lastFetched.containsKey("servicePort"))
-                        {
-                            //current request has the same id like last fech -> result will be saved in file as new Service address
-                            if(!FM->fExist(getFilename(lastRequest.serviceName).c_str()))
-                            {
-                                //create first Service File
-                                FM->fOpen(getFilename(lastRequest.serviceName).c_str(), "w");
-                                FM->fWrite(" ");
-                                FM->fClose();
-                                FM->appendJsonKey(getFilename(lastRequest.serviceName).c_str(), "ip", lastFetched["ip"]);
-                                FM->appendJsonKey(getFilename(lastRequest.serviceName).c_str(), "mac", lastFetched["mac"]);
-                                FM->appendJsonKey(getFilename(lastRequest.serviceName).c_str(), "port", lastFetched["servicePort"]);
-                                #ifdef J54J6_LOGGING_H
-                                    logger logging;
-                                    String message = "Main Cfg for Service \"";
-                                    message += lastRequest.serviceName;
-                                    message += "\" was added";
-                                    logging.SFLog(className, "loop", message.c_str());
-                                #endif
-                                return;
-                            }
-                            if(!FM->fExist(getFilename(lastRequest.serviceName, true).c_str()))
-                            {
-                                //create Fallback Address File - only generated if manually poked or if first host can't be found
-                                String ipOnFile = FM->readJsonFileValue(getFilename(lastRequest.serviceName).c_str(), "ip");
-                                String fetchedIP = lastFetched["ip"];
-                                ipOnFile.replace(" ","");
-                                fetchedIP.replace(" ", "");
-                                if(ipOnFile == fetchedIP)
-                                {
-                                    #ifdef J54J6_LOGGING_H
-                                        logger logging;
-                                        logging.SFLog(className, "loop", "Can't add new ext. Service Fallback Record - ip already registered as Main", 1);
-                                    #endif
-                                    return;
-                                }
-                                else
-                                {
-                                    FM->fOpen(getFilename(lastRequest.serviceName, true).c_str(), "w");
-                                    FM->fClose();
-                                    FM->appendJsonKey(getFilename(lastRequest.serviceName, true).c_str(), "ip", lastFetched["ip"]);
-                                    FM->appendJsonKey(getFilename(lastRequest.serviceName, true).c_str(), "mac", lastFetched["mac"]);
-                                    FM->appendJsonKey(getFilename(lastRequest.serviceName, true).c_str(), "port", lastFetched["servicePort"]);
-                                    #ifdef J54J6_LOGGING_H
-                                        logger logging;
-                                        String message = "Fallback Cfg for Service \"";
-                                        message += lastRequest.serviceName;
-                                        message += "\" was added";
-                                        logging.SFLog(className, "loop", message.c_str());
-                                    #endif
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                //Nothing to do - fallback and main are configured - at this time only two ways are supported - updated later by an universal way
-                            }
-                            
-                        }
-                        else
-                        {
-                            //one or more keys are missing
-                            #ifdef J54J6_LOGGING_H
-                                logger logging;
-                                logging.SFLog(className, "loop", "Can't add new ext. Service Record - one ore more keys are missing", 0);
-                            #endif
-                        }
-                    }
-                }
-                else
-                {
-                    //Not useable for this lib - there is no id stored - maybe for another lib or program
-                }
-                
-            }
-            else
-            {
-                //last fetched was an request or non-syntax confirm - skip
-            }
-            
-        }
-        else
-        {
-            //Nothing to do - no "type" in last Fetch - maybe because of other program using networkIdent port or wrong useage of lib
-        }
-    }
-    else 
-    {
-        /*
-            Nothing to do - no requests
-        */
-    }
-    
-
-    if(autoAddWait)
+    if(autoAddRunning)
     {
         autoAddService();
     }
     lastRequest.loop();
+    networkIdent->loop();
 }
 
 /*
