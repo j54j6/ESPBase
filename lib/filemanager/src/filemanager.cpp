@@ -1255,7 +1255,7 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
         return {};
     }
 
-    File readFile = LittleFS.open(Filename,"r"); //Open File
+    File readFile = LittleFS.open(Filename, "r"); //Open File
 
     if(!readFile)
     { 
@@ -1265,8 +1265,8 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
         return {};
     }
    
-    String output = readFile.readString();
-    readFile.close();
+    String output = this->readFile(Filename);
+    
 
     DeserializationError error = deserializeJson(jsonDocument, output);
     if(error)
@@ -1279,6 +1279,7 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
         #endif
         return {};
     }
+    
     const char* returnVal = jsonDocument[pattern]; //pattern need quotes too! e.g pattern = "\"id\""
     #ifdef J54J6_LOGGING_H //use logging Libary if included
             String message = "Output String: ";
@@ -1537,19 +1538,21 @@ bool Filemanager::appendJsonKey(const char* filename, const char* newKey, const 
         {
             #ifdef J54J6_LOGGING_H
                 logger logging;
-                logging.SFLog(className, "appendJsonKey", "Service already exist - SKIP", 0);
+                logging.SFLog(className, "appendJsonKey", "Key already exist - SKIP", 0);
             #endif 
             return true;
         }
 
         const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
-        DynamicJsonDocument cacheDocument(capacity);
+        StaticJsonDocument<capacity> cacheDocument;
 
-        cacheDocument = readJsonFile(filename);
-        cacheDocument.add(newKey);
-        JsonObject tempJsonObejct = cacheDocument.as<JsonObject>();
+        String data = readFile(filename);
 
-        tempJsonObejct[newKey] = newVal;
+        if(!data.isEmpty())
+        {
+            deserializeJson(cacheDocument, data);
+        }
+        cacheDocument[newKey] = newVal;
 
         writeJsonFile(filename, cacheDocument);
         if(checkForKeyInJSONFile(filename, newKey))
@@ -1560,7 +1563,7 @@ bool Filemanager::appendJsonKey(const char* filename, const char* newKey, const 
         {
             #ifdef J54J6_LOGGING_H
                 logger logging;
-                logging.SFLog(className, "appendJsonKey", "An Error occured while adding the Service please check! -  Service can't be added", 2);
+                logging.SFLog(className, "appendJsonKey", "An Error occured while adding the Key please check! -  Service can't be added", 2);
             #endif
             return false;
         }
@@ -1570,7 +1573,7 @@ bool Filemanager::appendJsonKey(const char* filename, const char* newKey, const 
     {
         #ifdef J54J6_LOGGING_H
             logger logging;
-            logging.SFLog(className, "appendJsonKey", "Can't check for Service - filename doesn't exist!", 1);
+            logging.SFLog(className, "appendJsonKey", "Can't append Json Key! - File doesn't exist!", 1);
         #endif
         return false;
     }
