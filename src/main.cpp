@@ -8,9 +8,6 @@
 #include "externServiceHandler.h"
 #include "../lib/network/webSrc/setupPage.h"
 
-#include "espBase.h"
-
-
 
 LED wifiLed(D1);
 LED errorLed(D7);
