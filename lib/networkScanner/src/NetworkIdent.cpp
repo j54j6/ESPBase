@@ -342,6 +342,9 @@ String NetworkIdent::formatMessage(bool request, bool generateId, const char* se
         }
         
     }
+    Serial.println("Output String: ");
+    Serial.println(output);
+    Serial.println("********************************");
     return output;
 }
 
