@@ -1494,7 +1494,7 @@ bool Filemanager::checkForKeyInJSONFile(const char* filename, const char* key)
     {
         #ifdef J54J6_LOGGING_H
             logger logging;
-            logging.SFLog(className, "checkForKeyInJSONFile", "Can't check for Service - serviceFile doesn't exist!", 2);
+            logging.SFLog(className, "checkForKeyInJSONFile", "Can't check for Json Key - File doesn't exist!", 2);
         #endif
         return false;
     }
@@ -1548,6 +1548,14 @@ bool Filemanager::appendJsonKey(const char* filename, const char* newKey, const 
 
         String data = readFile(filename);
 
+        //for debug
+        /*
+        Serial.println("--------------------------------");
+        Serial.println(data);
+        Serial.println("--------------------------------");
+        */
+
+
         if(!data.isEmpty())
         {
             deserializeJson(cacheDocument, data);
@@ -1563,7 +1571,7 @@ bool Filemanager::appendJsonKey(const char* filename, const char* newKey, const 
         {
             #ifdef J54J6_LOGGING_H
                 logger logging;
-                logging.SFLog(className, "appendJsonKey", "An Error occured while adding the Key please check! -  Service can't be added", 2);
+                logging.SFLog(className, "appendJsonKey", "An Error occured while adding the Key please check!", 2);
             #endif
             return false;
         }
