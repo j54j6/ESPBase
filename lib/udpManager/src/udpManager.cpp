@@ -114,6 +114,10 @@ void udpManager::run()
         int packetSize = udpHandler.parsePacket();
         if(packetSize)
         {
+            if(lastContent.remoteIP == WiFi.localIP())
+            {
+                return;
+            }
             lastContent.paketSize = packetSize;
             lastContent.remoteIP = udpHandler.remoteIP();
             lastContent.remotePort = udpHandler.remotePort();

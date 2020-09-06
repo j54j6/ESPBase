@@ -264,7 +264,7 @@ bool NetworkIdent::createConfigFile()
 }
 
 
-String NetworkIdent::formatMessage(bool request, bool generateId, const char* serviceName, const char* MAC, const char* ip, const char* servicePort)
+String NetworkIdent::formatMessage(bool request, bool generateId, const char* serviceName, const char* MAC, const char* ip, const char* servicePort, const char* givenID)
 {
     /*
     {
@@ -309,10 +309,21 @@ String NetworkIdent::formatMessage(bool request, bool generateId, const char* se
     }
     else
     {
-        output += "\",";
-        output += "\"id\" : \"";
-        output += genId;
-        output += "\"}";
+        if(strcmp(givenID, "n.S") == 0)
+        {
+            output += "\",";
+            output += "\"id\" : \"";
+            output += genId;
+            output += "\"}";
+        }
+        else
+        {
+            output += "\",";
+            output += "\"id\" : \"";
+            output += givenID;
+            output += "\"}";
+        }
+        
     }
     return output;
 }
@@ -360,7 +371,13 @@ void NetworkIdent::loop()
     }
     
     
-    
+    //for debug only
+    Serial.println("---------------------------------");
+    Serial.println("UDP Content: ");
+    Serial.println(lastResolve->udpContent);
+    Serial.println("---------------------------------");
+
+
     DeserializationError error = deserializeJson(cacheDocument, lastResolve->udpContent);
 
     if(error)
@@ -394,7 +411,16 @@ void NetworkIdent::loop()
                 #endif
                 Serial.print("serviceNameCached: ");
                 Serial.println(serviceNameCached);
-                udpControl.sendUdpMessage(formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str())).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                if(!cacheDocument.containsKey("id"))
+                {
+                    udpControl.sendUdpMessage(formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str())).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                }
+                else
+                {
+                    udpControl.sendUdpMessage(formatMessage(false, true, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()), cacheDocument["id"]).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                }
+                
+                //udpControl.sendUdpMessage(formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str())).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
             }
             else
             {
