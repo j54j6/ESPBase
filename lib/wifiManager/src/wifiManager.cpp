@@ -302,7 +302,6 @@ bool WiFiManager::setWiFiHostname(const char* hostname)
 
 bool WiFiManager::setWiFiConfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet, IPAddress dns1, IPAddress dns2)
 {
-  
   if(WiFi.config(local_ip, gateway, subnet, dns1, dns2))
   {
     #ifdef J54J6_LOGGING_H
@@ -349,7 +348,6 @@ void WiFiManager::enableWiFi(WiFiMode_t mode)
       logging.SFLog(className, "enableWiFi", "WiFi already enabled - SKIP", 1);
     #endif
   }
-  
 }
 
 void WiFiManager::disableWiFi()
@@ -414,9 +412,7 @@ bool WiFiManager::startWifiAP(const char *ssid, const char *passwd, int hidden, 
       error.priority = 4;
       setLockClass(true); //lock Class to prevent further Errors in this Class - to prevent this "Error" - just keeo overrideSettingsToPreventError as true
       return false;
-    }
-    
-    
+    } 
   }
   
   if(WiFi.softAP(ssid, passwd, channel, hidden))
@@ -492,7 +488,6 @@ bool WiFiManager::stopWifiAP(bool wifioff) //if wifiOff = true - softAP mode wil
         error.priority = 1;
         return false;
       }
-      
     }
     #ifdef J54J6_LOGGING_H
       logger logging;
@@ -564,7 +559,6 @@ bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMo
       #endif
       delay(50);
     }
-    
   }
 
   if(!this->shieldState) //if wifiIsDisabled and overrideSettings is enabled - enableWifi and then start WifiAP
@@ -591,8 +585,6 @@ bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMo
       setLockClass(true); //lock Class to prevent further Errors in this Class - to prevent this "Error" - just keeo overrideSettingsToPreventError as true
       return false;
     }
-    
-    
   }
   
   if(WiFi.mode(mode))
@@ -674,7 +666,6 @@ bool WiFiManager::stopWifiStation(bool wifioff)
         error.priority = 1;
         return false;
       }
-      
     }
     #ifdef J54J6_LOGGING_H
       logger logging;
@@ -799,9 +790,7 @@ void WiFiManager::setOpticalMessage(wl_status_t currentState)
       wifiLed->blink(750);
       return;
     }
-    
   }
-  
 }
 
 
