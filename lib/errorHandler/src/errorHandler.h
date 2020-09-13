@@ -22,14 +22,14 @@ struct classErrorReport {
 
 class ErrorSlave {
     protected:
-        
         bool errorReported = false;
         bool warnReported = false;
         ErrorSlave* _next = _NULL;
         bool lockClass = false; //must implemented! - if true - no class function should be able to work
         const char* className = "placeholder";
+
     public:
-    classErrorReport error;
+        classErrorReport error;
         void setErrorReported(bool val)
         {
             this->errorReported = val;
@@ -115,6 +115,7 @@ class ErrorHandler {
 
         bool opticalOnWarn = true; //set Optical message when ErrorSlave::classErrorReport.error = false and ErrorSlave::classErrorReport.priority > _level
         bool SerialOnWarn = true; //Serial Message when ErrorSlave::classErrorReport.error = false and ErrorSlave::classErrorReport.priority > _level
+
     public:
         ErrorHandler(ErrorSlave* firstNode, LED* errorLed, LED* workLed):_errorLed(errorLed), _workLed(workLed),_firstNode(firstNode){_workLed->ledOn();};
 
@@ -186,7 +187,6 @@ class ErrorHandler {
                     break;
                 }
                 actualNode = actualNode->getNext();
-
             }
         }
 
