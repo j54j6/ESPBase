@@ -98,8 +98,7 @@ String ServiceHandler::formatComMessage(bool request, bool generateId, String se
             output += "\"id\" : \"";
             output += id;
             output += "\"}";
-        }
-        
+        } 
     }
     /*
     Serial.println("Output String: ");
@@ -182,7 +181,7 @@ bool ServiceHandler::createInternalServicesBasicConfigFile()
 
 void ServiceHandler::handleRequests()
 {
-
+    return;
 }
 
 ulong ServiceHandler::getLastGeneratedId()
@@ -277,7 +276,6 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
                 #endif
                 return false;
             }
-
         }
         else
         {
@@ -287,7 +285,6 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
             #endif
             return false;
         }
-
     }
     else
     {
@@ -340,8 +337,7 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
                 logging.SFLog(className, "addService", "Can't add Service - one or more parameter not set!", 1);
             #endif
             return false;
-        }
-        
+        }   
     }
     return false;
 }
@@ -921,7 +917,6 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
                 logger logging;
                 logging.SFLog(className, "checkForService", "Can't check for internal Service - serviceFile doesn't exist!", 2);
             #endif
-
         }
         if(!skip)
         {
