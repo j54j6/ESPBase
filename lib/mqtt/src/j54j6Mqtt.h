@@ -30,6 +30,7 @@ class J54J6_MQTT : public ErrorSlave {
     protected:
         //extra stuff
         bool configCheck();
+        
     public:        
         J54J6_MQTT(Filemanager* FM, WiFiManager* wifiManager);
 
