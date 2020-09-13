@@ -30,9 +30,6 @@ bucket list:
     communitystore integration
     launch blog website nodework.de
     Network: add SSDP
-    Network: captive Portal for easy SignUp
-    Network: MDNS Support
-    Network: DNS Support
     Network: DNS Homeintegration
     Network: WPS Support
     Network: Dynamic LED Support
@@ -83,5 +80,8 @@ what's working:
         Webserver + custom service add
         ServiceSearch (NetworkIdent by j54j6) - later as JServiceManager
         udp Communication
+        Network: captive Portal for easy SignUp
+        Network: MDNS Support
+        Network: DNS Support
     
 
