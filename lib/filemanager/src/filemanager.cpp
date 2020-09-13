@@ -61,7 +61,6 @@ Filemanager::Filemanager(bool tryAutoFix)
         #endif
         this->autoFix = false;
     }
-    
 }
 
 bool Filemanager::begin()
@@ -127,8 +126,7 @@ void Filemanager::end() //Stop/unmount Filesystem
         #ifdef J54J6_LOGGING_H //use logging Libary if included
             logger::SFLog(className, "end", "Just for dev. - init state maybe inconsistent - init = false! - please check...");
         #endif
-    }
-    
+    } 
 }
 
 void Filemanager::unmount()
@@ -530,7 +528,6 @@ void Filemanager::fClose(File actualFile)
         return;
     }
     actualFile.close();
-    return;
 }
 
 bool Filemanager::fDelete(const char* path)
@@ -659,7 +656,6 @@ bool Filemanager::fExist(const char* path)
 /*
     Dir control
 */
-
 bool Filemanager::dNext()
 {
     if(!checkForInit())
@@ -875,7 +871,6 @@ bool Filemanager::seek(File usedFile, uint8 offset, const char* mode)
     }
     
     return usedFile.seek(offset);
-    
 }
 
 uint8 Filemanager::position()
@@ -896,7 +891,6 @@ uint8 Filemanager::position()
         return false;
     }
     return internalFileHandle.position();
-    
 }
 
 uint8 Filemanager::position(File usedFile)
@@ -930,7 +924,6 @@ uint8 Filemanager::size()
         return false;
     }
     return internalFileHandle.size();
-
 }
 
 uint8 Filemanager::size(File usedFile)
@@ -977,7 +970,6 @@ const char* Filemanager::name(File usedFile)
     }
     
     return usedFile.name();
-
 }
 
 const char* Filemanager::fullName()
@@ -1009,9 +1001,7 @@ const char* Filemanager::fullName(File usedFile)
         #endif
         return false;
     }
-    
     return usedFile.fullName();
-
 }
 
 long Filemanager::getLastWrite()
@@ -1045,7 +1035,6 @@ long Filemanager::getLastWrite(File usedFile)
     }
     
     return usedFile.getLastWrite();
-
 }
 
 long Filemanager::getCreationTime()
@@ -1077,7 +1066,6 @@ long Filemanager::getCreationTime(File usedFile)
         #endif
         return false;
     }
-    
     return usedFile.getCreationTime();
 }
 
@@ -1186,6 +1174,7 @@ bool Filemanager::changeJsonValueFile(const char* Filename, const char* key, con
         #endif
         return false;
     }
+
     DynamicJsonDocument jsonFile = readJsonFile(Filename);
     jsonFile[key] = newValue;
     bool val1 = writeJsonFile(Filename, jsonFile, "w");
@@ -1210,7 +1199,6 @@ bool Filemanager::changeJsonValueFile(const char* Filename, const char* key, con
         logger::SFLog(className, "changeJsonValueFile", message.c_str(), 2);
     #endif
     return false;
-
 }
 
 String Filemanager::readFile(const char* Filename)
@@ -1264,9 +1252,7 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
         #endif
         return {};
     }
-   
     String output = this->readFile(Filename);
-    
 
     DeserializationError error = deserializeJson(jsonDocument, output);
     if(error)
@@ -1279,7 +1265,6 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
         #endif
         return {};
     }
-    
     const char* returnVal = jsonDocument[pattern]; //pattern need quotes too! e.g pattern = "\"id\""
     #ifdef J54J6_LOGGING_H //use logging Libary if included
             String message = "Output String: ";
@@ -1484,8 +1469,6 @@ bool Filemanager::returnAsBool(const char* val)
         #endif
         return false;
     }
-    
-    
 }
 
 bool Filemanager::checkForKeyInJSONFile(const char* filename, const char* key)
@@ -1575,7 +1558,6 @@ bool Filemanager::appendJsonKey(const char* filename, const char* newKey, const 
             #endif
             return false;
         }
-
     }
     else
     {

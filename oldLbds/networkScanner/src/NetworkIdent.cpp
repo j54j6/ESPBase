@@ -383,18 +383,25 @@ void NetworkIdent::searchForService(const char* serviceName, bool generateId, IP
 
 void NetworkIdent::loop()
 {
+    //check for new Packets with UDPControl Class on <<NetworkIdentPort>>
     udpControl.run();
+
+    //if this class is Disabled - end function
     if(classDisabled)
     {
         return;
     }
+
+    //get new Packets if there are new ones - if nothing new there is an empty pack delivered
     udpPacketResolve* lastResolve = udpControl.getLastUDPPacketLoop();
+
+    //If there is any new Data -> Content != NULL -> clean all fragments delivered with the protocol -> in this Case only char until packackgeSize[n] will be readed all other are removed
     if(lastResolve->udpContent != "NULL")
     {
         lastResolve->clean(); //delete fragments at the end of document
     }
     
-
+    //If there are no new Data UDPContent=NULL -> end function
     if(lastResolve->udpContent == "NULL")
     {
         return;
@@ -409,28 +416,82 @@ void NetworkIdent::loop()
     Serial.println("---------------------------------");
     */
 
+
+    //create a Json Document from the String given in the last Resolve -> result saved in <<error>>
     DeserializationError error = deserializeJson(cacheDocument, lastResolve->udpContent);
 
+    /*
+        This part called if the incoming data doesnt have the correct syntax - most Error showing Serial is "incomplete Input"
+        
+        In this Case you only get a Warn and the function ends - if you use this port for another thins unlike NetworkIdent you can use the data properly
+    */
     if(error)
     {
+        
         #ifdef J54J6_LOGGING_H
             logger logging;
             String message = "Can't parse last UDP Content to Json - Json returned: \n!";
             message += error.c_str();
             message += "\n";
-            logging.SFLog(className, "loop", message.c_str());
+            logging.SFLog(className, "loop", message.c_str(), 1);
         #endif
         return;
     }
     else
     {
+
         //check for any constructions
+
+        /*
+            If you are here you have a correct Json Data package received
+            
+
+            Basicly this "else" block does:
+                First check if the Json Package includes:
+                    - serviceName key 
+                    - type key
+                If this is not included the function will end
+
+                If both keys are existing:
+                    Check if the "type" value is "request" or "answer"
+
+                If type is an request (type = "request")
+                    First check for own Services the device offer to others
+                    If nothing found saved services will be searched - if there is an service Matching <<serviceName>> - this will be sended
+                If type is an answer (type = "answer")
+                    Check if ID is the same sended by NetworkIdent
+                        if true:
+                            try to add the new Service data
+                        else
+                            function ends
+                    at last step:
+                        Test for Service
+        
+        */
+        if(!cacheDocument.containsKey("type") || !cacheDocument.containsKey("serviceName"))
+        {
+            //If the parsed Document does not contain "type" and "serviceName" - drop the package and end function
+
+            return;
+        }
+
+
+        //cache the Servicename to remove space in Names - because of earlier Problems i prevent double Services or basic mistakes
         String serviceNameCached = cacheDocument["serviceName"];
         serviceNameCached.replace(" ", "");
+        
+
         if(cacheDocument["type"] == "request")
         {
-            //request stuff
-            if(checkForService(cacheDocument["serviceName"]))
+            /*
+                request Section
+
+                First check for self offered Services matching the Json.serviceName
+                if not
+                check for interal saved addresses matching the json.servername
+            */
+
+           if(checkForService(cacheDocument["serviceName"]))
             {
                 #ifdef J54J6_LOGGING_H
                     
@@ -471,6 +532,7 @@ void NetworkIdent::loop()
                 
             }
             
+            
 
 
         }
@@ -500,6 +562,8 @@ void NetworkIdent::loop()
 
 /*
     Inherited overwritten functionalities
+
+    This are very Basic implementations and will be fixed / better implemented later
 */
 void NetworkIdent::startClass()
 {

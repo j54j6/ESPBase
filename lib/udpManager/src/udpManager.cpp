@@ -5,6 +5,11 @@ udpManager::udpManager(WiFiManager* wifiManager, int port)
     this->listenPort = port;
 }
 
+udpManager::~udpManager()
+{
+    udpHandler.~WiFiUDP();
+}
+
 int udpManager::getListenPort()
 {
     return listenPort;

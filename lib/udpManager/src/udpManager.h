@@ -63,6 +63,7 @@ class udpManager : public ErrorSlave {
 
     public:
         udpManager(WiFiManager* wifiManager, int port);
+        ~udpManager();
         
         //get stuff
         int getListenPort();
