@@ -25,8 +25,7 @@ bool Filemanager::checkForInit()
                     logger::SFLog(className, "checkForInit", "Can't mount Filesyste", 2);
                 #endif
                 return false;
-            }
-            
+            }   
         }
         else
         {
@@ -34,8 +33,7 @@ bool Filemanager::checkForInit()
                     logger::SFLog(className, "checkForInit", "AutoFix disabled - SKIP");
             #endif
             return false;
-        }
-        
+        }   
     }
     return true;
 }
@@ -97,7 +95,6 @@ bool Filemanager::begin()
             this->init = false;
             return false;
         }
-        
     }
     #ifdef J54J6_LOGGING_H //use logging Libary if included
         logger::SFLog(className, "begin", "undefined - unexcepted Jump! \n further assistance needed", 2);
@@ -555,8 +552,7 @@ bool Filemanager::fDelete(const char* path)
                 logger::SFLog(className, "fDelete", "can't remove File - undefined Error - implemented soon :)");
             #endif
             return false;
-        }
-        
+        } 
     }
     else
     {
@@ -1537,7 +1533,6 @@ bool Filemanager::appendJsonKey(const char* filename, const char* newKey, const 
         Serial.println(data);
         Serial.println("--------------------------------");
         */
-
 
         if(!data.isEmpty())
         {

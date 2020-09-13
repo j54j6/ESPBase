@@ -98,8 +98,7 @@ String ServiceHandler::formatComMessage(bool request, bool generateId, String se
             output += "\"id\" : \"";
             output += id;
             output += "\"}";
-        }
-        
+        } 
     }
     /*
     Serial.println("Output String: ");
@@ -182,7 +181,7 @@ bool ServiceHandler::createInternalServicesBasicConfigFile()
 
 void ServiceHandler::handleRequests()
 {
-
+    return;
 }
 
 ulong ServiceHandler::getLastGeneratedId()
@@ -277,7 +276,6 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
                 #endif
                 return false;
             }
-
         }
         else
         {
@@ -287,7 +285,6 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
             #endif
             return false;
         }
-
     }
     else
     {
@@ -340,8 +337,7 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
                 logging.SFLog(className, "addService", "Can't add Service - one or more parameter not set!", 1);
             #endif
             return false;
-        }
-        
+        }   
     }
     return false;
 }
@@ -921,7 +917,6 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
                 logger logging;
                 logging.SFLog(className, "checkForService", "Can't check for internal Service - serviceFile doesn't exist!", 2);
             #endif
-
         }
         if(!skip)
         {
@@ -1092,7 +1087,6 @@ void ServiceHandler::loop()
         return;
     }
     
-    
     //for debug only
     /*
     Serial.println("---------------------------------");
@@ -1100,7 +1094,6 @@ void ServiceHandler::loop()
     Serial.println(lastResolve->udpContent);
     Serial.println("---------------------------------");
     */
-
 
     //create a Json Document from the String given in the last Resolve -> result saved in <<error>>
     DeserializationError error = deserializeJson(udpLastReceivedDataDocument, lastResolve->udpContent);
@@ -1112,7 +1105,6 @@ void ServiceHandler::loop()
     */
     if(error)
     {
-        
         #ifdef J54J6_LOGGING_H
             logger logging;
             String message = "Can't parse last UDP Content to Json - Json returned: \n!";
@@ -1124,7 +1116,6 @@ void ServiceHandler::loop()
     }
     else
     {
-
         //check for any constructions
 
         /*
@@ -1200,7 +1191,6 @@ void ServiceHandler::loop()
                         fmsg = formatComMessage(false, false, udpLastReceivedDataDocument["serviceName"], getServiceMAC(udpLastReceivedDataDocument["serviceName"]), getServiceIP(udpLastReceivedDataDocument["serviceName"]).toString() , FM->readJsonFileValue(externalServicesPath, serviceNameCached.c_str()));
                         udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
                     }
-                    
                 }
                 else
                 {
@@ -1230,10 +1220,8 @@ void ServiceHandler::loop()
                     message += serviceNameCached;
                     message += "doesn't exist - return nothing";
                     logging.SFLog(className, "loop", message.c_str(), 1);
-                #endif
-                
+                #endif 
             }   
-
         }
         else if(udpLastReceivedDataDocument["type"] == "answer")
         {
@@ -1252,7 +1240,6 @@ void ServiceHandler::loop()
                 logging.SFLog(className, "loop", message.c_str(), 1);
             #endif
         }
-        
     }
     return;
 }

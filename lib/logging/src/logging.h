@@ -60,7 +60,7 @@ class logger {
     public:
         logger()
         {
-
+            return;
         }
 
         static void SFLog(const char* className, const char* function, const char* message, int prio = 0)

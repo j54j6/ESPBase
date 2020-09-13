@@ -131,8 +131,6 @@ class Network : public ErrorSlave
        
 
     public:
-
-
         Network(Filemanager* FM, WiFiManager* wifiManager);
         Network(Filemanager* FM, WiFiManager* wifiManager, LED* wifiLed);
         

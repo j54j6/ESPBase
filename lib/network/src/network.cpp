@@ -329,7 +329,6 @@ bool Network::startDnsServer() //fkt Nr 5 / direct called in startup
         #endif
         return true;
     }
-    
 }
 
 bool Network::startMDnsServer(const char* newHostname) //fkt Nr. 4 / direct called in startup
@@ -361,8 +360,7 @@ bool Network::startMDnsServer(const char* newHostname) //fkt Nr. 4 / direct call
         error.message = "Can't Start MDNS Server";
         error.priority = 2;
         return false;
-    }
-    
+    }  
 }
 
 void Network::internalControl() //At this time only for performance checking
@@ -390,8 +388,7 @@ void Network::autoResetLock() //internal useage of delay() as sim. threading alt
                 logger logging;
                 logging.SFLog(className, "autoResetLock", "unlock run!");
             #endif
-            return;
-            
+            return;           
         }
         else
         {
@@ -451,8 +448,7 @@ void Network::internalBegin()
                 #ifdef J54J6_LOGGING_H
                     logging.SFLog(className, "internalBegin", "configFile can't be created!", 1);
                 #endif
-            }
-            
+            } 
         }
         if(!FM->fExist(configFile))
         {
@@ -496,8 +492,7 @@ void Network::internalBegin()
                 #ifdef J54J6_LOGGING_H 
                     logging.SFLog(className, "internalBegin", "setupFile can't be created!", 1);
                 #endif
-            }
-            
+            } 
         }
         if(!FM->fExist(setupFile))
         {
@@ -893,7 +888,6 @@ void Network::run()
     }
     this->lastCall = millis();
     return;
-    
 }
 
 

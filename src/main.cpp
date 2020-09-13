@@ -26,7 +26,6 @@ void handleTest()
    ESP8266WebServer* webserver = test.getWebserver();
 
    webserver->send(200, "text/plain", "Das ist eine Testnachricht");
-
 }
 
 
@@ -58,7 +57,6 @@ void getPerformance()
     #endif
     lastCall = millis();
   }
-
 }
 
 void setup() {
@@ -114,13 +112,11 @@ void loop() {
   //wifiManager
   wifiManager.run();
 
-
   //dedicated ErrorHandler
   errorHandle();
 
   //performanceControl
   //getPerformance();
-
 
   //NetworkIdent
   networkIdent.loop();

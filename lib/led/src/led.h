@@ -28,7 +28,6 @@ class LED {
         struct ledConfig {
             int led_Pin;
             bool state;
-    
         };
 
         static bool ledEnabled; 
