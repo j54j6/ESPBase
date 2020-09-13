@@ -1,4 +1,6 @@
 # ESPBase
+[![CodeFactor](https://www.codefactor.io/repository/github/j54j6/espbase/badge)](https://www.codefactor.io/repository/github/j54j6/espbase)
+
 This project is not finished yet
 
 Current dev in dev_linearWeb!
