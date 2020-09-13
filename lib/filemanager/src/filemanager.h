@@ -19,9 +19,11 @@
             void space(int number);
             int getNumberOfFiles(String path);
             void recursive(String path);
+            
         protected:
             File internalFileHandle;
             Dir actualDir;
+
         public: 
             bool error = false;
             
