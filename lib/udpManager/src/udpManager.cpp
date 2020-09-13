@@ -95,8 +95,6 @@ void udpManager::sendUdpMessage(const char* workload, IPAddress ip, int port)
                 logging.SFLog(className, "sendUdpMessage", "Can't send UDP Message - beginPacket - return false (0)", 2);
             #endif
         }
-        
-        
     }
     else
     {
