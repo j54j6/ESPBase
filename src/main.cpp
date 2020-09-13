@@ -4,8 +4,7 @@
 #include "network.h"
 #include "led.h"
 #include "button.h"
-#include "NetworkIdent.h"
-#include "externServiceHandler.h"
+#include "serviceHandler.h"
 #include "../lib/network/webSrc/setupPage.h"
 
 
@@ -17,11 +16,10 @@ WiFiManager wifiManager(&wifiLed);
 Filemanager FM;
 Network test(&FM, &wifiManager);
 ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
-NetworkIdent networkIdent(&FM, &wifiManager);
+ServiceHandler networkIdent(&FM, &wifiManager);
 
 udpManager udpManage(&wifiManager, 63547);
 
-ExternServiceHandler extServices(&FM, &wifiManager, &networkIdent);
 
 void handleTest()
 {
@@ -126,7 +124,4 @@ void loop() {
 
   //NetworkIdent
   networkIdent.loop();
-
-  //external Service Handler
-  extServices.loop();
 }

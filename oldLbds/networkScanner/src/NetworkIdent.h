@@ -11,6 +11,7 @@
 #include "filemanager.h"
 #include "wifiManager.h"
 #include "udpManager.h"
+#include "externServiceHandler.h"
 
 
 typedef std::function<void()> handlerFunction;

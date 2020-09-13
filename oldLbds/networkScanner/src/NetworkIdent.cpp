@@ -491,8 +491,46 @@ void NetworkIdent::loop()
                 check for interal saved addresses matching the json.servername
             */
 
-           bool selfOfferedServices = checkForService(cacheDocument["serviceName"]);
-           bool savedServiceAddresses = 
+           if(checkForService(cacheDocument["serviceName"]))
+            {
+                #ifdef J54J6_LOGGING_H
+                    
+                    logger logging;
+                    String message = "Service ";
+                    message += serviceNameCached;
+                    message += "exist - return true";
+                    logging.SFLog(className, "loop", message.c_str(), 1);
+                #endif
+                
+                String fmsg;
+                if(!cacheDocument.containsKey("id"))
+                {
+                    fmsg = formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress(), wifiManager->getLocalIP(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()));
+                    udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                }
+                else
+                {
+                    fmsg = formatMessage(false, true, cacheDocument["serviceName"], WiFi.macAddress(), wifiManager->getLocalIP(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str()), cacheDocument["id"]);
+                    udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                }
+                /*
+                Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                Serial.println(fmsg);
+                Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                //udpControl.sendUdpMessage(formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str())).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                */
+            }
+            else
+            {
+                #ifdef J54J6_LOGGING_H
+                    logger logging;
+                    String message = "Service ";
+                    message += serviceNameCached;
+                    message += "doesn't exist - return nothing";
+                    logging.SFLog(className, "loop", message.c_str(), 1);
+                #endif
+                
+            }
             
             
 

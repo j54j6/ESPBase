@@ -15,6 +15,48 @@
 #include "wifiManager.h" //control of Wifi Interface
 #include "udpManager.h" //udp Manager to control and receive UDP connection/packets
 
+/*
+    networkSearchCacheValueHolder
+    This struct is only used to cache all values of Network Search - funcion "autoAdd"
+
+    only for internal useage
+*/
+struct networkSearchCacheValueHolder {
+    const char* serviceName = "n.S";
+    int searchType = 0; // 0 = nothing, 1 = ip, 2 = port, 3 = mac, 4 - autoAdd
+    long id = 0;
+    ulong createdAt = 0;
+    int deleteAfter = 20000; //10 seconds default delay
+    bool isFallback = false;
+    
+    void reset() {
+        searchType = 0;
+        serviceName = "n.S";
+        id = 0;
+        createdAt = 0;
+        isFallback = false;
+
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog("Struct - networkSearchCacheValueHolder", "reset", "reset ServiceRequestCacheStruct", 0);
+        #endif
+    }
+
+    void loop()
+    {
+        if(strcmp(serviceName, "n.S") == 0)
+        {
+            return;
+        }
+        if(millis() >= (createdAt + deleteAfter) && strcmp(this->serviceName, "n.S") != 0)
+        {
+            reset();
+        }
+    }
+};
+
+
+
 
 /*
     ServiceHandler Class
@@ -71,6 +113,7 @@
     ####################################
         externalServiceJson Scheme
     ####################################
+        INFO: external Services devided into single Files (max. 2 per Service (mainCFG and Fallback))
     JSON-Format:
     {
         "ip" : "<<Address>>",
@@ -79,6 +122,22 @@
     }
 
 */
+
+/*
+    ####################################
+      internalOfferedServiceJson Scheme
+    ####################################
+        INFO: all offered Services are registered in one Single File - appended every time a new Service will be added
+                the Filename is static defined
+        
+    JSON-Format:
+    {
+        "serviceName" : "port",
+        "serviceName2" : "port2", 
+        [...]
+    }
+
+*/    
 
 /*
     ##############################################
@@ -95,52 +154,165 @@
     }
 */
 
-class serviceHandler : public ErrorSlave
+class ServiceHandler : public ErrorSlave
 {
     private:
         //internal Class Stuff
         const char* className = "serviceHandler"; //for Logging (class Logger.h)
-        
+        bool classDisabled = false;
 
+
+        //config of Class
+        int networkIdentPort = 63547;
+        int timeoutAfterAutoAddWillEnd = 10000;
+        const char* serviceConfigBlueprint[1][2] = {{"NetworkIdent", "63547"}}; //port of network scanner - basic Configuration
+
+
+        /*  
+            autoAddRUnning
+                used for audoAdd function to init autoAdd or use the inherited loopFunction to resolve and use received answers
+        */
+        bool autoAddRunning = false;
+        
+        //File paths
         const char* offeredServicesPath = "/config/networkIdent/services.json"; //saved in one File as JSON -  {serviceName : port , serviceName : port , ...}
         const char* externalServicesPath = "/config/serviceHandler/registered/"; //saved in multipleFiles - every Service has its own File with the name <<serviceName>>.json or <<serviceName>>-fallback.json
+
+        //caching for internalClass Stuff
+        long lastId = 0;
+
+        //saves the last fetched Data from UDP Manager
+        StaticJsonDocument<425> udpLastReceivedDataDocument;
+
+        //save all Values for autoAdd loop
+        networkSearchCacheValueHolder lastAutoAddRequest;
+
+        //internal Handler
+        Filemanager* FM;
+        WiFiManager* wifiManager;
+        udpManager udpControl = udpManager(this->wifiManager, this->networkIdentPort);
 
     protected:
         //internal helper functions
 
+        /*
+            Preformat and returns a formatted message to send and use with NetworkIdent
+
+            if request = true
+                you will send an request, you need to add an serviceName if not there will be "notSet" as Service
+            if request = false
+                yoou will send an answerMessage for a request - in this case you don't need a serviceName, it will be dropped
+
+            if generateId = true
+                there will be an id appenden out of millis() + random(int) to use multiple requests the same time by the id you can difference it e.g if you want multiple devices for the same service (implemented later)
+
+        */
+        String formatComMessage(bool request = false, bool generateId = false, String serviceName = "n.S", String MAC = "n.S", String ip = "n.S", String port = "-1", String id = "n.S");
+
+        /*
+            return the correct Filename to use with LittleFS - only helper function
+
+            if fallback = false
+                mainCFG File of ServiceName will returned
+            else
+                FallbackCFG File will returned 
+
+            This function doesn't check for existence of the specified File - it only creates the correct path
+        */
+        String getExternalServiceFilename(const char* serviceName, bool fallback = false);
+
+        //create the "Basic Internal offered Services File " - content is only this as a Service (NetworkIdent@Port:63547)
+        bool createInternalServicesBasicConfigFile();
+
+        //added in loop to handle incoming messages
+        void handleRequests(); 
+
+        ulong getLastGeneratedId();
+        StaticJsonDocument<425> getLastData();
 
 
     public:
         //Constructo / Destructor
-        serviceHandler(Filemanager* FM, WiFiManager* wifiManager);
-        ~serviceHandler();
+        ServiceHandler(Filemanager* FM, WiFiManager* wifiManager);
+        ~ServiceHandler();
 
         //Basic Control
+        bool beginListen();
+        void stopListen();
 
+
+        //serviceManagement
+        /*
+            addService
+                if selfOffered = true
+                    only serviceName and port need to be added - other parameter will ignored
+                else
+                    all parameters are needed
+
+                DEV-INF:
+                    Auto assign MAC Address need to be added! - V1.2
+        */
+        bool addService(bool selfOffered = true, bool fallback = false, const char* serviceName = "n.S", const char* port = "-1", IPAddress ip = IPAddress(0,0,0,0));
+
+        /*
+            Search in Network for other devices - saved <<serviceName>> and try add CFG for this service
+            -> only external Services can be added this way - but i think i don't need to explain here why^^
+
+
+            res:
+                0 = no Networkdevice found with specified service (no device in network or no connection)
+                1 = device found and added (success)
+                2 = device found but service can't be added
+        */
+        short autoAddService(const char* serviceName);
+
+
+
+        /*
+            delService
+                if selfOffered = true
+                    only serviceName is needed - other params will be ignored
+                else
+                    if fallback = true
+                        only the fallback CFG of external Service will be deleted
+                    else
+                        only the mainCFG of external Serivce will be deleted
+        */
+        bool delService(const char* serviceName, bool selfOffered = false, bool fallback = false);
 
 
         //get Stuff
-        //  for internal useage to get Addresses and Ports
-        IPAddress getServiceIP(const char* serviceName);
-        String getServiceMAC(const char* serviceName);
-        int getServicePort(const char* serviceName);
+        //  for internal useage to get Address and Port of specified external Services
 
-        
-        //savedServiceControl
         /*
-            delService
-                Delete a saved Service
-                if <<internal>> true
-                    -> it removes the specified key
-                if <<internal>> false
-                    -> it removes an external Service (only the specified config - not main and fallback)
-
-                fallback will ignored if <<internal>> is true - 
-                    if <<internal>> is false
-                    you will delete the file matching the parameters
+            getServiceIP
+                on success: return IPAddress
+                on fail: return IP(0,0,0,0)
         */
-        bool delService(const char* serviceName, bool delInternalService = true, bool delFallbackConfig = false);
+        IPAddress getServiceIP(const char* serviceName, bool fallback = false);
 
+        /*
+            getServiceMAC
+                onSuccess: return MAC
+                onFail: return "failed"
+        */
+        String getServiceMAC(const char* serviceName, bool fallback = false);
+
+        /*
+            getServicePort
+                onSuccess: return port
+                onFail: return -1
+        */
+        int getServicePort(const char* serviceName, bool fallback = false);
+        
+        /*
+            CheckForService
+                res = 0 -> service doesn't exist
+                res = 1 -> internal Service (self offered)
+                res = 2 -> external Service
+                res = 3 -> found as internal and external
+        */
+        short checkForService(const char* serviceName, bool onlyExternal = false);
 
         /*
             changeConfigValue
@@ -158,7 +330,10 @@ class serviceHandler : public ErrorSlave
         */
         bool changeConfigValue(const char* serviceName, const char* toChangeKey, const char* newValue, bool changeInternalService = true, bool changeFallback = false);
 
-
+        /*
+            Search for Service
+        */
+       void searchForService(const char* serviceName, bool generateId = true, IPAddress ip = IPAddress(255,255,255,255), int port = 63547);
 
         //loop
         void loop();
@@ -166,7 +341,7 @@ class serviceHandler : public ErrorSlave
         /*
         Inherited ErrorHandling
 
-        This are very Basic implementations and will be fixed / better implemented later
+        These are very Basic implementations and will be fixed / better implemented later
        */
         void startClass();
         void stopClass();
