@@ -11,8 +11,6 @@
  bool change; //only run 
  unsigned long nextCall = 0;
  unsigned long nextToggle = 0;
-
-
 */
 
  bool LED::ledEnabled;
@@ -100,8 +98,7 @@
     {
         digitalWrite(led_Pin, LOW);
     }
-
- }
+}
 
 void LED::getVars()
 {
@@ -170,9 +167,9 @@ void LED::getVars()
       this->intervall = 0;
       this->change = true;
       digitalWrite(led_Pin, LOW);
-    }
-     
+    } 
  }
+
  void LED::blink(unsigned short newIntervall, bool blinkInfinit, int amount)
  {
      this->blinkAmount = amount + amount;
@@ -180,6 +177,7 @@ void LED::getVars()
      this->change = true;
      setLedBlink(newIntervall);
  }
+
  void LED::toggleLed(bool changeNew)
  {
      /*
