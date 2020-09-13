@@ -10,6 +10,5 @@ class performanceIndicator {
 
     public:
         ulong getCallPerSecond();
-
 };
 #endif
