@@ -96,7 +96,7 @@ void setup() {
   networkIdent.beginListen();
 
   networkIdent.addService("NetworkIdent", "63547");
-  //networkIdent.addService(true, false, "mqttConfigServer", 61500);
+  //networkIdent.addService(true, false, "mqttConfigServer", "61500");
 }
 
 void loop() {
