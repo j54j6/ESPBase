@@ -96,6 +96,7 @@ void setup() {
   networkIdent.beginListen();
 
   networkIdent.addService("NetworkIdent", "63547");
+  //networkIdent.addService(true, false, "mqttConfigServer", 61500);
 }
 
 void loop() {
@@ -120,4 +121,14 @@ void loop() {
 
   //NetworkIdent
   networkIdent.loop();
+
+  /*
+  static int counter = 0;
+  if(counter == 0 && millis() > 5000)
+  {
+    Serial.println("Search for Service");
+    networkIdent.autoAddService("mqttConfigServer");
+    counter++;
+  }
+  */
 }

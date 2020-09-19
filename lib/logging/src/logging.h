@@ -12,7 +12,7 @@ class logger {
     private:
         int baudrate = 115200;
         bool serialLogging = true;
-        int logLevel = 0;
+        int logLevel = -1;
 
 
 
@@ -26,6 +26,8 @@ class logger {
         {
             switch(prio)
             {
+                case -1:
+                    return "DEBUG";
                 case 1:
                     return "WARN";
                     break;

@@ -264,7 +264,7 @@ class ServiceHandler : public ErrorSlave
                 1 = device found and added (success)
                 2 = device found but service can't be added
         */
-        short autoAddService(const char* serviceName);
+        short autoAddService(const char* serviceName = "n.S");
 
 
 

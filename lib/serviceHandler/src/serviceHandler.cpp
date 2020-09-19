@@ -344,7 +344,7 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
 
 short ServiceHandler::autoAddService(const char* serviceName)
 {
-    if(!autoAddRunning && strcmp(serviceName, "n.S") != 0) //init. autoAdd and set all Variables
+    if(!autoAddRunning && strcmp(serviceName, "n.S") != 0 && strcmp(lastAutoAddRequest.serviceName, "n.S") == 0) //init. autoAdd and set all Variables
     {
         //check if service already is registered - main Cfg
         if(!FM->fExist(getExternalServiceFilename(serviceName).c_str()))
@@ -446,6 +446,13 @@ short ServiceHandler::autoAddService(const char* serviceName)
             }
             else
             {
+                /*
+                #ifdef J54J6_LOGGING_H
+                    logger logging;
+                    logging.SFLog(className, "autoAddService", "Received useable Packet", -1);
+                #endif
+
+                */
                 //lastReceived Packet does contain all needed keys to create a new Service - check for id and serviceName
                 String castedLastRequestID = String(lastAutoAddRequest.id);
                 String castedLastReceivedID = lastFetched["id"];
@@ -1070,6 +1077,12 @@ void ServiceHandler::loop()
     if(classDisabled)
     {
         return;
+    }
+
+    if(autoAddRunning)
+    {
+        autoAddService();
+        lastAutoAddRequest.loop();
     }
 
     //get new Packets if there are new ones - if nothing new there is an empty pack delivered

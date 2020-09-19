@@ -77,6 +77,20 @@ void udpManager::sendUdpMessage(const char* workload, IPAddress ip, int port)
             udpHandler.write(workload);
             udpHandler.endPacket();
         
+
+            #ifdef J54J6_LOGGING_H
+                logger logging;
+                String message = "------------------------------\n";
+                message += "IP: ";
+                message += ip.toString();
+                message += "\nPort: ";
+                message += port;
+                message += "\nWorkload: ";
+                message += workload;
+                message += "\n------------------------------\n";
+                logging.SFLog(className, "sendUdpMessage", message.c_str(), -1);
+            #endif
+
             /*
             Serial.println("------------------------------");
             Serial.print("IP: ");
@@ -126,6 +140,26 @@ void udpManager::run()
             lastContent.paketSize = packetSize;
             lastContent.remoteIP = udpHandler.remoteIP();
             lastContent.remotePort = udpHandler.remotePort();
+
+            
+            if(lastContent.udpContent != "NULL")
+            {
+                #ifdef J54J6_LOGGING_H
+                    logger logging;
+
+                    String message = "\n.............\n";
+                    message += "Address: \n";
+                    message += lastContent.remoteIP.toString().c_str();
+                    message += "\nPort: ";
+                    message += lastContent.remotePort;
+                    message += "\nPacket Size: ";
+                    message += lastContent.paketSize;
+                    message += "\nContent: ";
+                    message += lastContent.udpContent;
+                    message += ".............";
+                    logging.SFLog(className, "sendUdpMessage", "Can't send UDP Message - no Network!", -1);
+                #endif
+            }
 
             char cacheUDP[512];
             int numbersReaded = udpHandler.read(cacheUDP, 512);
