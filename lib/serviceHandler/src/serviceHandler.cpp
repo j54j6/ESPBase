@@ -1194,6 +1194,11 @@ void ServiceHandler::loop()
                 String fmsg;
                 if(!udpLastReceivedDataDocument.containsKey("id"))
                 {
+                    #ifdef J54J6_LOGGING_H
+                        logger logging;
+                        logging.SFLog(className, "loop", "No ID will generated/added", -1);
+                    #endif
+
                     if(checkForService(udpLastReceivedDataDocument["serviceName"]) == 1 || checkForService(udpLastReceivedDataDocument["serviceName"]) == 3)
                     {
                         fmsg = formatComMessage(false, false, udpLastReceivedDataDocument["serviceName"], WiFi.macAddress(), wifiManager->getLocalIP(), FM->readJsonFileValue(offeredServicesPath, serviceNameCached.c_str()));
@@ -1207,6 +1212,11 @@ void ServiceHandler::loop()
                 }
                 else
                 {
+                    #ifdef J54J6_LOGGING_H
+                        logger logging;
+                        logging.SFLog(className, "loop", "ID will generated", -1);
+                    #endif
+                    
                     if(checkForService(udpLastReceivedDataDocument["serviceName"]) == 1 || checkForService(udpLastReceivedDataDocument["serviceName"]) == 3)
                     {
                         fmsg = formatComMessage(false, true, udpLastReceivedDataDocument["serviceName"], WiFi.macAddress(), wifiManager->getLocalIP(), FM->readJsonFileValue(offeredServicesPath, serviceNameCached.c_str()));
