@@ -5,6 +5,7 @@
 #include "led.h"
 #include "button.h"
 #include "serviceHandler.h"
+#include "j54j6Mqtt.h"
 #include "../lib/network/webSrc/setupPage.h"
 
 
@@ -19,6 +20,7 @@ ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
 ServiceHandler networkIdent(&FM, &wifiManager);
 
 udpManager udpManage(&wifiManager, 63547);
+J54J6_MQTT mqttClient(&FM, &wifiManager);
 
 
 void handleTest()
@@ -89,14 +91,16 @@ void setup() {
   test.begin();
 
   //add webservice to webserver@Network
-  test.addService("/new", handleTest);
-  test.startWebserver(80);
+  //test.addService("/new", handleTest);
+  //test.startWebserver(80);
 
   //start Listening on UDP-NetworkIdentPort
   networkIdent.beginListen();
 
   networkIdent.addService("NetworkIdent", "63547");
-  //networkIdent.addService(true, false, "mqttConfigServer", "61500");
+  networkIdent.addService(true, false, "mqttConfigServer", "61500");
+
+  mqttClient.begin(IPAddress(192,168,178,25));
 }
 
 void loop() {
@@ -122,12 +126,11 @@ void loop() {
   //NetworkIdent
   networkIdent.loop();
 
-  
-  static int counter = 0;
-  if(counter == 0 && millis() > 5000)
+  //MQTT Handler
+  mqttClient.run();
+
+  if(test.getDeviceIsConfigured())
   {
-    Serial.println("Search for Service");
-    networkIdent.autoAddService("mqttConfigServer");
-    counter++;
+    
   }
 }

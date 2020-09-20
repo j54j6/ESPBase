@@ -37,6 +37,7 @@ class J54J6_MQTT : public ErrorSlave {
         //Init MQTTClient - start listener
         void begin(const char* hostname);
         void begin(const char* hostname, int port = 1883);
+        void begin(IPAddress host, int port = 1883);
 
 
         //Destruct

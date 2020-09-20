@@ -113,7 +113,7 @@ class ErrorHandler {
                             Report if n >= _level -> with ReportTypes defiend below
                         */
 
-        bool opticalOnWarn = true; //set Optical message when ErrorSlave::classErrorReport.error = false and ErrorSlave::classErrorReport.priority > _level
+        bool opticalOnWarn = false; //set Optical message when ErrorSlave::classErrorReport.error = false and ErrorSlave::classErrorReport.priority > _level
         bool SerialOnWarn = true; //Serial Message when ErrorSlave::classErrorReport.error = false and ErrorSlave::classErrorReport.priority > _level
 
     public:

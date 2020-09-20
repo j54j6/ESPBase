@@ -146,6 +146,8 @@ class Network : public ErrorSlave
         //get Stuff
         ulong getCallPerSecond();
         bool getClassDisabled();
+        bool getDeviceIsConfigured() { return deviceConfigured;};
+
 
         //set Stuff
         void setClassDisabled(bool newVal);

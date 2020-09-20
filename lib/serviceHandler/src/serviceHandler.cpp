@@ -701,7 +701,8 @@ bool ServiceHandler::delService(const char* serviceName, bool selfOffered, bool 
         cacheDocument = FM->readJsonFile(offeredServicesPath);
 
         cacheDocument.remove(serviceName);
-
+        cacheDocument.~BasicJsonDocument();
+        
         if(checkForService(serviceName))
         {
             #ifdef J54J6_LOGGING_H
@@ -746,21 +747,25 @@ bool ServiceHandler::delService(const char* serviceName, bool selfOffered, bool 
 
 IPAddress ServiceHandler::getServiceIP(const char* serviceName, bool fallback)
 {
-    IPAddress ip;
+    IPAddress returnIp;
     if(!fallback)
     {
-        if(ip.fromString(String(FM->readJsonFileValue(getExternalServiceFilename(serviceName).c_str(), "ip"))))
+        DynamicJsonDocument cacheDoc(425);
+        cacheDoc = FM->readJsonFile(getExternalServiceFilename(serviceName, fallback).c_str());
+        String ipCached = cacheDoc["ip"];
+        if(returnIp.fromString(ipCached))
         {
             #ifdef J54J6_LOGGING_H
                 logger logging;
                 String message = "returned IP for Service \"";
                 message += serviceName;
                 message += "\" with IP \"";
-                message += ip.toString();
+                message += returnIp.toString();
                 message += "\" - success";
                 logging.SFLog(className, "getServiceIP", message.c_str());
             #endif 
-            return ip;
+            cacheDoc.~BasicJsonDocument();
+            return returnIp;
         }
         else
         {
@@ -773,24 +778,24 @@ IPAddress ServiceHandler::getServiceIP(const char* serviceName, bool fallback)
     }
     else
     {
-        if(ip.fromString(String(FM->readJsonFileValue(getExternalServiceFilename(serviceName, true).c_str(), "ip"))))
+        if(returnIp.fromString(String(FM->readJsonFileValue(getExternalServiceFilename(serviceName, true).c_str(), "ip"))))
         {
             #ifdef J54J6_LOGGING_H
                 logger logging;
-                String message = "returned IP for Service \"";
+                String message = "returned fallback IP for Service \"";
                 message += serviceName;
                 message += "\" with IP \"";
-                message += ip.toString();
+                message += returnIp.toString();
                 message += "\" - success";
                 logging.SFLog(className, "getServiceIP", message.c_str());
             #endif 
-            return ip;
+            return returnIp;
         }
         else
         {
             #ifdef J54J6_LOGGING_H
                 logger logging;
-                logging.SFLog(className, "getServiceIP", "Can't read IP! - return errorIP", 2);
+                logging.SFLog(className, "getServiceIP", "Can't read fallback IP! - return errorIP", 2);
             #endif 
             return IPAddress(0,0,0,0);
         }
