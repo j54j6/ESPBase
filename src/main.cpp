@@ -122,7 +122,7 @@ void loop() {
   //NetworkIdent
   networkIdent.loop();
 
-  /*
+  
   static int counter = 0;
   if(counter == 0 && millis() > 5000)
   {
@@ -130,5 +130,5 @@ void loop() {
     networkIdent.autoAddService("mqttConfigServer");
     counter++;
   }
-  */
+  
 }

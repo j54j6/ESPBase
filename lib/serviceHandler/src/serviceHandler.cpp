@@ -1192,7 +1192,7 @@ void ServiceHandler::loop()
                 #endif
                 
                 String fmsg;
-                if(!udpLastReceivedDataDocument.containsKey("id"))
+                if(udpLastReceivedDataDocument.containsKey("id"))
                 {
                     #ifdef J54J6_LOGGING_H
                         logger logging;
