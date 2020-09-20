@@ -1201,7 +1201,7 @@ void ServiceHandler::loop()
 
                     if(checkForService(udpLastReceivedDataDocument["serviceName"]) == 1 || checkForService(udpLastReceivedDataDocument["serviceName"]) == 3)
                     {
-                        fmsg = formatComMessage(false, false, udpLastReceivedDataDocument["serviceName"], WiFi.macAddress(), wifiManager->getLocalIP(), FM->readJsonFileValue(offeredServicesPath, serviceNameCached.c_str()), udpLastReceivedDataDocument["id");
+                        fmsg = formatComMessage(false, false, udpLastReceivedDataDocument["serviceName"], WiFi.macAddress(), wifiManager->getLocalIP(), FM->readJsonFileValue(offeredServicesPath, serviceNameCached.c_str()), udpLastReceivedDataDocument["id"]);
                         udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
                     }
                     else
