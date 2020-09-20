@@ -205,7 +205,7 @@ class ServiceHandler : public ErrorSlave
 
             if generateId = true
                 there will be an id appenden out of millis() + random(int) to use multiple requests the same time by the id you can difference it e.g if you want multiple devices for the same service (implemented later)
-
+                otherwise if you preDefine an ID (id != n.S) the given ID will used
         */
         String formatComMessage(bool request = false, bool generateId = false, String serviceName = "n.S", String MAC = "n.S", String ip = "n.S", String port = "-1", String id = "n.S");
 
