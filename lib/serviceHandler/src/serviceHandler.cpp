@@ -55,13 +55,9 @@ String ServiceHandler::formatComMessage(bool request, bool generateId, String se
 
         logging.SFLog(className, "formatMessage", message.c_str(), -1);
     #endif 
-    
-
 
     long genId = millis() + random(20, 2145895698);
     lastId = genId;
-
-
 
     String output = "{\"type\" : \"";
     if(request)
