@@ -201,7 +201,7 @@ class ServiceHandler : public ErrorSlave
             if request = true
                 you will send an request, you need to add an serviceName if not there will be "notSet" as Service
             if request = false
-                yoou will send an answerMessage for a request - in this case you don't need a serviceName, it will be dropped
+                you will send an answerMessage for a request - in this case you don't need a serviceName, it will be dropped
 
             if generateId = true
                 there will be an id appenden out of millis() + random(int) to use multiple requests the same time by the id you can difference it e.g if you want multiple devices for the same service (implemented later)
