@@ -1196,18 +1196,20 @@ void ServiceHandler::loop()
                 {
                     #ifdef J54J6_LOGGING_H
                         logger logging;
-                        logging.SFLog(className, "loop", "No ID will generated/added", -1);
+                        logging.SFLog(className, "loop", "ID will be appended", -1);
                     #endif
 
                     if(checkForService(udpLastReceivedDataDocument["serviceName"]) == 1 || checkForService(udpLastReceivedDataDocument["serviceName"]) == 3)
                     {
-                        fmsg = formatComMessage(false, false, udpLastReceivedDataDocument["serviceName"], WiFi.macAddress(), wifiManager->getLocalIP(), FM->readJsonFileValue(offeredServicesPath, serviceNameCached.c_str()));
+                        fmsg = formatComMessage(false, false, udpLastReceivedDataDocument["serviceName"], WiFi.macAddress(), wifiManager->getLocalIP(), FM->readJsonFileValue(offeredServicesPath, serviceNameCached.c_str()), udpLastReceivedDataDocument["id");
                         udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
                     }
                     else
                     {
+                        /*
                         fmsg = formatComMessage(false, false, udpLastReceivedDataDocument["serviceName"], getServiceMAC(udpLastReceivedDataDocument["serviceName"]), getServiceIP(udpLastReceivedDataDocument["serviceName"]).toString() , FM->readJsonFileValue(externalServicesPath, serviceNameCached.c_str()));
                         udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                        */
                     }
                 }
                 else
@@ -1224,8 +1226,10 @@ void ServiceHandler::loop()
                     }
                     else
                     {
+                        /*
                         fmsg = formatComMessage(false, true, udpLastReceivedDataDocument["serviceName"], getServiceMAC(udpLastReceivedDataDocument["serviceName"]), getServiceIP(udpLastReceivedDataDocument["serviceName"]).toString() , FM->readJsonFileValue(externalServicesPath, serviceNameCached.c_str()));
                         udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                        */
                     }
                 }
                 /*
