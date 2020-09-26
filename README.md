@@ -11,6 +11,9 @@ A little Sketch to Handle all common things for you like Network (WiFi, DNS, MDN
 
 If you find any bugs please report it, i'll fix it as fast as possible... This is my private project in a very early state, i might change some functionalities but i try to add and change all features without changing the general function, you dont need any changes if i update my Baseprogram, only new functionalities or parameters will change. Only if there is no other way than a complete change e.g security fixes i will change complete interfaces but in this case i will write it in README and ChangeLog
 
+priority work:
+    -> Add @PJON to this project as NetworkBase
+
 postponed work:
 
     -> switch from linear Webserver to Async Webserver (branch: dev)
