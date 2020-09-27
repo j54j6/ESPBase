@@ -5,7 +5,6 @@
 #include "led.h"
 #include "button.h"
 #include "serviceHandler.h"
-#include "j54j6Mqtt.h"
 #include "../lib/network/webSrc/setupPage.h"
 
 
@@ -20,14 +19,13 @@ ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
 ServiceHandler networkIdent(&FM, &wifiManager);
 
 udpManager udpManage(&wifiManager, 63547);
-J54J6_MQTT mqttClient(&FM, &wifiManager);
-
 
 void handleTest()
 {
    ESP8266WebServer* webserver = test.getWebserver();
 
    webserver->send(200, "text/plain", "Das ist eine Testnachricht");
+   
 }
 
 
@@ -99,8 +97,6 @@ void setup() {
 
   networkIdent.addService("NetworkIdent", "63547");
   networkIdent.addService(true, false, "mqttConfigServer", "61500");
-
-  mqttClient.begin(IPAddress(192,168,178,25));
 }
 
 void loop() {
@@ -125,9 +121,6 @@ void loop() {
 
   //NetworkIdent
   networkIdent.loop();
-
-  //MQTT Handler
-  mqttClient.run();
 
   if(test.getDeviceIsConfigured())
   {

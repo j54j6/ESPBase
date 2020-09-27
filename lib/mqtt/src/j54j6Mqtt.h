@@ -1,14 +1,31 @@
 #ifndef J54J6_MQTT_H
 #define J54J6_MQTT_H
 #include <Arduino.h>
-#include <MQTTClient.h>
-#include <mqtt.h>
+#include <ESP8266WiFi.h>
+#include <PubSubClient.h>
 
 #include "wifiManager.h"
 #include "filemanager.h"
+#include "serviceHandler.h"
 
 #include "errorHandler.h"
 #include "logging.h"
+
+/*
+    MQTT Config Blueprint
+
+    {
+        "id" : "",
+        "user" : "",
+        "pass" : "",
+        "willTopic" : "",
+        "willQos" : "",
+        "willRetain" : "",
+        "willMessage" : "",
+        "cleanSession" : ""
+    }
+
+*/
 
 class J54J6_MQTT : public ErrorSlave {
     private:
@@ -20,10 +37,13 @@ class J54J6_MQTT : public ErrorSlave {
         const char* className = "MQTT";
 
         const char* configFile = "/config/mqtt.json";
-        MQTTClient mqttHandlerClient;
-
+        
+        logger logging;
         Filemanager* FM;
         WiFiManager* wifiManager;
+        ServiceHandler* services;
+        PubSubClient mqttHandlerClient;
+
         int default_port = 1883;
         bool MQTTActive = false;
 
@@ -32,96 +52,119 @@ class J54J6_MQTT : public ErrorSlave {
         bool configCheck();
         
     public:        
-        J54J6_MQTT(Filemanager* FM, WiFiManager* wifiManager);
-
-        //Init MQTTClient - start listener
-        void begin(const char* hostname);
-        void begin(const char* hostname, int port = 1883);
-        void begin(IPAddress host, int port = 1883);
-
+        J54J6_MQTT(Filemanager* FM, WiFiManager* wifiManager, ServiceHandler* serviceHandler);
 
         //Destruct
         ~J54J6_MQTT() {
             MQTTActive = false;
         };
+    
+
+    /*
+        Set Stuff
+    */
+    bool setServer(IPAddress ip, uint16_t port, bool save = true, bool asFallback = false);
+
+    void setCallback(MQTT_CALLBACK_SIGNATURE);
+
+    void setClient(Client& client);
+
+    void setStream(Stream& stream);
+
+    void setKeepAlive(uint16_t keepAlive);
+
+    void setSocketTimeout(uint16_t timeout);
+
+    bool setBufferSize(uint16_t size);
+
+    uint16_t getBufferSize();
+
+    //helper Function - read out saved config and set as much as possible
+    bool autoConfig();
+
+
+    /*
+        Set Stuff for Module Conf
+    */
+    bool setId(const char* id);
+    bool setUser(const char* user);
+    bool setPass(const char* pass);
+    bool setWillTopic(const char* willTopic);
+    bool setWillQos(uint8_t willQos);
+    bool setWillRetain(bool willRetain);
+    bool setWillMessage(const char* willMessage);
+    bool setCleanSession(bool cleanSession = true);
+
+
+    /*
+        Connect
+    */
+    bool connect(); //try to connect to as external defined MQTT Server or fallback - if fail: return false
+    bool connect(const char* id);
+    bool connect(const char* id, const char* user, const char* pass);
+    bool connect(const char* id, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage);
+    bool connect(const char* id, const char* user, const char* pass, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage);
+    bool connect(const char* id, const char* user, const char* pass, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage, boolean cleanSession);
+
+    /*
+        Disconnect
+    */
+    void disconnect();
+
+    /*
+        Publishing
+    */
+    bool publish(const char* topic, const char* payload);
+    bool publish(const char* topic, const char* payload, boolean retained);
+    bool publish(const char* topic, const uint8_t * payload, unsigned int plength);
+    bool publish(const char* topic, const uint8_t * payload, unsigned int plength, boolean retained);
+
+    bool publish_P(const char* topic, const char* payload, boolean retained);
+    bool publish_P(const char* topic, const uint8_t * payload, unsigned int plength, boolean retained);
+
+    // Start to publish a message.
+    // This API:
+    //   beginPublish(...)
+    //   one or more calls to write(...)
+    //   endPublish()
+    // Allows for arbitrarily large payloads to be sent without them having to be copied into
+    // a new buffer and held in memory at one time
+    // Returns 1 if the message was started successfully, 0 if there was an error
+    bool beginPublish(const char* topic, unsigned int plength, boolean retained);
+    // Finish off this publish message (started with beginPublish)
+    // Returns 1 if the packet was sent successfully, 0 if there was an error
+    int endPublish();
+    // Write a single byte of payload (only to be used with beginPublish/endPublish)
+    virtual size_t write(uint8_t);
+    // Write size bytes from buffer into the payload (only to be used with beginPublish/endPublish)
+    // Returns the number of bytes written
+    virtual size_t write(const uint8_t *buffer, size_t size);
+
+    /*
+        Subscription Control
+    */
+    bool subscribe(const char* topic);
+    bool subscribe(const char* topic, uint8_t qos);
+
+    bool unsubscribe(const char* topic);
+
+    /*
+        Other Stuff to get this working^^
+    */
+    bool connected();
+
+    int state();
         
-        //Get Stuff
-        bool connected();
 
-
-        //Set Stuff
-        void setHost(const char* hostname[]);
-        void setHost(const char* hostname[], int port = 1883);
-
-        void setWill(const char topic[]);
-        void setWill(const char topic[], const char payload[]);
-        void setWill(const char topic[], const char payload[], bool retained, int qos);
-        void clearWill();
-
-        void setKeepAlive(int keepAliveTime);
-        void setCleanSession(bool cleanSession);
-        void setTimeout(int timeout);
-        void setOptions(int keepAlive, bool cleanSession, int timeout);
-
-        void setClockSource(MQTTClientClockSource);
-
-
-        
-        //Response stuff
-        void (*MQTTClientCallbackSimple)(String &topic, String &payload);
-        void setOnMessage(String &topic, String &payload);
-
-
-        //connection
-        bool connect(const char clientId[], bool skip = false);
-        bool connect(const char clientId[], const char username[], bool skip = false);
-        bool connect(const char clientId[], const char username[], const char password[], bool skip = false);
-
-
-        //publish
-        bool publish(const String &topic);
-        bool publish(const char topic[]);
-        bool publish(const String &topic, const String &payload);
-        bool publish(const String &topic, const String &payload, bool retained, int qos);
-        bool publish(const char topic[], const String &payload);
-        bool publish(const char topic[], const String &payload, bool retained, int qos);
-        bool publish(const char topic[], const char payload[]);
-        bool publish(const char topic[], const char payload[], bool retained, int qos);
-        bool publish(const char topic[], const char payload[], int length);
-        bool publish(const char topic[], const char payload[], int length, bool retained, int qos);
-
- 
-        //Subscribe
-        bool subscribe(const String &topic);
-        bool subscribe(const String &topic, int qos); 
-        bool subscribe(const char topic[]);
-        bool subscribe(const char topic[], int qos);
-
-
-        //unsubscribe
-        bool unsubscribe(const String &topic);
-        bool unsubscribe(const char topic[]);
-
-
-        //disconnecting
-        bool disconnect();
-
-
-        //debug
-        lwmqtt_err_t lastError();
-        lwmqtt_return_code_t returnCode();
-        
-
-        //loop
+    //loop
         void run();
 
-
-        //control class
-        void startClass();
-        void stopClass();
-        void pauseClass();
-        void restartClass();
-        void continueClass();        
+    //control class
+    void startClass();
+    void stopClass();
+    void pauseClass();
+    void restartClass();
+    void continueClass();        
 };
 
 

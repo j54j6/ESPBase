@@ -209,18 +209,6 @@ class ServiceHandler : public ErrorSlave
         */
         String formatComMessage(bool request = false, bool generateId = false, String serviceName = "n.S", String MAC = "n.S", String ip = "n.S", String port = "-1", String id = "n.S");
 
-        /*
-            return the correct Filename to use with LittleFS - only helper function
-
-            if fallback = false
-                mainCFG File of ServiceName will returned
-            else
-                FallbackCFG File will returned 
-
-            This function doesn't check for existence of the specified File - it only creates the correct path
-        */
-        String getExternalServiceFilename(const char* serviceName, bool fallback = false);
-
         //create the "Basic Internal offered Services File " - content is only this as a Service (NetworkIdent@Port:63547)
         bool createInternalServicesBasicConfigFile();
 
@@ -305,6 +293,19 @@ class ServiceHandler : public ErrorSlave
         */
         int getServicePort(const char* serviceName, bool fallback = false);
         
+        /*
+            return the correct Filename to use with LittleFS - only helper function
+
+            if fallback = false
+                mainCFG File of ServiceName will returned
+            else
+                FallbackCFG File will returned 
+
+            This function doesn't check for existence of the specified File - it only creates the correct path
+        */
+        String getExternalServiceFilename(const char* serviceName, bool fallback = false);
+
+
         /*
             CheckForService
                 res = 0 -> service doesn't exist
