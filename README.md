@@ -5,6 +5,9 @@
 
 This project is not finished yet
 
+
+IMPORTANT: To get this program working you need to pre flash the files saved in Data/* to your ESP with LittleFS Flasher != SPIFFS Flash !!!!
+
 Current dev in dev_linearWeb!
 
 A little Sketch to Handle all common things for you like Network (WiFi, DNS, MDNS, Captive Portals, Filehandling, config creation (as Json), Webserver, MQTT)
