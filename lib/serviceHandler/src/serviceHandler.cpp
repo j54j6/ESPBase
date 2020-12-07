@@ -764,7 +764,6 @@ IPAddress ServiceHandler::getServiceIP(const char* serviceName, bool fallback)
                 message += "\" - success";
                 logging.SFLog(className, "getServiceIP", message.c_str());
             #endif 
-            cacheDoc.~BasicJsonDocument();
             return returnIp;
         }
         else

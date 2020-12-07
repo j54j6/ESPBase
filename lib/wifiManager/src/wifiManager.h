@@ -104,7 +104,7 @@ class WiFiManager : public ErrorSlave {
         int32_t getRSSI();
 
         WiFiClient* getWiFiClient();
-
+        WiFiClient& getRefWiFiClient();
         String getLocalIP();
 
 
@@ -139,8 +139,8 @@ class WiFiManager : public ErrorSlave {
         bool stopWifiStation(bool wifioff = true);
 
         //State functionalities
-        bool wifiSTAIsConnected();
-        bool wifiAPUserConnected();
+        bool isConnected();
+        bool isAPUserConnected();
         void setOpticalMessage(wl_status_t currentState);
 
         //Class Handler

@@ -3,6 +3,7 @@
         "array": "cpp",
         "atomic": "cpp",
         "*.tcc": "cpp",
+        "bitset": "cpp",
         "cctype": "cpp",
         "clocale": "cpp",
         "cmath": "cpp",
@@ -10,6 +11,7 @@
         "cstdint": "cpp",
         "cstdio": "cpp",
         "cstdlib": "cpp",
+        "ctime": "cpp",
         "cwchar": "cpp",
         "cwctype": "cpp",
         "deque": "cpp",
@@ -30,12 +32,10 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "cinttypes": "cpp",
+        "regex": "cpp",
         "tuple": "cpp",
         "type_traits": "cpp",
         "utility": "cpp",
-        "typeinfo": "cpp",
-        "string": "cpp",
-        "random": "cpp",
-        "bitset": "cpp"
+        "typeinfo": "cpp"
     }
 }

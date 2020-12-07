@@ -9,7 +9,7 @@
 #include <ESP8266mDNS.h>
 #include <DNSServer.h>
 #include <PubSubClient.h>
-#include <PJON.h>
+//#include <PJON.h>
 
 
 #include "logging.h"

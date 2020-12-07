@@ -1,7 +1,7 @@
-#include "j54j6Mqtt.h"
+#include "mqttHandler.h"
 
 //extra Stuff
-bool J54J6_MQTT::configCheck()
+bool MQTTHandler::configCheck()
 {
     if(FM->fExist(configFile))
     {
@@ -53,7 +53,7 @@ bool J54J6_MQTT::configCheck()
 
 //Constructor
 
-J54J6_MQTT::J54J6_MQTT(Filemanager* FM, WiFiManager* wifiManager, ServiceHandler* serviceHandler)
+MQTTHandler::MQTTHandler(Filemanager* FM, WiFiManager* wifiManager, ServiceHandler* serviceHandler)
 {
     this->FM = FM;
     this->wifiManager = wifiManager;
@@ -61,15 +61,18 @@ J54J6_MQTT::J54J6_MQTT(Filemanager* FM, WiFiManager* wifiManager, ServiceHandler
 }
 
 
-bool J54J6_MQTT::setServer(IPAddress ip, uint16 port, bool save, bool asFallback)
+/*
+    Set Stuff
+*/
+bool MQTTHandler::setServer(IPAddress ip, uint16 port, bool save, bool asFallback)
 {
     mqttHandlerClient = mqttHandlerClient.setServer(ip, port);
 
-    if(save && !asFallback && services->checkForService(services->getExternalServiceFilename("mqtt").c_str()) == 0 || services->checkForService(services->getExternalServiceFilename("mqtt").c_str()) == 2)
+    if(save & !asFallback & (services->checkForService(services->getExternalServiceFilename("mqtt").c_str()) == 0) || (services->checkForService(services->getExternalServiceFilename("mqtt").c_str()) == 2))
     {
         bool ipChanged = services->changeConfigValue(services->getExternalServiceFilename("mqtt").c_str(), "ip", ip.toString().c_str(), false);
         bool portChanged = services->changeConfigValue(services->getExternalServiceFilename("mqtt").c_str(), "ip", ip.toString().c_str(), false);
-        if(ipChanged && portChanged)
+        if(ipChanged & portChanged)
         {
             return true;
         }
@@ -84,11 +87,11 @@ bool J54J6_MQTT::setServer(IPAddress ip, uint16 port, bool save, bool asFallback
             return false;
         }
     }
-    else if (save && asFallback && services->checkForService(services->getExternalServiceFilename("mqtt", true).c_str()) == 0 || services->checkForService(services->getExternalServiceFilename("mqtt", true).c_str()) == 2)
+    else if (save & asFallback & services->checkForService(services->getExternalServiceFilename("mqtt", true).c_str()) == 0 || services->checkForService(services->getExternalServiceFilename("mqtt", true).c_str()) == 2)
     {
         bool ipChanged = services->changeConfigValue(services->getExternalServiceFilename("mqtt").c_str(), "ip", ip.toString().c_str(), true);
         bool portChanged = services->changeConfigValue(services->getExternalServiceFilename("mqtt").c_str(), "ip", ip.toString().c_str(), true);
-        if(ipChanged && portChanged)
+        if(ipChanged & portChanged)
         {
             return true;
         }
@@ -110,37 +113,38 @@ bool J54J6_MQTT::setServer(IPAddress ip, uint16 port, bool save, bool asFallback
     return false;
 }
 
-void J54J6_MQTT::setCallback(MQTT_CALLBACK_SIGNATURE)
+
+void MQTTHandler::setCallback(MQTT_CALLBACK_SIGNATURE)
 {
     mqttHandlerClient = mqttHandlerClient.setCallback(callback);
 }
 
-void J54J6_MQTT::setClient(Client& client)
+void MQTTHandler::setClient(Client& client)
 {
     mqttHandlerClient = mqttHandlerClient.setClient(client);
 }
 
-void J54J6_MQTT::setStream(Stream& stream)
+void MQTTHandler::setStream(Stream& stream)
 {
     mqttHandlerClient = mqttHandlerClient.setStream(stream);
 }
 
-void J54J6_MQTT::setKeepAlive(uint16_t keepAlive)
+void MQTTHandler::setKeepAlive(uint16_t keepAlive)
 {
     mqttHandlerClient = mqttHandlerClient.setKeepAlive(keepAlive);
 }
 
-void J54J6_MQTT::setSocketTimeout(uint16_t timeout)
+void MQTTHandler::setSocketTimeout(uint16_t timeout)
 {
     mqttHandlerClient = mqttHandlerClient.setSocketTimeout(timeout);
 }
 
-bool J54J6_MQTT::setBufferSize(uint16_t size)
+bool MQTTHandler::setBufferSize(uint16_t size)
 {
     return mqttHandlerClient.setBufferSize(size);
 }
 
-uint16_t J54J6_MQTT::getBufferSize()
+uint16_t MQTTHandler::getBufferSize()
 {
     return mqttHandlerClient.getBufferSize();
 }
@@ -149,7 +153,8 @@ uint16_t J54J6_MQTT::getBufferSize()
 /*
     Set Stuff for Module Conf
 */
-bool J54J6_MQTT::setId(const char* id)
+
+bool MQTTHandler::setId(const char* id)
 {
     if(strcmp(id, "") == 0)
     {
@@ -168,7 +173,7 @@ bool J54J6_MQTT::setId(const char* id)
     return false;
 }
 
-bool J54J6_MQTT::setUser(const char* user)
+bool MQTTHandler::setUser(const char* user)
 {
     if(strcmp(user, "") == 0)
     {
@@ -187,7 +192,7 @@ bool J54J6_MQTT::setUser(const char* user)
     return false;
 }
 
-bool J54J6_MQTT::setPass(const char* pass)
+bool MQTTHandler::setPass(const char* pass)
 {
     if(strcmp(pass, "") == 0)
     {
@@ -206,7 +211,7 @@ bool J54J6_MQTT::setPass(const char* pass)
     return false;
 }
 
-bool J54J6_MQTT::setWillTopic(const char* willTopic)
+bool MQTTHandler::setWillTopic(const char* willTopic)
 {
     if(strcmp(willTopic, "") == 0)
     {
@@ -225,7 +230,7 @@ bool J54J6_MQTT::setWillTopic(const char* willTopic)
     return false;
 }
 
-bool J54J6_MQTT::setWillQos(uint8_t willQos)
+bool MQTTHandler::setWillQos(uint8_t willQos)
 {
     if(FM->checkForKeyInJSONFile(configFile, "willQos"))
     {
@@ -239,7 +244,7 @@ bool J54J6_MQTT::setWillQos(uint8_t willQos)
     return false;
 }
 
-bool J54J6_MQTT::setWillRetain(bool willRetain)
+bool MQTTHandler::setWillRetain(bool willRetain)
 {
     if(FM->checkForKeyInJSONFile(configFile, "willRetain"))
     {
@@ -252,7 +257,7 @@ bool J54J6_MQTT::setWillRetain(bool willRetain)
     return false;
 }
 
-bool J54J6_MQTT::setWillMessage(const char* willMessage)
+bool MQTTHandler::setWillMessage(const char* willMessage)
 {
     if(strcmp(willMessage, "") == 0)
     {
@@ -271,7 +276,7 @@ bool J54J6_MQTT::setWillMessage(const char* willMessage)
     return false;
 }
 
-bool J54J6_MQTT::setCleanSession(bool cleanSession)
+bool MQTTHandler::setCleanSession(bool cleanSession)
 {
     if(FM->checkForKeyInJSONFile(configFile, "cleanSession"))
     {
@@ -288,7 +293,7 @@ bool J54J6_MQTT::setCleanSession(bool cleanSession)
     Connect
 */
 
-bool J54J6_MQTT::connect()
+bool MQTTHandler::connect()
 {
     logging.SFLog(className, "connect - AUTO", "Try to connect to MQTT Broker - read Config", 0);
 
@@ -309,7 +314,6 @@ bool J54J6_MQTT::connect()
     else //MQTT Service defined
     {
         bool setServerSuccess = false;
-        bool connectFailed = false;
         for(int i = 0; i <= 1; i++)
         {
             if(i == 0)
@@ -339,10 +343,81 @@ bool J54J6_MQTT::connect()
             }                
         }
     }
+    return false;
 }
 
+bool MQTTHandler::connect(const char* id)
+{
+    logging.SFLog(className, "connect(id)", "try to connect with id only");
 
-void J54J6_MQTT::run()
+    return mqttHandlerClient.connect(id);
+}
+
+bool MQTTHandler::connect(const char* id, const char* user, const char* pass)
+{
+    logging.SFLog(className, "connect(id, user, pass)", "try to connect with id, user, pass");
+
+    return mqttHandlerClient.connect(id, user, pass);
+}
+
+bool MQTTHandler::connect(const char* id, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage)
+{
+    logging.SFLog(className, "connect(id, user, pass, will*)", "try to connect");
+
+    return mqttHandlerClient.connect(id, willTopic, willQos, willRetain, willMessage);
+}
+
+bool MQTTHandler::connect(const char* id, const char* user, const char* pass, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage)
+{
+    logging.SFLog(className, "connect(id, user, pass, will*)", "try to connect");
+
+    return mqttHandlerClient.connect(id, user, pass, willTopic, willQos, willRetain, willMessage);
+}
+
+bool MQTTHandler::connect(const char* id, const char* user, const char* pass, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage, boolean cleanSession)
+{
+    logging.SFLog(className, "connect full", "try to connect");
+
+    return mqttHandlerClient.connect(id, user, pass, willTopic, willQos, willRetain, willMessage, cleanSession);
+}
+
+/*
+    Disconnect
+*/
+
+void MQTTHandler::disconnect()
+{
+    logging.SFLog(className, "disconnect", "Disconnecting from MQTT Broker!");
+    mqttHandlerClient.disconnect();
+}
+
+/*
+    Publishing
+*/
+
+bool MQTTHandler::publish(const char* topic, const char* payload)
+{
+    logging.SFLog(className, "publish", "Publish Message");
+
+    return mqttHandlerClient.publish(topic, payload);
+}
+
+/*
+    Subscription Control
+*/
+bool MQTTHandler::subscribe(const char* topic)
+{
+    logging.SFLog(className, "subscribe", "Subscribe topic");
+    return mqttHandlerClient.subscribe(topic);
+}
+
+bool MQTTHandler::unsubscribe(const char* topic)
+{
+    logging.SFLog(className, "unsubscribe", "Unsubscribe topic");
+    return mqttHandlerClient.unsubscribe(topic);
+}
+
+void MQTTHandler::run()
 {
     /*
     if(!mqttHandlerClient.loop())
@@ -353,4 +428,49 @@ void J54J6_MQTT::run()
     }
     */
     delay(10); //need to fix several stability problems look at https://github.com/256dpi/arduino-mqtt?utm_source=platformio&utm_medium=piohome#notes
+}
+
+/*
+    Inherited overwritten functionalities
+*/
+void MQTTHandler::startClass()
+{
+    if(this->classDisabled)
+    {
+        this->classDisabled = false;
+        if(this->configCheck())
+        {
+            this->connect();
+        }
+    }
+    else
+    {
+        this->connect();
+    }
+}
+
+void MQTTHandler::stopClass()
+{
+    if(!this->classDisabled)
+    {
+        this->classDisabled = true;
+        this->run();
+        Serial.println("locked!");
+        return;
+    }
+}
+
+void MQTTHandler::pauseClass()
+{
+    this->stopClass();
+}
+
+void MQTTHandler::restartClass()
+{
+    this->startClass();
+}
+
+void MQTTHandler::continueClass()
+{
+    this->startClass();
 }

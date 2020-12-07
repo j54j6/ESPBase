@@ -1,5 +1,6 @@
-#ifndef J54J6_MQTT_H
-#define J54J6_MQTT_H
+#ifndef MQTTHANDLER
+#define MQTTHANDLER
+
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
@@ -10,6 +11,7 @@
 
 #include "errorHandler.h"
 #include "logging.h"
+
 
 /*
     MQTT Config Blueprint
@@ -27,40 +29,82 @@
 
 */
 
-class J54J6_MQTT : public ErrorSlave {
-    private:
-        const char* configFallback[1][2] = {
-            {"", ""}
-        };
-        int configFileLength = 0;
-        
-        const char* className = "MQTT";
+/*
+  MQTT Callback 
 
-        const char* configFile = "/config/mqtt.json";
-        
-        logger logging;
+    Topic: const char*
+    lastPayload: const char*
+
+
+*/
+
+struct lastMqttCallback {
+    
+    const char* topic = "";
+    const char* payload = "";
+    const char* outputModuleName = "";
+
+    void reset()
+    {
+        topic = "";
+        payload = "";
+        outputModuleName = "";
+    }
+
+    const char* getPayload(const char* moduleName = "")
+    {
+        if(outputModuleName == "" || strcmp(outputModuleName, moduleName))
+        {
+            return payload;
+        }
+    }
+
+    const char* getTopic(const char* moduleName = "")
+    {
+        if(outputModuleName == "" || strcmp(outputModuleName, moduleName))
+        {
+            return topic;
+        }
+    }
+};
+
+class MQTTHandler : public ErrorSlave {
+    private:
         Filemanager* FM;
+        logger logging;
         WiFiManager* wifiManager;
         ServiceHandler* services;
         PubSubClient mqttHandlerClient;
 
-        int default_port = 1883;
+        lastMqttCallback lastCallback;
+
+        const char* configFallback[1][2] = {
+            {"", ""}
+        };
+        int configFileLength = 0;
+
+        const char* className = "MQTTHandler";
+
+        const char* configFile = "/config/mqtt.json";
+
+        int defaultPort = 1883;
         bool MQTTActive = false;
-
+        bool classDisabled = false;
+    
     protected:
-        //extra stuff
+        //extra Stuff
         bool configCheck();
-        
-    public:        
-        J54J6_MQTT(Filemanager* FM, WiFiManager* wifiManager, ServiceHandler* serviceHandler);
 
+    public:        
+        MQTTHandler(Filemanager* FM, WiFiManager* wifiManager, ServiceHandler* serviceHandler);
+        MQTTHandler();
         //Destruct
-        ~J54J6_MQTT() {
+        
+        ~MQTTHandler() {
             MQTTActive = false;
         };
-    
 
-    /*
+         /*
         Set Stuff
     */
     bool setServer(IPAddress ip, uint16_t port, bool save = true, bool asFallback = false);
@@ -80,7 +124,7 @@ class J54J6_MQTT : public ErrorSlave {
     uint16_t getBufferSize();
 
     //helper Function - read out saved config and set as much as possible
-    bool autoConfig();
+    //bool autoConfig();
 
 
     /*
@@ -95,7 +139,6 @@ class J54J6_MQTT : public ErrorSlave {
     bool setWillMessage(const char* willMessage);
     bool setCleanSession(bool cleanSession = true);
 
-
     /*
         Connect
     */
@@ -106,22 +149,35 @@ class J54J6_MQTT : public ErrorSlave {
     bool connect(const char* id, const char* user, const char* pass, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage);
     bool connect(const char* id, const char* user, const char* pass, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage, boolean cleanSession);
 
+     /*
+        Subscription Control
+    */
+   bool subscribe(const char* topic);
+    //bool subscribe(const char* topic, uint8_t qos);
+
+    bool unsubscribe(const char* topic);
+
     /*
         Disconnect
     */
     void disconnect();
 
-    /*
+
+        /*
         Publishing
     */
-    bool publish(const char* topic, const char* payload);
+   bool publish(const char* topic, const char* payload);
+    /*
     bool publish(const char* topic, const char* payload, boolean retained);
     bool publish(const char* topic, const uint8_t * payload, unsigned int plength);
     bool publish(const char* topic, const uint8_t * payload, unsigned int plength, boolean retained);
 
     bool publish_P(const char* topic, const char* payload, boolean retained);
     bool publish_P(const char* topic, const uint8_t * payload, unsigned int plength, boolean retained);
+    */
 
+
+   /*
     // Start to publish a message.
     // This API:
     //   beginPublish(...)
@@ -140,32 +196,33 @@ class J54J6_MQTT : public ErrorSlave {
     // Returns the number of bytes written
     virtual size_t write(const uint8_t *buffer, size_t size);
 
-    /*
-        Subscription Control
     */
-    bool subscribe(const char* topic);
-    bool subscribe(const char* topic, uint8_t qos);
 
-    bool unsubscribe(const char* topic);
+    /*
+        Action
+    */
+    virtual void eventListener(char* topic, byte* payload, unsigned int length);
+    lastMqttCallback* getCallback();
+
 
     /*
         Other Stuff to get this working^^
     */
-    bool connected();
+    bool isConnected();
 
     int state();
-        
+    void init();   
 
     //loop
-        void run();
+    void run();
 
-    //control class
+    
+        //control class
     void startClass();
     void stopClass();
     void pauseClass();
     void restartClass();
-    void continueClass();        
+    void continueClass();     
 };
-
 
 #endif
