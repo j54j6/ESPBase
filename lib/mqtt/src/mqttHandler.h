@@ -41,7 +41,7 @@
 struct lastMqttCallback {
     
     const char* topic = "";
-    const char* payload = "";
+    String payload = "";
     const char* outputModuleName = "";
 
     void reset()
@@ -51,7 +51,7 @@ struct lastMqttCallback {
         outputModuleName = "";
     }
 
-    const char* getPayload(const char* moduleName = "")
+    String getPayload(const char* moduleName = "")
     {
         if(outputModuleName == "" || strcmp(outputModuleName, moduleName))
         {
@@ -70,6 +70,7 @@ struct lastMqttCallback {
 
 class MQTTHandler : public ErrorSlave {
     private:
+        
         Filemanager* FM;
         logger logging;
         WiFiManager* wifiManager;
@@ -152,8 +153,8 @@ class MQTTHandler : public ErrorSlave {
      /*
         Subscription Control
     */
-   bool subscribe(const char* topic);
-    //bool subscribe(const char* topic, uint8_t qos);
+    bool subscribe(const char* topic);
+    bool subscribe(const char* topic, uint8_t qos);
 
     bool unsubscribe(const char* topic);
 
@@ -201,7 +202,7 @@ class MQTTHandler : public ErrorSlave {
     /*
         Action
     */
-    virtual void eventListener(char* topic, byte* payload, unsigned int length);
+    void eventListener(char* topic, uint8* payload, uint length);
     lastMqttCallback* getCallback();
 
 

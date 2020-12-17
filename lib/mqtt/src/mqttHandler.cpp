@@ -334,7 +334,6 @@ bool MQTTHandler::connect()
                 this->mqttHandlerClient.connect("ESP");
                 Serial.println("MQTT connect success");
                 setServerSuccess = true;
-                delay(10000);
                 return true;
             }
             else
@@ -434,24 +433,32 @@ bool MQTTHandler::unsubscribe(const char* topic)
 }
 
 
-void MQTTHandler::eventListener(char* topic, byte* payload, uint length)
+void MQTTHandler::eventListener(char* topic, uint8* payload, uint length)
 {
+    /*
     lastCallback.topic = topic;
 
     String res = "";
-    for(int i = 0; i < length; i++)
+    for(uint i = 0; i < length; i++)
     {
-        res += payload[i];
-        Serial.println(payload[i]);
+        res += (char)payload[i];
     }
-    Serial.print("res: ");
-    Serial.println(res);
     lastCallback.payload = res.c_str();
-    res.~String();
+
 
     Serial.println("Settet: ");
     Serial.println(lastCallback.topic);
     Serial.println(lastCallback.payload);
+*/
+    String res;
+    lastCallback.topic = topic;
+
+  for (int i = 0; i < length; i++) {
+    res += (char)payload[i];
+  }
+  lastCallback.payload = res;
+
+  
 }
 
 lastMqttCallback* MQTTHandler::getCallback()
@@ -470,7 +477,7 @@ bool MQTTHandler::isConnected()
 
 void MQTTHandler::init()
 {
-    mqttHandlerClient.setCallback(([this] (char* topic, byte * payload, unsigned int length) {this -> eventListener(topic, payload, length);}));
+    mqttHandlerClient.setCallback(([this] (char* topic, uint8* payload, uint length) {MQTTHandler::eventListener(topic, payload, length);}));
 }
 
 void MQTTHandler::run()
@@ -484,7 +491,7 @@ void MQTTHandler::run()
         this->error.priority = 5;
     }
 
-    delay(10); //need to fix several stability problems look at https://github.com/256dpi/arduino-mqtt?utm_source=platformio&utm_medium=piohome#notes
+    //delay(10); //need to fix several stability problems look at https://github.com/256dpi/arduino-mqtt?utm_source=platformio&utm_medium=piohome#notes
     
 }
 

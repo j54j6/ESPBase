@@ -98,8 +98,6 @@ void setup() {
   mainHandler.addNewNode(networkIdent.getINode(), "NetworkIdent");
   mainHandler.addNewNode(mqtthandler.getINode(), "mqtt");
   
-  //Serial.println(mainHandler.verifyAmountOfNodes());
-
   //preMount Filesystem
   FM.mount();
 
@@ -120,13 +118,9 @@ void setup() {
   networkIdent.addService(true, false, "mqttConfigServer", "1883", IPAddress(192,168,178,27));
   networkIdent.addService(false, false, "mqtt", "1883", IPAddress(192,168,178,27));
   //MQTT
-  Serial.println("main1");
   IPAddress mqserv = IPAddress(192,168,178,27);
   bool mqt = mqtthandler.setServer(mqserv, 1883);
-
-  Serial.print("mqt set Server: ");
-  Serial.println(mqt);
-//  mqtthandler.setCallback(getMqtt);
+  //mqtthandler.setCallback(getMqtt);
 }
 
 void loop() {
@@ -157,7 +151,7 @@ void loop() {
 
   mqtthandler.run();
 
-  if(strcmp(mqtthandler.getCallback()->payload, "") != 0)
+  if(mqtthandler.getCallback()->payload != "")
   {
     Serial.println("-------------MQTT Message-------------");
     Serial.print("Topic: ");
@@ -165,13 +159,21 @@ void loop() {
     Serial.print("Message: ");
     Serial.println(mqtthandler.getCallback()->payload);
 
-    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && strcmp(mqtthandler.getCallback()->payload, "reset") == 0)
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "reset")
     {
       errorLed.ledOn();
     }
-    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && strcmp(mqtthandler.getCallback()->payload, "off") == 0)
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "off")
     {
       errorLed.ledOff();
+    }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "restart")
+    {
+      ESP.restart();
+    }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "shutdown")
+    {
+      ESP.deepSleep(5000);
     }
     mqtthandler.getCallback()->reset();
   }
