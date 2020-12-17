@@ -7,5 +7,5 @@ void performanceIndicator::internalControl()
 
 ulong performanceIndicator::getCallPerSecond()
 {
-    return this->callPerSecond;
+    return this->callPerSecond; 
 }

@@ -125,6 +125,11 @@ WiFiClient* WiFiManager::getWiFiClient()
   return &localWiFiClient;
 }
 
+WiFiClient& WiFiManager::getRefWiFiClient()
+{
+  return localWiFiClient;
+}
+
 String WiFiManager::getLocalIP()
 {
   return WiFi.localIP().toString();
@@ -680,7 +685,7 @@ bool WiFiManager::stopWifiStation(bool wifioff)
   return false; //normaly this can't be reached - only for better syntax ^^
 }
 
-bool WiFiManager::wifiSTAIsConnected()
+bool WiFiManager::isConnected()
 {
   if(WiFi.status() == WL_CONNECTED)
    {
@@ -692,7 +697,7 @@ bool WiFiManager::wifiSTAIsConnected()
   }
 }
 
-bool WiFiManager::wifiAPUserConnected()
+bool WiFiManager::isAPUserConnected()
 {
   if(WiFi.softAPgetStationNum() > 0)
   {

@@ -24,12 +24,18 @@ class ErrorSlave {
     protected:
         bool errorReported = false;
         bool warnReported = false;
+        bool isWorking = false;
         ErrorSlave* _next = _NULL;
         bool lockClass = false; //must implemented! - if true - no class function should be able to work
         const char* className = "placeholder";
 
     public:
         classErrorReport error;
+        void setWorking(bool val)
+        {
+            isWorking = true;
+        }
+
         void setErrorReported(bool val)
         {
             this->errorReported = val;
@@ -39,6 +45,17 @@ class ErrorSlave {
         {
             this->warnReported = val;
         }
+
+        void setClassName(const char* newVal)
+        {
+            this->className = newVal;
+        }
+
+        void setNext(ErrorSlave* next)
+        {
+            this->_next = next;
+        }
+
 
         bool getErrorReported()
         {
@@ -77,20 +94,17 @@ class ErrorSlave {
         {
             return _next;
         }
-        void setNext(ErrorSlave* next)
-        {
-            this->_next = next;
-        }
 
         const char* getClassName()
         {
             return className;
         }
-
-        void setClassName(const char* newVal)
+        
+        bool getIsWorking()
         {
-            this->className = newVal;
+            return isWorking;
         }
+       
         virtual void startClass() = 0;
         virtual void stopClass() = 0;
         virtual void pauseClass() = 0;
@@ -113,7 +127,7 @@ class ErrorHandler {
                             Report if n >= _level -> with ReportTypes defiend below
                         */
 
-        bool opticalOnWarn = true; //set Optical message when ErrorSlave::classErrorReport.error = false and ErrorSlave::classErrorReport.priority > _level
+        bool opticalOnWarn = false; //set Optical message when ErrorSlave::classErrorReport.error = false and ErrorSlave::classErrorReport.priority > _level
         bool SerialOnWarn = true; //Serial Message when ErrorSlave::classErrorReport.error = false and ErrorSlave::classErrorReport.priority > _level
 
     public:
@@ -143,6 +157,26 @@ class ErrorHandler {
             actualNode->setNext(newNode);
         }
 
+/*
+    Implementation LATER - 
+        Check for specified values of all registered Nodes - e.g to find out if a class is still working
+
+    
+        bool checkForValue(bool andMode = false, )
+        {
+            bool returnVal = false;
+            short numberFound = 0;
+            
+            ErrorSlave* actualNode = _firstNode;
+
+            while(!actualNode->getNext() == NULL)
+            {
+                if(actualNode)
+            }
+            
+        }
+
+*/
         void checkForError()
         {
             classErrorReport actualError;

@@ -201,25 +201,13 @@ class ServiceHandler : public ErrorSlave
             if request = true
                 you will send an request, you need to add an serviceName if not there will be "notSet" as Service
             if request = false
-                yoou will send an answerMessage for a request - in this case you don't need a serviceName, it will be dropped
+                you will send an answerMessage for a request - in this case you don't need a serviceName, it will be dropped
 
             if generateId = true
                 there will be an id appenden out of millis() + random(int) to use multiple requests the same time by the id you can difference it e.g if you want multiple devices for the same service (implemented later)
-
+                otherwise if you preDefine an ID (id != n.S) the given ID will used
         */
         String formatComMessage(bool request = false, bool generateId = false, String serviceName = "n.S", String MAC = "n.S", String ip = "n.S", String port = "-1", String id = "n.S");
-
-        /*
-            return the correct Filename to use with LittleFS - only helper function
-
-            if fallback = false
-                mainCFG File of ServiceName will returned
-            else
-                FallbackCFG File will returned 
-
-            This function doesn't check for existence of the specified File - it only creates the correct path
-        */
-        String getExternalServiceFilename(const char* serviceName, bool fallback = false);
 
         //create the "Basic Internal offered Services File " - content is only this as a Service (NetworkIdent@Port:63547)
         bool createInternalServicesBasicConfigFile();
@@ -264,7 +252,7 @@ class ServiceHandler : public ErrorSlave
                 1 = device found and added (success)
                 2 = device found but service can't be added
         */
-        short autoAddService(const char* serviceName);
+        short autoAddService(const char* serviceName = "n.S");
 
 
 
@@ -305,6 +293,19 @@ class ServiceHandler : public ErrorSlave
         */
         int getServicePort(const char* serviceName, bool fallback = false);
         
+        /*
+            return the correct Filename to use with LittleFS - only helper function
+
+            if fallback = false
+                mainCFG File of ServiceName will returned
+            else
+                FallbackCFG File will returned 
+
+            This function doesn't check for existence of the specified File - it only creates the correct path
+        */
+        String getExternalServiceFilename(const char* serviceName, bool fallback = false);
+
+
         /*
             CheckForService
                 res = 0 -> service doesn't exist

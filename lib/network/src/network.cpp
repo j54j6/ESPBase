@@ -213,7 +213,6 @@ void Network::startSetupMode() //fkt Nr. -2
         error.message = "Can't configure AP!";
         error.priority = 5;
     }
-    Serial.println("Pass1");
     delay(500);
     if(wifiManager->startWifiAP(apSSID.c_str(), apPSK.c_str()))
     {
@@ -239,8 +238,6 @@ void Network::startSetupMode() //fkt Nr. -2
         error.message = "Can't start AP!";
         error.priority = 5;
     }
-
-    Serial.println("Pass2");
     delay(500);
     /*
         Start DNS Server
@@ -263,7 +260,6 @@ void Network::startSetupMode() //fkt Nr. -2
             logging.SFLog(className, "startSetupMode", "Can't start DNS Server!");
         #endif
     }
-    Serial.println("Pass3");
     delay(500);
     /*
         Start MDNS
@@ -284,7 +280,6 @@ void Network::startSetupMode() //fkt Nr. -2
             logging.SFLog(className, "startSetupMode", "Can't start MDNS Server!");
         #endif
     }
-    Serial.println("Webserver");
     delay(500);
     /*
         Start Webserver
@@ -572,6 +567,7 @@ void Network::internalBegin()
             message += res;
             logging.SFLog(className, "internalBegin", message.c_str());
         #endif
+        deviceConfigured = true;
         runFunction = -3; //startWorking()
         return;
     }

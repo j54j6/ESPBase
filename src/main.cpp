@@ -6,7 +6,8 @@
 #include "button.h"
 #include "serviceHandler.h"
 #include "../lib/network/webSrc/setupPage.h"
-
+#include "wifiManager.h"
+#include "mqttHandler.h"
 
 LED wifiLed(D1);
 LED errorLed(D7);
@@ -17,8 +18,8 @@ Filemanager FM;
 Network test(&FM, &wifiManager);
 ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
 ServiceHandler networkIdent(&FM, &wifiManager);
-
 udpManager udpManage(&wifiManager, 63547);
+MQTTHandler mqtthandler(&FM, &wifiManager, &networkIdent);
 
 
 void handleTest()
@@ -26,6 +27,7 @@ void handleTest()
    ESP8266WebServer* webserver = test.getWebserver();
 
    webserver->send(200, "text/plain", "Das ist eine Testnachricht");
+   
 }
 
 
@@ -59,6 +61,24 @@ void getPerformance()
   }
 }
 
+void getMqtt(char* topic, byte* payload, unsigned int length)
+{
+  Serial.println("------------------");
+  Serial.println("Message received!");
+  Serial.print("Topic: ");
+  Serial.println(topic);
+  Serial.print("payload: ");
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println("");
+  Serial.print("length: ");
+  Serial.println(length);
+  
+}
+
+
+
 void setup() {
   Serial.begin(921600);
   //Disable WifiAutoConnect and onboard WifiConfig
@@ -76,9 +96,8 @@ void setup() {
   //add modules to dedicated ErrorHandler
   mainHandler.addNewNode(test.getINode(), "network");
   mainHandler.addNewNode(networkIdent.getINode(), "NetworkIdent");
+  mainHandler.addNewNode(mqtthandler.getINode(), "mqtt");
   
-  //Serial.println(mainHandler.verifyAmountOfNodes());
-
   //preMount Filesystem
   FM.mount();
 
@@ -89,13 +108,19 @@ void setup() {
   test.begin();
 
   //add webservice to webserver@Network
-  test.addService("/new", handleTest);
-  test.startWebserver(80);
+  //test.addService("/new", handleTest);
+  //test.startWebserver(80);
 
   //start Listening on UDP-NetworkIdentPort
   networkIdent.beginListen();
 
   networkIdent.addService("NetworkIdent", "63547");
+  networkIdent.addService(true, false, "mqttConfigServer", "1883", IPAddress(192,168,178,27));
+  networkIdent.addService(false, false, "mqtt", "1883", IPAddress(192,168,178,27));
+  //MQTT
+  IPAddress mqserv = IPAddress(192,168,178,27);
+  bool mqt = mqtthandler.setServer(mqserv, 1883);
+  //mqtthandler.setCallback(getMqtt);
 }
 
 void loop() {
@@ -116,8 +141,94 @@ void loop() {
   errorHandle();
 
   //performanceControl
-  //getPerformance();
+  getPerformance();
 
   //NetworkIdent
   networkIdent.loop();
+  static int step = 0;
+  static int lastCall = 0;
+
+
+  mqtthandler.run();
+
+  if(mqtthandler.getCallback()->payload != "")
+  {
+    Serial.println("-------------MQTT Message-------------");
+    Serial.print("Topic: ");
+    Serial.println(mqtthandler.getCallback()->topic);
+    Serial.print("Message: ");
+    Serial.println(mqtthandler.getCallback()->payload);
+
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "reset")
+    {
+      errorLed.ledOn();
+    }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "off")
+    {
+      errorLed.ledOff();
+    }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "restart")
+    {
+      ESP.restart();
+    }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "shutdown")
+    {
+      ESP.deepSleep(5000);
+    }
+    mqtthandler.getCallback()->reset();
+  }
+
+
+  if(test.getDeviceIsConfigured())
+  {
+    if(wifiManager.isConnected())
+    {
+      if(step > 1 & !mqtthandler.isConnected())
+      {
+        Serial.println("MQTT Broker - Connection Lost - reconnect!");
+        step = 0;
+      }
+
+      switch(step) {
+        case 0:
+          Serial.println("Connect with MQTT");
+          if(mqtthandler.connect())
+          {
+            Serial.println("Successfully loaded Connect Config!");
+            step++;
+            break;
+          }
+          else
+          {
+            Serial.println("Error connectng with MQTT Broker!");
+          }
+          break;
+        
+        case 1:
+          if(mqtthandler.isConnected())
+          {
+            Serial.println("Connected with Broker!");
+            step++;
+            lastCall = millis();
+            mqtthandler.subscribe("home/test");
+            mqtthandler.subscribe("home/control");
+          }
+          break;
+
+        case 2:
+
+          if(mqtthandler.publish("home/test", "ESP works!"))
+          {
+            Serial.println("Message successfully published!");
+            step++;
+          }
+          else
+          {
+            Serial.println("There was an Error while Publishing!");
+
+          }
+          break;
+      }
+    }
+  }
 }

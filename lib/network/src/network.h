@@ -1,10 +1,16 @@
 #ifndef J54J6_NETWORK_H
 #define J54J6_NETWORK_H
+
+#define PJON_INCLUDE_ETCP
+
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <DNSServer.h>
+#include <PubSubClient.h>
+//#include <PJON.h>
+
 
 #include "logging.h"
 #include "wifiManager.h"
@@ -77,6 +83,7 @@ class Network : public ErrorSlave
         Filemanager* FM;
         DNSServer dnsServer;
         ESP8266WebServer webserver;
+        PubSubClient mqttHandler;
         
 
         /*
@@ -110,8 +117,8 @@ class Network : public ErrorSlave
         */
         bool createConfig(); //if no ConfigFile is preflashed create default
         bool createSetupFile(); //if no setupFile is pre flashed create default
-        void startWorking(); //if network configured start working Mode (default function - connect to wifi/set AP - start services - etc.)
-        void startSetupMode(); //if network is nor configured (normally at first start - start Setup)
+        void startWorking(); //if network configured - start working Mode (default function - connect to wifi/set AP - start services - etc.)
+        void startSetupMode(); //if network is not configured (normally at first start - start Setup)
         
         bool startDnsServer();
         bool startMDnsServer(const char* newHostname = "undefinedDevice");
@@ -146,14 +153,12 @@ class Network : public ErrorSlave
         //get Stuff
         ulong getCallPerSecond();
         bool getClassDisabled();
+        bool getDeviceIsConfigured() { return deviceConfigured;};
+
 
         //set Stuff
         void setClassDisabled(bool newVal);
         bool saveCredentials(const String* ssid, const String* psk, const char* File);
-
-
-        //Run
-        void run(); //Handler function need to be called in arduino>loop()
         
     
         /*
@@ -168,7 +173,6 @@ class Network : public ErrorSlave
         void disableCaptive();
         void addCaptive();
 
-
         /*
             Specific Stuff
         */
@@ -179,6 +183,11 @@ class Network : public ErrorSlave
         String getHTMLFormattedWiFiNetworksForSetupHandler();
         int getRSSIasQuality(int RSSI);
         void checkAndTestCredits();
+
+        /*
+            RUN
+        */
+        void run(); //Handler function need to be called in arduino>loop()
 
        /*
         Inherited ErrorHandling
