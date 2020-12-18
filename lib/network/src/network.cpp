@@ -169,19 +169,40 @@ bool Network::createSetupFile() //Fkt. Nr 120
 
 void Network::startWorking() //fkt. Nr. -3
 {
-    String staSSID = FM->readJsonFileValue(configFile, "ssid");
-    String staPSK = FM->readJsonFileValue(configFile, "psk");
+    String staSSID;
+    String staPSK;
+    if(FM->fExist(configFile))
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "startWorking", "configFileExist");
+        #endif
+        staSSID = FM->readJsonFileValue(configFile, "ssid");
+        staPSK = FM->readJsonFileValue(configFile, "psk");
+    }
+    else
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "startWorking", "No ConfigFile found! - use default PSK and SSID station credentials", 2);
+        #endif
+        staSSID = "hotspot";
+        staPSK = "hotspot1234";
+    }
+    
+
+     
     
 
     #ifdef J54J6_LOGGING_H
         logger logging;
-        logging.SFLog(className, "startSetupMode", "AP successfully started");
+        logging.SFLog(className, "startWorking", "AP successfully started");
         String message = "Credentials: \n";
         message += " SSID: ";
         message += staSSID;
         message += "\n PSK: ";
         message += "don't hope that I log any passwords ;)";
-        logging.SFLog(className, "startSetupMode", message.c_str());
+        logging.SFLog(className, "startWorking", message.c_str());
     #endif
 
     wifiManager->startWifiStation(staSSID.c_str(), staPSK.c_str());
@@ -191,9 +212,28 @@ void Network::startWorking() //fkt. Nr. -3
 void Network::startSetupMode() //fkt Nr. -2
 {
     Serial.println("Start setup");
-    delay(500);
-    String apSSID = FM->readJsonFileValue(setupFile, "ssid");
-    String apPSK = FM->readJsonFileValue(setupFile, "psk");
+    String apSSID;
+    String apPSK;
+    if(FM->fExist(setupFile))
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "startSetupMode", "setup File exist - read credentials");
+        #endif
+        apSSID = FM->readJsonFileValue(setupFile, "ssid");
+        apPSK = FM->readJsonFileValue(setupFile, "psk");
+    }
+    else
+    {
+        #ifdef J54J6_LOGGING_H
+            logger logging;
+            logging.SFLog(className, "startSetupMode", "SetupFile doesnt exist - use default APCredentials");
+        #endif
+        apSSID = backupAPSSID;
+        apPSK = backupAPPSK;
+    }
+    
+    
     
     if(wifiManager->configWiFiAP(apIpAddress, apIpAddress, apNetMsk))
     {
@@ -214,6 +254,9 @@ void Network::startSetupMode() //fkt Nr. -2
         error.priority = 5;
     }
     delay(500);
+    Serial.println("##########################################");
+    Serial.println(apSSID.c_str());
+    Serial.println()
     if(wifiManager->startWifiAP(apSSID.c_str(), apPSK.c_str()))
     {
         #ifdef J54J6_LOGGING_H
@@ -480,7 +523,20 @@ void Network::internalBegin()
                 #ifdef J54J6_LOGGING_H 
                     logging.SFLog(className, "internalBegin", "setupFile successfully created", 0);
                 #endif
-                break;
+                if(FM->writeInFile(setupFile, "{\"ssid\" : \"newSensor\",\"psk\" : \"dzujkhgffzojh\",\"hostType\" : \"hidden\"}"))
+                {
+                    #ifdef J54J6_LOGGING_H 
+                        logging.SFLog(className, "internalBegin", "setupFile successfully filled with default Credentials", 0);
+                    #endif
+                    break;
+                }
+                else
+                {
+                    #ifdef J54J6_LOGGING_H 
+                        logging.SFLog(className, "internalBegin", "setupFile can't filled with default Credentials", 0);
+                    #endif
+                }
+                
             }
             else
             {

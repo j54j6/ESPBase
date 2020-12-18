@@ -100,7 +100,7 @@ void setup() {
   
   //preMount Filesystem
   FM.mount();
-
+  FM.format();
   //get Filestructure - only for dev
   FM.getSerialFileStructure();
 
@@ -114,13 +114,14 @@ void setup() {
   //start Listening on UDP-NetworkIdentPort
   networkIdent.beginListen();
 
-  networkIdent.addService("NetworkIdent", "63547");
-  networkIdent.addService(true, false, "mqttConfigServer", "1883", IPAddress(192,168,178,27));
-  networkIdent.addService(false, false, "mqtt", "1883", IPAddress(192,168,178,27));
+  //networkIdent.addService("NetworkIdent", "63547");
+  //networkIdent.addService(true, false, "mqttConfigServer", "1883", IPAddress(192,168,178,27));
+  //networkIdent.addService(false, false, "mqtt", "1883", IPAddress(192,168,178,27));
   //MQTT
-  IPAddress mqserv = IPAddress(192,168,178,27);
-  bool mqt = mqtthandler.setServer(mqserv, 1883);
+  //IPAddress mqserv = IPAddress(192,168,178,27);
+  //bool mqt = mqtthandler.setServer(mqserv, 1883);
   //mqtthandler.setCallback(getMqtt);
+
 }
 
 void loop() {
@@ -174,6 +175,10 @@ void loop() {
     if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "shutdown")
     {
       ESP.deepSleep(5000);
+    }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "sayWhat")
+    {
+      mqtthandler.publish("/home/public", "heyho^^");
     }
     mqtthandler.getCallback()->reset();
   }

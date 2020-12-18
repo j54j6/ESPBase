@@ -45,6 +45,9 @@ class Network : public ErrorSlave
         const char* className = "Network"; //only for Debugging
         const char* hostName = "NodeWork"; //Network WiFi Hostname
         const char* registerHostname = "registration";
+        const char* backupAPSSID = "NodeworkNewDevice";
+        const char* backupAPPSK = "NodeworkDevice1234";
+        
         ulong lastCall = 0; //only for class
         int checkDelay = 20; //Check class (call run()) every 20ms
         ulong callPerSecond = 0; //performance indicator - normally 1000/checkDelay

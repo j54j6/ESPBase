@@ -435,6 +435,10 @@ bool WiFiManager::startWifiAP(const char *ssid, const char *passwd, int hidden, 
       logger logging;
       logging.SFLog(className, "startWifiAP", "Can't start WiFi AP - softAP return 'false'", 2);
     #endif
+    Serial.println(ssid);
+    Serial.println(passwd);
+    Serial.println(channel);
+    Serial.println(hidden);
     error.error = true;
     error.ErrorCode = 1;
     error.message = "WiFi Class -> softAP return false";
