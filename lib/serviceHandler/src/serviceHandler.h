@@ -24,7 +24,7 @@
 struct networkSearchCacheValueHolder {
     const char* serviceName = "n.S";
     int searchType = 0; // 0 = nothing, 1 = ip, 2 = port, 3 = mac, 4 - autoAdd
-    long id = 0;
+    long id = -1;
     ulong createdAt = 0;
     int deleteAfter = 20000; //10 seconds default delay
     bool isFallback = false;
@@ -32,7 +32,7 @@ struct networkSearchCacheValueHolder {
     void reset() {
         searchType = 0;
         serviceName = "n.S";
-        id = 0;
+        id = -1;
         createdAt = 0;
         isFallback = false;
 
@@ -251,6 +251,8 @@ class ServiceHandler : public ErrorSlave
                 0 = no Networkdevice found with specified service (no device in network or no connection)
                 1 = device found and added (success)
                 2 = device found but service can't be added
+                3 = Services already defined (Main anf Backup CFG (Error)
+                10 = AutoAdd is running but nothing received
         */
         short autoAddService(const char* serviceName = "n.S");
 

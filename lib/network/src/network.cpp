@@ -256,7 +256,7 @@ void Network::startSetupMode() //fkt Nr. -2
     delay(500);
     Serial.println("##########################################");
     Serial.println(apSSID.c_str());
-    Serial.println()
+    Serial.println(apPSK.c_str());
     if(wifiManager->startWifiAP(apSSID.c_str(), apPSK.c_str()))
     {
         #ifdef J54J6_LOGGING_H
@@ -757,6 +757,8 @@ void Network::checkAndTestCredits()
                     #ifdef J54J6_LOGGING_H
                         logging.SFLog(className, "checkAndTestCredits", "Credentials successfully saved!");
                     #endif
+                    delay(1000);
+                    ESP.restart();
                 }
             }
         }   

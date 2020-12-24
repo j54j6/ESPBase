@@ -304,11 +304,19 @@ bool MQTTHandler::setCleanSession(bool cleanSession)
 
 bool MQTTHandler::connect()
 {
+
+    //if service will already searched then Skip other calls
+    if(this->serviceAddDelayActive)
+    {
+        return false;
+    }
+
     logging.SFLog(className, "connect - AUTO", "Try to connect to MQTT Broker - read Config", 0);
 
     if(!services->checkForService("mqtt", true))
     {
-        logging.SFLog(className, "connect - AUTO", "No MQTT Service defined - try to connect to in Object defined MQTT Server", 1);
+        logging.SFLog(className, "connect - AUTO", "No MQTT Service defined - try to find Service in Network", 1);
+        /*
         if(mqttHandlerClient.connect(String(wifiManager->getDeviceMac()).c_str())) //check if any other connection is saved in Object e.g via setServer()
         {
             logging.SFLog(className, "connect - AUTO", "Successfully connected to in Object defined MQTT Server - return true", 0);
@@ -319,6 +327,39 @@ bool MQTTHandler::connect()
             logging.SFLog(className, "connect - AUTO", "Can't connect to MQTT Broker - Maybe no Address set?", 0);
             return false;
         }
+        */
+       this->serviceAddDelayActive = true;
+       this->serviceAddDelayTimeout = millis() + 5000;
+       short deviceFound = 100;
+       while(deviceFound != 1 && serviceAddDelayActive)
+       {
+           deviceFound = services->autoAddService("mqtt");
+           if(millis() > serviceAddDelayTimeout)
+           {
+               logging.SFLog(className, "connectAuto - Search", "Timeout reached - no Device Found");
+               serviceAddDelayActive = false;
+               break;
+           }
+           if(deviceFound == 3)
+           {
+               logging.SFLog(className, "connectAuto - Search", "Service already defined! - SKIP");
+               serviceAddDelayActive = false;
+               break;
+           }
+           services->loop();
+       }
+        
+        if(serviceAddDelayActive == false && deviceFound != 100)
+        {
+            Serial.println("#########################################");
+            Serial.println("Last Data: ");
+            Serial.println(deviceFound);
+            deviceFound = 100;
+        }
+
+
+
+       
     }
     else //MQTT Service defined
     {
@@ -331,7 +372,7 @@ bool MQTTHandler::connect()
                 this->mqttHandlerClient = this->mqttHandlerClient.setServer(IPAddress(services->getServiceIP("mqtt")), int(services->getServicePort("mqtt")));
                 Serial.println("Server successfully set!");
                 this->mqttHandlerClient.setClient(wifiManager->getRefWiFiClient());
-                this->mqttHandlerClient.connect("ESP");
+                this->mqttHandlerClient.connect(String(wifiManager->getDeviceMac()).c_str());
                 Serial.println("MQTT connect success");
                 setServerSuccess = true;
                 return true;
@@ -364,7 +405,11 @@ bool MQTTHandler::connect(const char* id)
 {
     logging.SFLog(className, "connect(id)", "try to connect with id only");
 
-    return mqttHandlerClient.connect(id);
+    if(strcmp(id, "") == 0)
+    {
+        return mqttHandlerClient.connect(String(wifiManager->getDeviceMac()).c_str());
+    }
+    return mqttHandlerClient.connect(id);    
 }
 
 bool MQTTHandler::connect(const char* id, const char* user, const char* pass)
@@ -482,6 +527,17 @@ void MQTTHandler::init()
 
 void MQTTHandler::run()
 {
+
+    if(serviceAddDelayActive)
+    {
+        if(serviceAddDelayTimeout <= millis())
+        {
+            serviceAddDelayTimeout = 0;
+            serviceAddDelayActive = false;
+            logging.SFLog(className, "run - ServiceAdd", "ServiceAddDelayTimeout reached - try to connect to mqtt Service");
+            this->connect();
+        }
+    }
     
     if(!mqttHandlerClient.loop())
     {

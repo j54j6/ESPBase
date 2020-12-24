@@ -80,7 +80,7 @@ String ServiceHandler::formatComMessage(bool request, bool generateId, String se
     output += "\", ";
     output += "\"servicePort\" : \"";
     output += port;
-    if(!generateId)
+    if(!generateId && id == "n.S")
     {
         output += "\"";
         output += "}";
@@ -413,7 +413,7 @@ short ServiceHandler::autoAddService(const char* serviceName)
     }
     else //autoAdd already running - do loop stuff to check for any responses and add new service if needed
     {
-        if(lastAutoAddRequest.id == 0) //lastRequest is > timeout - disable autoRun
+        if(lastAutoAddRequest.id == -1) //lastRequest is > timeout - disable autoRun
         {
             #ifdef J54J6_LOGGING_H
                 logger logging;
@@ -422,7 +422,7 @@ short ServiceHandler::autoAddService(const char* serviceName)
             autoAddRunning = false;
             return 0;
         }
-        else if(lastAutoAddRequest.id != 0 && lastAutoAddRequest.searchType != 4) //lasRequest was not set by function AutoAdd
+        else if(lastAutoAddRequest.id != -1 && lastAutoAddRequest.searchType != 4) //lasRequest was not set by function AutoAdd
         {
             #ifdef J54J6_LOGGING_H
                 logger logging;
@@ -433,7 +433,7 @@ short ServiceHandler::autoAddService(const char* serviceName)
         }
         
         //working normal
-        if(lastAutoAddRequest.id != 0 && lastAutoAddRequest.searchType == 4)
+        if(lastAutoAddRequest.id != -1 && lastAutoAddRequest.searchType == 4)
         {
             StaticJsonDocument<425> lastFetched = getLastData();
 
@@ -442,17 +442,17 @@ short ServiceHandler::autoAddService(const char* serviceName)
             */
             if(!lastFetched.containsKey("id") || !lastFetched.containsKey("serviceName") || !lastFetched.containsKey("ip") || !lastFetched.containsKey("mac") || !lastFetched.containsKey("servicePort"))
             {
-                return 2;
+                return 10;
             }
             else
             {
-                /*
+                
                 #ifdef J54J6_LOGGING_H
                     logger logging;
                     logging.SFLog(className, "autoAddService", "Received useable Packet", -1);
                 #endif
 
-                */
+                
                 //lastReceived Packet does contain all needed keys to create a new Service - check for id and serviceName
                 String castedLastRequestID = String(lastAutoAddRequest.id);
                 String castedLastReceivedID = lastFetched["id"];
@@ -1184,18 +1184,22 @@ void ServiceHandler::loop()
                 check for interal saved addresses matching the json.servername
             */
 
-            if(checkForService(udpLastReceivedDataDocument["serviceName"]) != 0)
+            if(checkForService(udpLastReceivedDataDocument["serviceName"]) != 0) //Service exist
             {
                 #ifdef J54J6_LOGGING_H
                     
                     logger logging;
                     String message = "Service ";
                     message += serviceNameCached;
-                    message += "exist - return true";
-                    logging.SFLog(className, "loop", message.c_str(), 1);
+                    message += " exist - return true";
+                    logging.SFLog(className, "loop", message.c_str(), 0);
                 #endif
                 
                 String fmsg;
+
+                /*
+    	            Request uses ID identification
+                */   
                 if(udpLastReceivedDataDocument.containsKey("id"))
                 {
                     #ifdef J54J6_LOGGING_H
@@ -1203,20 +1207,29 @@ void ServiceHandler::loop()
                         logging.SFLog(className, "loop", "ID will be appended", -1);
                     #endif
 
-                    if(checkForService(udpLastReceivedDataDocument["serviceName"]) == 1 || checkForService(udpLastReceivedDataDocument["serviceName"]) == 3)
+                    if(checkForService(udpLastReceivedDataDocument["serviceName"]) == 1 || checkForService(udpLastReceivedDataDocument["serviceName"]) == 3) //send internal service
                     {
                         fmsg = formatComMessage(false, true, udpLastReceivedDataDocument["serviceName"], WiFi.macAddress(), wifiManager->getLocalIP(), FM->readJsonFileValue(offeredServicesPath, serviceNameCached.c_str()), udpLastReceivedDataDocument["id"]);
                         udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                        #ifdef J54J6_LOGGING_H
+                            logger logging;
+                            logging.SFLog(className, "loop", "Sended Answer Data with internal Service cred.", -1);
+                        #endif
+                        return;
                     }
-                    else
+                    else //send external service 
                     {
                         
-                        //fmsg = formatComMessage(false, false, udpLastReceivedDataDocument["serviceName"], getServiceMAC(udpLastReceivedDataDocument["serviceName"]), getServiceIP(udpLastReceivedDataDocument["serviceName"]).toString() , FM->readJsonFileValue(externalServicesPath, serviceNameCached.c_str()));
-                        //udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
-                        
+                        fmsg = formatComMessage(false, false, udpLastReceivedDataDocument["serviceName"], getServiceMAC(udpLastReceivedDataDocument["serviceName"]), getServiceIP(udpLastReceivedDataDocument["serviceName"]).toString(), String(getServicePort(udpLastReceivedDataDocument["serviceName"])), udpLastReceivedDataDocument["id"]);
+                        udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                        #ifdef J54J6_LOGGING_H
+                            logger logging;
+                            logging.SFLog(className, "loop", "Sended Answer Data with external Service cred.", -1);
+                        #endif
+                        return;                   
                     }
                 }
-                else
+                else 
                 {
                     #ifdef J54J6_LOGGING_H
                         logger logging;
@@ -1230,10 +1243,10 @@ void ServiceHandler::loop()
                     }
                     else
                     {
-                        /*
+                        
                         fmsg = formatComMessage(false, true, udpLastReceivedDataDocument["serviceName"], getServiceMAC(udpLastReceivedDataDocument["serviceName"]), getServiceIP(udpLastReceivedDataDocument["serviceName"]).toString() , FM->readJsonFileValue(externalServicesPath, serviceNameCached.c_str()));
                         udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
-                        */
+                        
                     }
                 }
                 /*
@@ -1243,7 +1256,7 @@ void ServiceHandler::loop()
                 //udpControl.sendUdpMessage(formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str())).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
                 */
             }
-            else
+            else //requested Setvice is not defined on the device!
             {
                 #ifdef J54J6_LOGGING_H
                     logger logging;

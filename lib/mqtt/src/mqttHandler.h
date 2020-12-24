@@ -91,6 +91,10 @@ class MQTTHandler : public ErrorSlave {
         int defaultPort = 1883;
         bool MQTTActive = false;
         bool classDisabled = false;
+
+        bool serviceAddDelayActive = false;
+        ulong serviceAddDelayTimeout = 0;
+
     
     protected:
         //extra Stuff

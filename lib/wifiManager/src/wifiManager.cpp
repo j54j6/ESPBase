@@ -38,9 +38,9 @@ bool WiFiManager::getLockClass()
   return lockClass;
 }
 
-uint32_t WiFiManager::getDeviceMac()
+String WiFiManager::getDeviceMac()
 {
-  return deviceMac;
+  return WiFi.macAddress();
 }
 
 int WiFiManager::getCheckDelay()

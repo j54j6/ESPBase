@@ -84,7 +84,7 @@ class WiFiManager : public ErrorSlave {
         bool getShieldState(); //return Wifi is Enabled or Disabled
         bool getOverrideSettingsToPreventError(); //change autoFix state (for simple syntax errors...)
         bool getLockClass(); //get State of class
-        uint32_t getDeviceMac();
+        String getDeviceMac();
         int getCheckDelay();
         ulong getCallPerSecond();
         classErrorReport getCurrentErrorState();

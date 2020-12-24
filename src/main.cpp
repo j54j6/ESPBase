@@ -100,7 +100,7 @@ void setup() {
   
   //preMount Filesystem
   FM.mount();
-  FM.format();
+  //FM.format();
   //get Filestructure - only for dev
   FM.getSerialFileStructure();
 
@@ -180,6 +180,23 @@ void loop() {
     {
       mqtthandler.publish("/home/public", "heyho^^");
     }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "allOff")
+    {
+      workLed.disable();
+    }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "allOn")
+    {
+      workLed.enable();
+    }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "format")
+    {
+      workLed.blink(200, false, 10);
+      FM.format();
+    }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "getMac")
+    {
+      mqtthandler.publish("/home/public", wifiManager.getDeviceMac().c_str());
+    }
     mqtthandler.getCallback()->reset();
   }
 
@@ -196,17 +213,21 @@ void loop() {
 
       switch(step) {
         case 0:
+        /*
           Serial.println("Connect with MQTT");
+          */
           if(mqtthandler.connect())
           {
             Serial.println("Successfully loaded Connect Config!");
             step++;
             break;
           }
+          /*
           else
           {
             Serial.println("Error connectng with MQTT Broker!");
           }
+          */
           break;
         
         case 1:
