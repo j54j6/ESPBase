@@ -53,7 +53,7 @@ struct lastMqttCallback {
 
     String getPayload(const char* moduleName = "")
     {
-        if(outputModuleName == "" || strcmp(outputModuleName, moduleName))
+        if(outputModuleName && !outputModuleName[0] || strcmp(outputModuleName, moduleName) == 0)
         {
             return payload;
         }
@@ -61,7 +61,7 @@ struct lastMqttCallback {
 
     const char* getTopic(const char* moduleName = "")
     {
-        if(outputModuleName == "" || strcmp(outputModuleName, moduleName))
+        if(outputModuleName && !outputModuleName[0] || strcmp(outputModuleName, moduleName))
         {
             return topic;
         }
@@ -154,7 +154,15 @@ class MQTTHandler : public ErrorSlave {
     bool connect(const char* id, const char* user, const char* pass, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage);
     bool connect(const char* id, const char* user, const char* pass, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage, boolean cleanSession);
 
-     /*
+
+    /*
+        connect() - helper
+    */
+
+    bool connectToService(bool main = true); //normaly used to connect to MQTT Server - try main and Backup CFG
+    bool searchForServiceInNetwork(); //if connectToService() fails - this function tries to find another network device offering MQTT - by using Networkident and 
+
+    /*
         Subscription Control
     */
     bool subscribe(const char* topic);

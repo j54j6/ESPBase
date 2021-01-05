@@ -310,12 +310,19 @@ bool MQTTHandler::connect()
     {
         return false;
     }
+    //end service will already searched in Network
 
+    //start connecting to MQTT Broker
     logging.SFLog(className, "connect - AUTO", "Try to connect to MQTT Broker - read Config", 0);
 
-    if(!services->checkForService("mqtt", true))
+
+    //Check for defined MQTT Broker Service - Extrnal and internal
+    if(!services->checkForService("mqtt", false))
     {
-        logging.SFLog(className, "connect - AUTO", "No MQTT Service defined - try to find Service in Network", 1);
+        /*
+            No Service defined on the device - try to search in Network for Devices with "NetworkIdent" - by j54j6
+        */
+        logging.SFLog(className, "connect - AUTO", "No MQTT Service defined - try to find Service in Network by Network", 1);
         /*
         if(mqttHandlerClient.connect(String(wifiManager->getDeviceMac()).c_str())) //check if any other connection is saved in Object e.g via setServer()
         {
@@ -328,19 +335,20 @@ bool MQTTHandler::connect()
             return false;
         }
         */
-       this->serviceAddDelayActive = true;
-       this->serviceAddDelayTimeout = millis() + 5000;
-       short deviceFound = 100;
-       while(deviceFound != 1 && serviceAddDelayActive)
+       this->serviceAddDelayActive = true; //set function in "InSearch" Mode to prevent multipe search requests in single-System
+       this->serviceAddDelayTimeout = millis() + 5000; // Set Search Timeout - After Timeout Search Request will canceled
+       short deviceFound = 100; //init value for "deviceFound" - 100 is a random number and has no special meaning
+
+       while(deviceFound != 1 && serviceAddDelayActive) //while no device is found 
        {
-           deviceFound = services->autoAddService("mqtt");
-           if(millis() > serviceAddDelayTimeout)
+           deviceFound = services->autoAddService("mqtt"); //NetworkIdent -> searchDevice in Network with defined "mqtt" device
+           if(millis() > serviceAddDelayTimeout) //if the timeour is reached stop searching
            {
                logging.SFLog(className, "connectAuto - Search", "Timeout reached - no Device Found");
                serviceAddDelayActive = false;
                break;
            }
-           if(deviceFound == 3)
+           if(deviceFound == 3) 
            {
                logging.SFLog(className, "connectAuto - Search", "Service already defined! - SKIP");
                serviceAddDelayActive = false;
@@ -351,9 +359,10 @@ bool MQTTHandler::connect()
         
         if(serviceAddDelayActive == false && deviceFound != 100)
         {
-            Serial.println("#########################################");
-            Serial.println("Last Data: ");
-            Serial.println(deviceFound);
+            String message;
+            message = "Network Search timeout reached - No Device Found\nLast State:";
+            message += deviceFound;
+            logging.SFLog(className, "connect - SearchServiceEnd", message.c_str());
             deviceFound = 100;
         }
 
@@ -363,6 +372,7 @@ bool MQTTHandler::connect()
     }
     else //MQTT Service defined
     {
+        /*
         bool setServerSuccess = false;
         for(int i = 0; i <= 1; i++)
         {
@@ -397,6 +407,28 @@ bool MQTTHandler::connect()
                 return false;
             }                
         }
+        */
+       bool connectSuccess = false;
+       for(int serviceTry = 0; serviceTry <= 3; serviceTry++)
+       {
+           switch(serviceTry)
+           {
+               case 1: //Try to connect with Main CFG MQTT Broker
+                logging.SFLog(className, "connect C1", "Try to connect to Main CFG broker");
+                switch(services->checkForService("mqtt", false))
+                {
+                    case 0:
+                        logging.SFLog(className, "connect C1", "Can't find any defined Service - Try to find MQTT Broker in Network");
+                        break;
+                    case 1:
+                        this->mqttHandlerClient.setServer("localhost");
+
+                };
+                break;
+
+           }
+       }
+    
     }
     return false;
 }

@@ -928,6 +928,7 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
                 logger logging;
                 logging.SFLog(className, "checkForService", "Can't check for internal Service - serviceFile doesn't exist!", 2);
             #endif
+            skip = true;
         }
         if(!skip)
         {
@@ -967,19 +968,55 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
     /*
         Check for external Service
     */
-    if(FM->fExist(getExternalServiceFilename(serviceName, false).c_str()) || FM->fExist(getExternalServiceFilename(serviceName, true).c_str()))
+
+    bool existMainCfg = FM->fExist(getExternalServiceFilename(serviceName, false).c_str());
+    bool existBackupCfg = FM->fExist(getExternalServiceFilename(serviceName, true).c_str());
+    
+    switch(result) //devide into section - self Offered found(1) and not found (0)
     {
-        switch (result)
-        {
-        case 0:
-            result = 2;
-            break;
+        case 0: //no self offered found
+            if(existMainCfg && existBackupCfg)
+            {
+                return 3;
+                break;
+            }
+            else if(existMainCfg && !existBackupCfg)
+            {
+                return 2;
+                break;
+            }
+            else if(!existMainCfg && existBackupCfg)
+            {
+                return 10;
+                break;
+            }
+            else
+            {
+                return 0;
+                break;
+            }
         case 1:
-            result = 3;
-        default:
-            break;
-        }
-    }
+            if(existMainCfg && existBackupCfg)
+            {
+                return 5;
+                break;
+            }
+            else if(existMainCfg && !existBackupCfg)
+            {
+                return 4;
+                break;
+            }
+            else if(!existMainCfg && existBackupCfg)
+            {
+                return 10;
+                break;
+            }
+            else
+            {
+                return 1;
+                break;
+            }
+    };
 
     #ifdef J54J6_LOGGING_H
         logger logging;
