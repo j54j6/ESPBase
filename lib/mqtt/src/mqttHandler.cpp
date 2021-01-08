@@ -91,7 +91,7 @@ bool MQTTHandler::setServer(IPAddress ip, uint16 port, bool save, bool asFallbac
             return false;
         }
     }
-    else if (save & asFallback & services->checkForService(services->getExternalServiceFilename("mqtt", true).c_str()) == 0 || services->checkForService(services->getExternalServiceFilename("mqtt", true).c_str()) == 2)
+    else if ((save & asFallback) && services->checkForService(services->getExternalServiceFilename("mqtt", true).c_str()) == 0 || services->checkForService(services->getExternalServiceFilename("mqtt", true).c_str()) == 2)
     {
         bool ipChanged = services->changeConfigValue(services->getExternalServiceFilename("mqtt").c_str(), "ip", ip.toString().c_str(), true);
         bool portChanged = services->changeConfigValue(services->getExternalServiceFilename("mqtt").c_str(), "ip", ip.toString().c_str(), true);
@@ -298,13 +298,71 @@ bool MQTTHandler::setCleanSession(bool cleanSession)
     return false;
 }
 
+
+/*
+    Get STuff
+*/
+
+String MQTTHandler::getWillMessage()
+{
+    if(!FM->fExist(configFile))
+    {
+        return {};
+    }
+
+    return FM->readJsonFileValue(configFile, "willMessage");
+}
+
+String MQTTHandler::getWillTopic()
+{
+    if(!FM->fExist(configFile))
+    {
+        return {};
+    }
+
+    return FM->readJsonFileValue(configFile, "willTopic");
+}
+
+uint8_t MQTTHandler::getWillQos()
+{
+    if(!FM->fExist(configFile))
+    {
+        return 0;
+    }
+    String cache = FM->readJsonFileValue(configFile, "willQos");
+    if(cache.toInt())
+    {
+        return cache.toInt();
+    }
+    return 0;
+}
+
+bool MQTTHandler::getWillRetain()
+{
+    if(!FM->fExist(configFile))
+    {
+        return false;
+    }
+
+    return FM->returnAsBool(FM->readJsonFileValue(configFile, "willRetain"));
+}
+
+bool MQTTHandler::getCleanSession()
+{
+    if(!FM->fExist(configFile))
+    {
+        return false;
+    }
+
+    return FM->returnAsBool(FM->readJsonFileValue(configFile, "cleanSession"));
+}
+
 /*
     Connect
 */
 
-bool MQTTHandler::connect()
+bool MQTTHandler::connect(bool onlyUseExternal, bool searchService)
 {
-
     //if service will already searched then Skip other calls
     if(this->serviceAddDelayActive)
     {
@@ -317,12 +375,28 @@ bool MQTTHandler::connect()
 
 
     //Check for defined MQTT Broker Service - Extrnal and internal
-    if(!services->checkForService("mqtt", false))
+    if(!services->checkForService("mqtt", false) || searchService)
     {
         /*
             No Service defined on the device - try to search in Network for Devices with "NetworkIdent" - by j54j6
         */
-        logging.SFLog(className, "connect - AUTO", "No MQTT Service defined - try to find Service in Network by Network", 1);
+        if(!searchService)
+        {
+            logging.SFLog(className, "connect - AUTO", "No MQTT Service defined - try to find Service in Network by Network", 1);
+        }
+        else
+        {
+            logging.SFLog(className, "connect - AUTO", "MQTT Search Service was poked by Connect - remove Backup CFG - Auto - start Searching for Service", 1);
+            if(services->delService("mqtt", false, true))
+            {
+                logging.SFLog(className, "connect - AUTO", "Successfully removed Backup CFG");
+            }
+            else
+            {
+                logging.SFLog(className, "connect - AUTO", "Error while removing Backup CFG!", 2);
+            } 
+        }
+        
         /*
         if(mqttHandlerClient.connect(String(wifiManager->getDeviceMac()).c_str())) //check if any other connection is saved in Object e.g via setServer()
         {
@@ -364,11 +438,13 @@ bool MQTTHandler::connect()
             message += deviceFound;
             logging.SFLog(className, "connect - SearchServiceEnd", message.c_str());
             deviceFound = 100;
+            return false;
+        }       
+        else
+        {
+            return true;
         }
-
-
-
-       
+        
     }
     else //MQTT Service defined
     {
@@ -408,30 +484,157 @@ bool MQTTHandler::connect()
             }                
         }
         */
-       bool connectSuccess = false;
+
+       const char* username = "";
+       const char* passwd = "";
+       const char* willTopic = "";
+       const char* willMessage = "";
+       uint8_t willQos = -1;
+       bool willRetain = false;
+       bool cleanSession = false;
+    
+       //Set all Parameters from Config File (defined above) by Config File
+       if(FM->fExist(configFile))
+       {
+           const char* valUsername = FM->readJsonFileValue(configFile, "user");
+
+           if(!strcmp(valUsername, "") == 0 || !valUsername)
+           {
+               username = valUsername;
+           }
+
+            const char* valPassword = FM->readJsonFileValue(configFile, "pass");
+
+           if(!strcmp(valPassword, "") == 0 || !valPassword)
+           {
+               username = valPassword;
+           }
+
+           willTopic = this->getWillTopic().c_str();
+           willQos = this->getWillQos();
+           willMessage = this->getWillMessage().c_str();
+           willRetain = this->getWillRetain();
+           cleanSession = this->getCleanSession();
+       }
+        bool connectSuccess = false;
+        uint sPort = 0;
        for(int serviceTry = 0; serviceTry <= 3; serviceTry++)
        {
            switch(serviceTry)
            {
-               case 1: //Try to connect with Main CFG MQTT Broker
-                logging.SFLog(className, "connect C1", "Try to connect to Main CFG broker");
-                switch(services->checkForService("mqtt", false))
+                case 1: //Try to connect to main CFG Stuff or internal   
+                    switch(services->checkForService("mqtt", onlyUseExternal))
+                    {
+                        case 0:
+                            logging.SFLog(className, "connect C1", "Can't find any defined Service - Try to find MQTT Broker in Network");   
+                            break; //End Case 0
+
+                        case 1:
+                            sPort = this->services->getServicePort("mqtt", false, true);
+
+                            if(sPort < 1 || sPort > 65535 || !sPort)
+                            {
+                                sPort = 1883; //default port
+                            }
+                            this->mqttHandlerClient.setServer("127.0.0.1", sPort);
+                            if(this->mqttHandlerClient.connect(WiFi.macAddress().c_str(), username, passwd, willTopic, willQos, willRetain, willMessage, cleanSession))
+                            {
+                                logging.SFLog(className, "connect C1", "Successfully connected to MQTT Broker (localhost)");
+                                connectSuccess = true;
+                            }
+                            else
+                            {
+                                logging.SFLog(className, "connect C1", "Can't connect to MQTT Broker! - only self Offered found and not connectable!");
+                                connectSuccess = false;
+                            }
+                            break; //End Case 1 - only self offered Service found
+
+                        default: //try to connect to Main CFG if defined
+                            logging.SFLog(className, "connect C2", "Try to connect to Main CFG broker");
+                            this->mqttHandlerClient.setServer(this->services->getServiceIP("mqtt"), this->services->getServicePort("mqtt"));
+
+                            if(this->mqttHandlerClient.connect(WiFi.macAddress().c_str(), username, passwd, willTopic, willQos, willRetain, willMessage, cleanSession))
+                            {
+                                logging.SFLog(className, "connect C1", "Successfully connected to MQTT Broker (Main CFG)");
+                                connectSuccess = true;
+                            }
+                            else
+                            {
+                                logging.SFLog(className, "connect C1", "Can't connect to MQTT Broker! - Main CFG not connectable!");
+                                connectSuccess = false;
+                            }
+                        break; //End Case2 - Connect to Main CFG
+                    };
+                break; //End Case 1 - try to connect to Main Services
+
+                case 2: //Try to connect to Fallback Services
+                    switch(services->checkForService("mqtt", onlyUseExternal))
+                    {
+                        case 0:
+                            logging.SFLog(className, "connect C1", "Can't find any defined Service - Try to find MQTT Broker in Network");   
+                            break; //End Case 0
+
+                        case 1: //Second try to connect to MQTT Service with default port 1883 tcp
+                            this->mqttHandlerClient.setServer("127.0.0.1", 1883);
+                            if(this->mqttHandlerClient.connect(WiFi.macAddress().c_str(), username, passwd, willTopic, willQos, willRetain, willMessage, cleanSession))
+                            {
+                                logging.SFLog(className, "connect C1", "Successfully connected to MQTT Broker (localhost)");
+                                connectSuccess = true;
+                            }
+                            else
+                            {
+                                logging.SFLog(className, "connect C1", "Can't connect to MQTT Broker! - only self Offered found and not connectable!");
+                                connectSuccess = false;
+                            }
+                            break; //End Case 1 - only self offered Service found
+
+                        case 3: //try to connect to Backup CFG if defined
+                        case 5: 
+                            logging.SFLog(className, "connect S2-C3/5", "Try to connect to Backup CFG broker");
+                            this->mqttHandlerClient.setServer(this->services->getServiceIP("mqtt", true), this->services->getServicePort("mqtt", true));
+
+                            if(this->mqttHandlerClient.connect(WiFi.macAddress().c_str(), username, passwd, willTopic, willQos, willRetain, willMessage, cleanSession))
+                            {
+                                logging.SFLog(className, "connect C1", "Successfully connected to MQTT Broker (Backup CFG)");
+                                connectSuccess = true;
+                            }
+                            else
+                            {
+                                logging.SFLog(className, "connect C1", "Can't connect to MQTT Broker! - Backup CFG not connectable!");
+                                connectSuccess = false;
+                            }
+                            break; //End Case3/5
+                    };
+                    break; //End Case2 - Connect to Backup CFG
+
+                case 3: //Try to Search another device in Network
+                    default:
+                        for(int tries = 0; tries <= 3; tries++)
+                        {
+                            if(this->connect(true, true))
+                            {
+                                if(tries < 3)
+                                {
+                                    connectSuccess = connect();
+                                }
+                                else
+                                {
+                                    connectSuccess = false;
+                                    break;
+                                }
+                            }              
+                        }
+                break; //End Case 3 - Search for new Service in Network
+
+                if(connectSuccess)
                 {
-                    case 0:
-                        logging.SFLog(className, "connect C1", "Can't find any defined Service - Try to find MQTT Broker in Network");
-                        break;
-                    case 1:
-                        this->mqttHandlerClient.setServer("localhost");
-
-                };
-                break;
-
-           }
-       }
-    
-    }
-    return false;
-}
+                    return true;
+                }
+            }//End switch ServiceTry
+        } //End For loop
+        return false;
+    } //End Else - try to connect to defined service
+} //End connect()
 
 bool MQTTHandler::connect(const char* id)
 {
@@ -471,6 +674,10 @@ bool MQTTHandler::connect(const char* id, const char* user, const char* pass, co
 
     return mqttHandlerClient.connect(id, user, pass, willTopic, willQos, willRetain, willMessage, cleanSession);
 }
+
+/*
+    Connect Helper
+*/
 
 /*
     Disconnect
@@ -530,12 +737,10 @@ void MQTTHandler::eventListener(char* topic, uint8* payload, uint length)
     String res;
     lastCallback.topic = topic;
 
-  for (int i = 0; i < length; i++) {
+  for (uint i = 0; i < length; i++) {
     res += (char)payload[i];
   }
   lastCallback.payload = res;
-
-  
 }
 
 lastMqttCallback* MQTTHandler::getCallback()

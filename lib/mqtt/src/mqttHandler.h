@@ -12,7 +12,6 @@
 #include "errorHandler.h"
 #include "logging.h"
 
-
 /*
     MQTT Config Blueprint
 
@@ -26,7 +25,6 @@
         "willMessage" : "",
         "cleanSession" : ""
     }
-
 */
 
 /*
@@ -34,8 +32,6 @@
 
     Topic: const char*
     lastPayload: const char*
-
-
 */
 
 struct lastMqttCallback {
@@ -95,7 +91,6 @@ class MQTTHandler : public ErrorSlave {
         bool serviceAddDelayActive = false;
         ulong serviceAddDelayTimeout = 0;
 
-    
     protected:
         //extra Stuff
         bool configCheck();
@@ -145,15 +140,23 @@ class MQTTHandler : public ErrorSlave {
     bool setCleanSession(bool cleanSession = true);
 
     /*
+        Get Stuff
+    */
+    String getWillMessage();
+    String getWillTopic();
+    uint8_t getWillQos();
+    bool getWillRetain();
+    bool getCleanSession();
+
+    /*
         Connect
     */
-    bool connect(); //try to connect to as external defined MQTT Server or fallback - if fail: return false
+    bool connect(bool onlyUseExternal = false, bool searchService = false); //try to connect to as external defined MQTT Server or fallback - if fail: return false
     bool connect(const char* id);
     bool connect(const char* id, const char* user, const char* pass);
     bool connect(const char* id, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage);
     bool connect(const char* id, const char* user, const char* pass, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage);
     bool connect(const char* id, const char* user, const char* pass, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage, boolean cleanSession);
-
 
     /*
         connect() - helper
@@ -161,7 +164,7 @@ class MQTTHandler : public ErrorSlave {
 
     bool connectToService(bool main = true); //normaly used to connect to MQTT Server - try main and Backup CFG
     bool searchForServiceInNetwork(); //if connectToService() fails - this function tries to find another network device offering MQTT - by using Networkident and 
-
+    bool setUserAndPass();
     /*
         Subscription Control
     */
@@ -189,7 +192,6 @@ class MQTTHandler : public ErrorSlave {
     bool publish_P(const char* topic, const uint8_t * payload, unsigned int plength, boolean retained);
     */
 
-
    /*
     // Start to publish a message.
     // This API:
@@ -208,7 +210,6 @@ class MQTTHandler : public ErrorSlave {
     // Write size bytes from buffer into the payload (only to be used with beginPublish/endPublish)
     // Returns the number of bytes written
     virtual size_t write(const uint8_t *buffer, size_t size);
-
     */
 
     /*
@@ -216,7 +217,6 @@ class MQTTHandler : public ErrorSlave {
     */
     void eventListener(char* topic, uint8* payload, uint length);
     lastMqttCallback* getCallback();
-
 
     /*
         Other Stuff to get this working^^
@@ -229,13 +229,11 @@ class MQTTHandler : public ErrorSlave {
     //loop
     void run();
 
-    
-        //control class
+    //control class
     void startClass();
     void stopClass();
     void pauseClass();
     void restartClass();
     void continueClass();     
 };
-
 #endif
