@@ -857,9 +857,40 @@ String ServiceHandler::getServiceMAC(const char* serviceName, bool fallback)
     return "failed";
 }
 
-int ServiceHandler::getServicePort(const char* serviceName, bool fallback)
+int ServiceHandler::getServicePort(const char* serviceName, bool fallback, bool selfOffered)
 {
-    if(!fallback)
+    if(selfOffered) //self offered Services - only return the port by reading serviceName Key Value from JSON
+    {
+        if(FM->fExist(offeredServicesPath) && checkForService(serviceName, false) == 1 || checkForService(serviceName, false) == 4 || checkForService(serviceName, false) == 5)
+        {
+            String result = FM->readJsonFileValue(offeredServicesPath, serviceName);
+            if(result.toInt())
+            {
+                return result.toInt();
+            }
+            else
+            {
+                #ifdef J54J6_LOGGING_H
+                    logger logging;
+                    logging.SFLog(className, "getServicePort", "Can't read ServicePort (selfOffered)! - return \"failed\"", 2);
+                #endif
+                return -1;
+
+            }
+            
+        }
+        else
+        {
+            #ifdef J54J6_LOGGING_H
+                logger logging;
+                logging.SFLog(className, "getServicePort", "Can't read ServicePort (selfOffered) - offeredServices File doesn't exist or Service doesn't exist! - return \"failed\"", 1);
+            #endif
+            return -1; //no selfoffered Service found or !
+        }
+        
+    }
+
+    if(!fallback && !selfOffered) //external Service
     {   
         String port = FM->readJsonFileValue(getExternalServiceFilename(serviceName).c_str(), "port");
         if(port != "")

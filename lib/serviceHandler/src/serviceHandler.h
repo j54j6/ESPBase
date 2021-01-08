@@ -245,7 +245,7 @@ class ServiceHandler : public ErrorSlave
 
         /*
             addServiceAttribute
-                Custom Attributes will be appended at the end of CFG Files - for example additional passwords or last Seen 
+                Custom Attributes will be appended at the end of CFG Files - for example additional passwords or last Seen - only externalServices
         */
         bool addServiceAttribute(const char* AttributeName, const char* value);
         /*
@@ -298,8 +298,10 @@ class ServiceHandler : public ErrorSlave
             getServicePort
                 onSuccess: return port
                 onFail: return -1
+
+            if <<selfOffered>> true - fallback will be ignored
         */
-        int getServicePort(const char* serviceName, bool fallback = false);
+        int getServicePort(const char* serviceName, bool fallback = false, bool selfOffered = false);
         
         /*
             return the correct Filename to use with LittleFS - only helper function
