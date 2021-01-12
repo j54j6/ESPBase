@@ -107,9 +107,7 @@ class ErrorSlave {
        
         virtual void startClass() = 0;
         virtual void stopClass() = 0;
-        virtual void pauseClass() = 0;
         virtual void restartClass() = 0;
-        virtual void continueClass() = 0;
 };
 
 class ErrorHandler {
