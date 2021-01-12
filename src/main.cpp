@@ -9,6 +9,7 @@
 #include "wifiManager.h"
 #include "mqttHandler.h"
 #include "moduleState.h"
+#include "logger.h"
 
 LED wifiLed(D1);
 LED errorLed(D7);
@@ -22,7 +23,8 @@ ServiceHandler networkIdent(&FM, &wifiManager);
 udpManager udpManage(&wifiManager, 63547);
 MQTTHandler mqtthandler(&FM, &wifiManager, &networkIdent);
 ErrorHandlerMaster testHandler(&errorLed, &workLed);
-
+SysLogger testLogger(&FM, "MainClass");
+//SysLogger testLogger("MainClass");
 
 void handleTest()
 {
@@ -123,7 +125,7 @@ void setup() {
   //IPAddress mqserv = IPAddress(192,168,178,27);
   //bool mqt = mqtthandler.setServer(mqserv, 1883);
   //mqtthandler.setCallback(getMqtt);
-
+  //testLogger.logIt("Setup", "This is a Test Message", 6);
 }
 
 void loop() {
