@@ -24,7 +24,7 @@ class LED {
         unsigned long nextToggle = 0;
 
     public:
-        //LEd Handler Constructor struct
+        //Led Handler Constructor struct
         struct ledConfig {
             int led_Pin;
             bool state;
