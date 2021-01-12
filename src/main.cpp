@@ -8,6 +8,7 @@
 #include "../lib/network/webSrc/setupPage.h"
 #include "wifiManager.h"
 #include "mqttHandler.h"
+#include "moduleState.h"
 
 LED wifiLed(D1);
 LED errorLed(D7);
@@ -20,6 +21,7 @@ ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
 ServiceHandler networkIdent(&FM, &wifiManager);
 udpManager udpManage(&wifiManager, 63547);
 MQTTHandler mqtthandler(&FM, &wifiManager, &networkIdent);
+ErrorHandlerMaster testHandler(&errorLed, &workLed);
 
 
 void handleTest()
