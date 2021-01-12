@@ -1002,55 +1002,92 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
 
     bool existMainCfg = FM->fExist(getExternalServiceFilename(serviceName, false).c_str());
     bool existBackupCfg = FM->fExist(getExternalServiceFilename(serviceName, true).c_str());
-    
+    #ifdef J54J6_LOGGING_H
+        logger logging;
+    #endif
     switch(result) //devide into section - self Offered found(1) and not found (0)
     {
         case 0: //no self offered found
             if(existMainCfg && existBackupCfg)
             {
+                #ifdef J54J6_LOGGING_H
+                    logging.SFLog(className, "checkForService", "Return 3", -1);
+                #endif
                 return 3;
                 break;
             }
             else if(existMainCfg && !existBackupCfg)
             {
+                #ifdef J54J6_LOGGING_H
+                    logging.SFLog(className, "checkForService", "Return 2", -1);
+                #endif
                 return 2;
                 break;
             }
             else if(!existMainCfg && existBackupCfg)
             {
+                #ifdef J54J6_LOGGING_H
+                    logging.SFLog(className, "checkForService", "Return 10", -1);
+                #endif
                 return 10;
                 break;
             }
             else
             {
+                #ifdef J54J6_LOGGING_H
+                    logging.SFLog(className, "checkForService", "Return 0", -1);
+                #endif
                 return 0;
                 break;
             }
         case 1:
             if(existMainCfg && existBackupCfg)
             {
+                #ifdef J54J6_LOGGING_H
+                    logging.SFLog(className, "checkForService", "Return 5", -1);
+                #endif
                 return 5;
                 break;
             }
             else if(existMainCfg && !existBackupCfg)
             {
+                #ifdef J54J6_LOGGING_H
+                    logging.SFLog(className, "checkForService", "Return 4", -1);
+                #endif
                 return 4;
                 break;
             }
             else if(!existMainCfg && existBackupCfg)
             {
+                #ifdef J54J6_LOGGING_H
+                    logging.SFLog(className, "checkForService", "Return 10", -1);
+                #endif
                 return 10;
                 break;
             }
             else
             {
+                #ifdef J54J6_LOGGING_H
+                    logging.SFLog(className, "checkForService", "Return 1", -1);
+                #endif
                 return 1;
                 break;
             }
+        default:
+            #ifdef J54J6_LOGGING_H
+                logger logging;
+                String message = "Unexcepted Value -  \"";
+                message += result;
+                message += "\" - excepted 0 or 1!: ";
+                logging.SFLog(className, "checkForService", message.c_str());
+            #endif
+            error.error = true;
+            error.ErrorCode = 893;
+            error.message = "Unexcepted value!";
+            error.priority = 5;
     };
 
     #ifdef J54J6_LOGGING_H
-        logger logging;
         String message = "Return State for Service \"";
         message += serviceName;
         message += "\": ";
