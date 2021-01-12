@@ -388,6 +388,110 @@ class ClassModuleSlave {
 };
 
 
+class ErrorHandlerMaster {
+    private:
+        LED* _errorLed;
+        LED* _workLed;
+    
+    public:
+        ErrorHandlerMaster()
+        {
+            LED dummy;
+            this->_errorLed = &dummy;
+            this->_workLed = &dummy;
+        }
+
+        ErrorHandlerMaster(LED* _errorLed, LED* _workLed)
+        {
+            this->_errorLed = _errorLed;
+            this->_workLed = _workLed;
+        }
+
+        void reportError(const char* className, const char* message, short priority, int code)
+        {
+            _errorLed->ledOn();
+            _workLed->ledOff();
+            logError(className, message, priority, code);
+        }
+
+        void logError(const char* className, const char* message, short priority, int code)
+        {
+            if(!Serial)
+            {
+                Serial.begin(115200);
+            }
+
+
+        }
+
+        const char* getErrorHandlerReaction(int prio)
+        {
+            switch(prio)
+            {
+                case 4:
+                    return "restart Class";
+                    break;
+                case 5:
+                    return "restart Class";
+                    break;
+                case 6:
+                    return "disable Class";
+                    break;
+                default:
+                    return "nothing";
+                    break;
+            };
+            return "false";
+        }
+
+        void preFormattedWarnNotification(const char* className , const char* message, int priority, int code)
+        {
+            String modifiedClassName = "ERROR-Handler";
+            modifiedClassName += "->";
+            modifiedClassName += className;
+            logger logging;
+            String FormatMessage = "\n\n\n##########-WARN-##########\n\n";
+            FormatMessage += "Reporting Class: ";
+            FormatMessage += className;
+            FormatMessage += "\nInternal Class-Priority: ";
+            FormatMessage += priority;
+            FormatMessage += "\nReason: ";
+            FormatMessage += message;
+            FormatMessage += "\nError-Code: ";
+            FormatMessage += code;
+            FormatMessage += "\nAction: nothing - only WARN";
+            FormatMessage += "\n\n###########-END-###########\n\n";
+            logging.SFLog(modifiedClassName.c_str(), "ERROR-HANDLER-LOG", FormatMessage.c_str(), 1);
+            return;
+        }
+
+        void preFormattedErrorNotification(const char* className, const char* message, int priority, int code, bool opticalReport = true)
+        {
+            String modifiedClassName = "ERROR-Handler";
+            modifiedClassName += "->";
+            modifiedClassName += className;
+            logger logging;
+            String FormatMessage = "\n\n\n\n##########-ERROR-##########\n\n";
+            FormatMessage += "Reporting Class: ";
+            FormatMessage += className;
+            FormatMessage += "\nInternal Class-Priority: ";
+            FormatMessage += priority;
+            FormatMessage += "\nOptical Report: ";
+            FormatMessage += opticalReport;
+            FormatMessage += "\nReason: ";
+            FormatMessage += message;
+            FormatMessage += "\nError-Code: ";
+            FormatMessage += code;
+            FormatMessage += "\n Action: ";
+            FormatMessage += getErrorHandlerReaction(priority);
+            FormatMessage += "\n\n###########-END-###########\n\n\n";
+            logging.SFLog(modifiedClassName.c_str(), "ERROR-HANDLER-LOG", FormatMessage.c_str(), 2);
+            return;
+        }
+};
+
+
+
 /*
     ClassModuleMaster
 
@@ -489,97 +593,4 @@ class ClassModuleMaster {
     
 
 };
-
-class ErrorHandlerMaster {
-    private:
-        LED* _errorLed;
-        LED* _workLed;
-    
-    public:
-        ErrorHandlerMaster()
-        {
-            LED dummy;
-            this->_errorLed = &dummy;
-            this->_workLed = &dummy;
-        }
-
-        ErrorHandlerMaster(LED* _errorLed, LED* _workLed)
-        {
-            this->_errorLed = _errorLed;
-            this->_workLed = _workLed;
-        }
-
-        void reportError()
-        {
-            _errorLed->ledOn();
-            _workLed->ledOff();
-        }
-
-
-        const char* getErrorHandlerReaction(int prio)
-        {
-            switch(prio)
-            {
-                case 4:
-                    return "restart Class";
-                    break;
-                case 5:
-                    return "restart Class";
-                    break;
-                case 6:
-                    return "disable Class";
-                    break;
-                default:
-                    return "nothing";
-                    break;
-            };
-            return "false";
-        }
-
-        void preFormattedWarnNotification(const char* className , const char* message, int priority, int code)
-        {
-            String modifiedClassName = "ERROR-Handler";
-            modifiedClassName += "->";
-            modifiedClassName += className;
-            logger logging;
-            String FormatMessage = "\n\n\n##########-WARN-##########\n\n";
-            FormatMessage += "Reporting Class: ";
-            FormatMessage += className;
-            FormatMessage += "\nInternal Class-Priority: ";
-            FormatMessage += priority;
-            FormatMessage += "\nReason: ";
-            FormatMessage += message;
-            FormatMessage += "\nError-Code: ";
-            FormatMessage += code;
-            FormatMessage += "\nAction: nothing - only WARN";
-            FormatMessage += "\n\n###########-END-###########\n\n";
-            logging.SFLog(modifiedClassName.c_str(), "ERROR-HANDLER-LOG", FormatMessage.c_str(), 1);
-            return;
-        }
-
-        void preFormattedErrorNotification(const char* className, const char* message, int priority, int code, bool opticalReport = true)
-        {
-            String modifiedClassName = "ERROR-Handler";
-            modifiedClassName += "->";
-            modifiedClassName += className;
-            logger logging;
-            String FormatMessage = "\n\n\n\n##########-ERROR-##########\n\n";
-            FormatMessage += "Reporting Class: ";
-            FormatMessage += className;
-            FormatMessage += "\nInternal Class-Priority: ";
-            FormatMessage += priority;
-            FormatMessage += "\nOptical Report: ";
-            FormatMessage += opticalReport;
-            FormatMessage += "\nReason: ";
-            FormatMessage += message;
-            FormatMessage += "\nError-Code: ";
-            FormatMessage += code;
-            FormatMessage += "\n Action: ";
-            FormatMessage += getErrorHandlerReaction(priority);
-            FormatMessage += "\n\n###########-END-###########\n\n\n";
-            logging.SFLog(modifiedClassName.c_str(), "ERROR-HANDLER-LOG", FormatMessage.c_str(), 2);
-            return;
-        }
-};
-
 #endif //J54J6_MODULESTATE_H
