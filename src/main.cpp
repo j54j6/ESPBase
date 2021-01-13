@@ -23,7 +23,7 @@ ServiceHandler networkIdent(&FM, &wifiManager);
 udpManager udpManage(&wifiManager, 63547);
 MQTTHandler mqtthandler(&FM, &wifiManager, &networkIdent);
 ErrorHandlerMaster testHandler(&errorLed, &workLed);
-SysLogger testLogger(&FM, "MainClass");
+//SysLogger testLogger(&FM, "MainClass");
 //SysLogger testLogger("MainClass");
 
 void handleTest()

@@ -54,7 +54,7 @@
         The default path is "/var/log/logger.log" if you want to use a custom one you need to uncomment the logFilePath and define your own
 
 */
- #define logInFile
+#define logInFile //Set Comment quotes here and the code compiles without any problems
 // #define logFilePath "/log/"
 // #define singleLogFile false // if true (default) all log messages are saved in one File otherwise in the given directoy a file is created for each class
 // #define fileFormatMessage
