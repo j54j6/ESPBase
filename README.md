@@ -24,9 +24,8 @@ postponed work:
     
 Current work:
 
-    -> Finish WiFi Setup and DNS/MDNS Handling - finished
-    -> Add MQTT Handling - WIP (90% finished)
     -> Wrap current global sketch content into single Class - WIP
+    -> rewrite Logging and Reporting Module to get get better ErrorHandling and deviceControl
 
 
 bucket list:
