@@ -85,7 +85,7 @@ what's working:
         Captive Portal (register and saving to LittleFS (using Filemanager))
         MQTT
         Webserver + custom service add
-        ServiceSearch (NetworkIdent by j54j6) - later as JServiceManager
+        ServiceSearch (NetworkIdent by j54j6) - later as JServiceManager with SSDP, UPnP and all common discovery protocols
         udp Communication
         Network: captive Portal for easy SignUp
         Network: MDNS Support
