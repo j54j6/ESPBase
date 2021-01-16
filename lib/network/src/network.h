@@ -12,7 +12,7 @@
 //#include <PJON.h>
 
 
-#include "logging.h"
+#include "logger.h"
 #include "wifiManager.h"
 #include "filemanager.h"
 #include "errorHandler.h"
@@ -87,6 +87,7 @@ class Network : public ErrorSlave
         DNSServer dnsServer;
         ESP8266WebServer webserver;
         PubSubClient mqttHandler;
+        SysLogger logging;
         
 
         /*
