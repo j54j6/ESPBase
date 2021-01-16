@@ -11,7 +11,7 @@
 //own Libs
 #include "errorHandler.h" //errorHandling to Control the class and report to other classes
 #include "filemanager.h" //Filemanager based on LittleFS with Config Addins 
-#include "logging.h" //Serial and File Logging
+#include "logger.h" //Serial and File Logging
 #include "wifiManager.h" //control of Wifi Interface
 #include "udpManager.h" //udp Manager to control and receive UDP connection/packets
 
@@ -191,7 +191,8 @@ class ServiceHandler : public ErrorSlave
         //internal Handler
         Filemanager* FM;
         WiFiManager* wifiManager;
-        udpManager udpControl = udpManager(this->wifiManager, this->networkIdentPort);
+        udpManager udpControl = udpManager(this->FM, this->wifiManager, this->networkIdentPort);
+        SysLogger logging;
 
     protected:
         //internal helper functions
