@@ -5,7 +5,7 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
-#include "logging.h"
+#include "logger.h"
 #include "errorHandler.h"
 #include "filemanager.h"
 #include "wifiManager.h"
@@ -60,9 +60,10 @@ class udpManager : public ErrorSlave {
         WiFiUDP udpHandler;
         WiFiManager* wifiManager;
         udpPacketResolve lastContent;
+        SysLogger logging;
 
     public:
-        udpManager(WiFiManager* wifiManager, int port);
+        udpManager(Filemanager* FM, WiFiManager* wifiManager, int port);
         ~udpManager();
         
         //get stuff

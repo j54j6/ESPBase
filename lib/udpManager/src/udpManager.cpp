@@ -1,8 +1,9 @@
 #include "udpManager.h"
 
-udpManager::udpManager(WiFiManager* wifiManager, int port)
+udpManager::udpManager(Filemanager* FM, WiFiManager* wifiManager, int port)
 {
     this->listenPort = port;
+    this->logging = SysLogger(FM, "udpManager");
 }
 
 udpManager::~udpManager()
@@ -30,16 +31,16 @@ bool udpManager::begin()
 {
     if(udpListenerStarted)
     {
-        logger logging;
-        logging.SFLog(className, "begin", "UDP handler already started - SKIP");
+        
+        logging.logIt("begin", "UDP handler already started - SKIP");
         return true;
     }
 
     if(udpHandler.begin(this->listenPort) == 0)
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "begin", "Can't start UDP - begin() return false!", 2);
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("begin", "Can't start UDP - begin() return false!", 2);
         #endif
         error.error = true;
         error.ErrorCode = 421;
@@ -49,12 +50,12 @@ bool udpManager::begin()
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
+        #ifdef J54J6_SysLogger
+            
             String message = "UDP handler started - ";
             message += "Listening on Port: ";
             message += listenPort;
-            logging.SFLog(className, "begin", message.c_str());
+            logging.logIt("begin", message.c_str());
         #endif
     }
     
@@ -78,8 +79,8 @@ void udpManager::sendUdpMessage(const char* workload, IPAddress ip, int port)
             udpHandler.endPacket();
         
 
-            #ifdef J54J6_LOGGING_H
-                logger logging;
+            #ifdef J54J6_SysLogger
+                
                 String message = "------------------------------\n";
                 message += "IP: ";
                 message += ip.toString();
@@ -88,7 +89,7 @@ void udpManager::sendUdpMessage(const char* workload, IPAddress ip, int port)
                 message += "\nWorkload: ";
                 message += workload;
                 message += "\n------------------------------\n";
-                logging.SFLog(className, "sendUdpMessage", message.c_str(), -1);
+                logging.logIt("sendUdpMessage", message.c_str(), -1);
             #endif
 
             /*
@@ -104,17 +105,17 @@ void udpManager::sendUdpMessage(const char* workload, IPAddress ip, int port)
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "sendUdpMessage", "Can't send UDP Message - beginPacket - return false (0)", 2);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("sendUdpMessage", "Can't send UDP Message - beginPacket - return false (0)", 2);
             #endif
         }
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "sendUdpMessage", "Can't send UDP Message - no Network!", 2);
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("sendUdpMessage", "Can't send UDP Message - no Network!", 2);
         #endif
     }
 }
@@ -153,8 +154,8 @@ void udpManager::run()
         
         if(lastContent.udpContent != "NULL")
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
+            #ifdef J54J6_SysLogger
+                
                 String message = "\n.............\n";
                 message += "Address: \n";
                 message += lastContent.remoteIP.toString().c_str();
@@ -165,7 +166,7 @@ void udpManager::run()
                 message += "\nContent: ";
                 message += lastContent.udpContent;
                 message += ".............";
-                logging.SFLog(className, "udpReceive - loop", message.c_str(), -1);
+                logging.logIt("udpReceive - loop", message.c_str(), -1);
             #endif
         }
     }
