@@ -1,19 +1,16 @@
 #include "logger.h"
 
 //Constructor
-#ifndef logInFile
 SysLogger::SysLogger(const char* className)
 {
     this->moduleClassName = className;
 }
-#else
-//logInFile
+
 SysLogger::SysLogger(Filemanager* FM, const char* className)
 {
     this->FM = FM;
     this->moduleClassName = className;
 }
-#endif 
 //protected
 String SysLogger::getLogLevel(short value)
 {
@@ -44,11 +41,6 @@ String SysLogger::getLogLevel(short value)
 
 String SysLogger::getFormattedMessage(String functionName, String message, short priority)
 {
-    //define TextSpaces 
-    #define classNameSpace 20
-    #define functionnameSpace 15
-    #define priorityValueSpace 15
-    
     //Output Variable
     String outputMessage;
     //local variablePointer - pointer to the current letter per Variable in each for-loop
@@ -113,44 +105,67 @@ String SysLogger::getFormattedMessage(String functionName, String message, short
 
 void SysLogger::logIt(String function, String message, char priority)
 {
-    if((priority < logLevel && logLevel != 7) || logLevel == 0)
+    if((priority >= serialLogLevel && serialLogLevel != 0) || serialLogLevel == 7)
     {
-        return;
+
+        #ifdef logSerial
+            #ifdef serialBaudrate
+                    if(!Serial)
+                    {
+                        Serial.begin(serialBaudrate);
+                    } 
+            #endif //serialBaudtate
+
+            if(Serial)
+            {
+                #ifdef serialFormatMessage
+                    Serial.println(getFormattedMessage(function, message, priority));
+                #else
+                {
+                    Serial.print(function);
+                    Serial.print(", ");
+                    Serial.print(getLogLevel(priority));
+                    Serial.print(", ");
+                    Serial.print(message);
+                }
+                #endif //serialFormatMessage
+            }
+
+        #endif //logSerial
     }
 
-    #ifdef logSerial
-        #ifdef serialBaudrate
-                if(!Serial)
-                {
-                    Serial.begin(serialBaudrate);
-                } 
-        #endif //serialBaudtate
+    if((priority >= fileLogLevel && fileLogLevel != 0) || fileLogLevel == 7)
+    {
+        #ifdef logInFile
+            #ifdef logFilePath
+                #ifdef singleLogFile
+                    if(!FM->fExist(logFilePath))
+                    {
+                        FM->createFile(logFilePath);
+                    }
 
-        if(Serial)
-        {
-            #ifdef serialFormatMessage
-                Serial.println(getFormattedMessage(function, message, priority));
-            #else
-            {
-                Serial.print(function);
-                Serial.print(", ");
-                Serial.print(message);
-                Serial.print(", ");
-                Serial.print(priority);
-            }
-            #endif //serialFormatMessage
-        }
-            
-    #endif //logSerial
+                #ifdef fileFormatMessage
+                    FM->writeInFile(logFilePath, getFormattedMessage(function, message, priority).c_str(), "a");
+                #else
+                    String message = function + ", " + getLogLevel(priority) + ", " + message;
+                    FM->writeInFile(logFilePath, message.c_str(), "a");
+                #endif
+                #else
+                    String logFile = logFilePath + moduleClassName + ".log";
+                    if(!FM->fExist(logFile.c_str()))
+                    {
+                        FM->createFile(logFile.c_str());
+                    }
 
-    #ifdef logInFile
-        #ifdef logFilePath
-            #ifdef singleLogFile
-
-            #else
-
-            #endif //singleLogFile
-        #endif //logInFilePath
-    #endif //logInFile
+                #ifdef fileFormatMessage
+                    FM->writeInFile(logFile.c_str(), getFormattedMessage(function, message, priority).c_str(), "a");
+                #else
+                    String message = function + ", " + getLogLevel(priority) + ", " + message;
+                    FM->writeInFile(logFile, message.c_str(), "a");
+                #endif
+                #endif //singleLogFile
+            #endif //logInFilePath
+        #endif //logInFile
+    }
 }
 

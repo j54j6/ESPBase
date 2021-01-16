@@ -2,6 +2,7 @@
 #define J54J6_SysLogger
 
 #include <Arduino.h>
+#include "filemanager.h"
 
 /*
     Logging class by j54j6
@@ -36,7 +37,8 @@
         - 7 -> all
 */
 
-#define logLevel 7
+#define serialLogLevel 7
+#define fileLogLevel 5
 
 /*
     Serial Logging
@@ -54,21 +56,21 @@
         The default path is "/var/log/logger.log" if you want to use a custom one you need to uncomment the logFilePath and define your own
 
 */
-#define logInFile //Set Comment quotes here and the code compiles without any problems
-// #define logFilePath "/log/"
-// #define singleLogFile false // if true (default) all log messages are saved in one File otherwise in the given directoy a file is created for each class
-// #define fileFormatMessage
+//#define logInFile //Set Comment quotes here and the code compiles without any problems
+#define logFilePath "/log/syslog.log"
+//#define singleLogFile false // if true (default) all log messages are saved in one File otherwise in the given directoy a file is created for each class
+#define fileFormatMessage
 
-#ifdef logInFile
-    #include "filemanager.h"
-#endif
+
+//define TextSpaces for Formatted Messages
+#define classNameSpace 15
+#define functionnameSpace 20
+#define priorityValueSpace 6
 
 class SysLogger {
     private:
         String moduleClassName;
-        #ifdef logInFile
-            Filemanager* FM;
-        #endif
+        Filemanager* FM;
     protected:
         //return PriorityValue as "humanReadable" text
         String getLogLevel(short value);
@@ -79,13 +81,11 @@ class SysLogger {
     public:
         #ifndef logInFile
             SysLogger(const char* className);
-            #ifdef J54J6_FILEMANAGER_H
-                SysLogger(Filemanager* FM, const char* className);
-            #endif
+            SysLogger(Filemanager* FM, const char* className);
         #else
             SysLogger(Filemanager* FM, const char* className);
         #endif
-
+        SysLogger() {};
         ~SysLogger() {};
 
 
