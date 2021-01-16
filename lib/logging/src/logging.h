@@ -12,14 +12,14 @@ class logger {
     private:
         int baudrate = 115200;
         bool serialLogging = true;
-        int logLevel = -1;
+        int logLevels = -1;
 
 
 
         static int getLogLevel()
         {
             logger logging; //create instance of itself to use non static functionalities of this class e.g readout Configparameter
-            return int(logging.logLevel);
+            return int(logging.logLevels);
         }
 
         const char* getLevel(int prio)
