@@ -11,6 +11,7 @@
 #include "logger.h"
 #include "filemanager.h"
 #include "errorHandler.h"
+#include "moduleState.h"
 
 #define WiFiCheckDelay 50
 #define FPM_SLEEP_MAX_TIME 0xFFFFFFF
@@ -28,7 +29,7 @@ struct macAdress {
 
 //typedef std::function<void(bool)> solverfkt;
 
-class WiFiManager : public ErrorSlave {
+class WiFiManager {
 /* WifiConState 
  *    State: 
  *    0 = WiFi disabled
@@ -51,9 +52,6 @@ class WiFiManager : public ErrorSlave {
         ulong lastCall; //for sim. multithreading to handle WifiCheckDelay (how often Wifi State and params will checked per Second)
         ulong callPerSecond = 0;
         int checkDelay = 50; //check class every 50ms
-        //classErrorReport error; - replaced by ErrorSlave Class
-
-
 
         // Interface States
         bool shieldState = false;
@@ -73,6 +71,9 @@ class WiFiManager : public ErrorSlave {
 
         //WiFi Object - for mqtt
         WiFiClient localWiFiClient;
+
+        //Watchdog Slave
+        ClassModuleSlave classControl = ClassModuleSlave("wifiManager");
         
     public:
         //Constructor
@@ -88,7 +89,10 @@ class WiFiManager : public ErrorSlave {
         String getDeviceMac();
         int getCheckDelay();
         ulong getCallPerSecond();
-        classErrorReport getCurrentErrorState();
+        ClassModuleSlave* getClassModuleSlave()
+        {
+            return &classControl;
+        }
         
 
         bool getWiFiAutoConnect();
@@ -150,8 +154,6 @@ class WiFiManager : public ErrorSlave {
         //inherited ErrorSlave
         void startClass();
         void stopClass();
-        void pauseClass();
         void restartClass();
-        void continueClass();
 };
 #endif
