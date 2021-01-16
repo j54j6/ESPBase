@@ -5,6 +5,9 @@
 #include "errorHandler.h"
 #include "led.h"
 #include "logger.h"
+#include "filemanager.h"
+
+#define opticalOnWarn
 
 /*
     ClassReportTemplate
@@ -12,14 +15,14 @@
     Object contains all Data of one Report 
     ClassReportTemplate is part of ordered List with Pointer
 */
-struct ClassReportTemplate {
+class ClassReportTemplate {
     friend class ClassReportModuleHandler;
     friend class ClassModuleMaster;
     private:
-        const char* className = "n.S";
+        String className = "n.S";
         ClassReportTemplate* _nextNode = NULL;
         bool error = false;
-        const char* message = NULL;
+        String message = "";
         short errorCode = 0;
         bool reportIsLocked = false; //if report is locked nothing can changed - the handler can read the Report and remove the Node - lock the Report if all Data are set
         /*
@@ -38,19 +41,28 @@ struct ClassReportTemplate {
         //set
         void setNextClassReport(ClassReportTemplate* _nextClassReport)
         {
-            if(!reportIsLocked || (reportIsLocked && this->_nextNode == NULL))
+            if(_nextNode == NULL)
             {
                this->_nextNode = _nextClassReport; 
+            }
+            else
+            {
+                Serial.println("Error while adding new report!");   
             }
         }
 
         //Get
+        String getClassname()
+        {
+            return this->className;
+        }
+
         bool getError()
         {
             return this->error;            
         }
 
-        const char* getErrorMessage()
+        String getErrorMessage()
         {
             return this->message;
         }
@@ -74,12 +86,20 @@ struct ClassReportTemplate {
 
     public:
         ClassReportTemplate(){};
-        ClassReportTemplate(const char* className, const char* message, short errorCode, bool isError)
+        ClassReportTemplate(String className, String message, short errorCode, short priority, bool isError)
         {
+            Serial.println("Object created: ");
+            Serial.println(className);
+            Serial.println(message);
+            Serial.println(errorCode);
+            Serial.println(priority);
+            Serial.println(isError);
+
             this->className = className;
             this->message = message;
             this->errorCode = errorCode;
             this->error = isError;
+            this->priority = priority;
         }
 
         void lockReport()
@@ -108,6 +128,14 @@ struct ClassReportTemplate {
             if(!reportIsLocked)
             {
                 this->errorCode = newErrorCode;
+            }
+        }
+
+        void setErrorPriority(short newPrio)
+        {
+            if(!reportIsLocked)
+            {
+                this->priority = newPrio;
             }
         }
 };
@@ -146,44 +174,37 @@ class ClassReportModuleHandler  {
 
         void removeActualReport()
         {
-            if(this->_firstReport == NULL)
+            if(this->_actualReportPointer == NULL)
             {
                 return;
             }
 
-            if(this->_actualReportPointer != NULL && this->_firstReport != NULL)
+            else if(_actualReportPointer == _firstReport)
             {
-                ClassReportTemplate* _cachePointer = _firstReport;
+                _firstReport = NULL;
+                _actualReportPointer = NULL;
+                Serial.println("Removed all reports!");
+                return;
+            }
 
-                if(_cachePointer == _firstReport && _cachePointer->getNextClassReport() == NULL) //first Node is the report and the only registered - remove complete List (of 1 Item)
+            ClassReportTemplate* _cacheTemplate = _firstReport;
+            while(_cacheTemplate->getNextClassReport() != _actualReportPointer)
+            {
+                _cacheTemplate = _cacheTemplate->getNextClassReport();
+            }
+            if(_cacheTemplate->getNextClassReport() == _actualReportPointer)
+            {
+                Serial.println("Remove Now");
+                if(_actualReportPointer->getNextClassReport() != NULL)
                 {
-                    _firstReport = NULL;
-                    _actualReportPointer = NULL;
+                    _cacheTemplate->setNextClassReport(_actualReportPointer->getNextClassReport());
+                    _actualReportPointer = _actualReportPointer->getNextClassReport();
                 }
-                else if(_cachePointer == _firstReport && _cachePointer->getNextClassReport() != NULL) //first Node is the report - set the second report as first Node
+                else
                 {
-                    _firstReport = _firstReport->getNextClassReport();
-                    _actualReportPointer = _firstReport;
+                    _cacheTemplate->setNextClassReport(NULL);
+                    _actualReportPointer = _cacheTemplate;
                 }
-                else //actual Node in not the first Node
-                {
-                    while (_cachePointer->getNextClassReport() != NULL && _cachePointer->getNextClassReport() != _actualReportPointer) //set CachePointer to 1 Report above the actualReport
-                    {
-                        _cachePointer = _cachePointer->getNextClassReport();
-                    }
-
-                    if(_cachePointer->getNextClassReport()->getNextClassReport() == NULL) 
-                    //if actualReport (_cachePointer->getnextClassReport()) don't have a next Node (_cachePointer->getNextClassReport()->getNextClassReport()) set prevNode of actualNode to NULL
-                    {
-                        _cachePointer->setNextClassReport(NULL);
-                        _actualReportPointer = _cachePointer;
-                    }
-                    else
-                    {
-                        _cachePointer->setNextClassReport(_cachePointer->getNextClassReport()->getNextClassReport());
-                    }
-                    
-                }               
             }
         }
 
@@ -214,22 +235,26 @@ class ClassReportModuleHandler  {
     public:
         ClassReportModuleHandler() {}
 
-        void addReport(const char* className, const char* message, short errorCode, bool isError, bool lockReport = false)
+        void addReport(const char* className, String message, short errorCode, short priority, bool isError, bool lockReport = false)
         {
-            ClassReportTemplate newTempl(className, message, errorCode, isError);
+            ClassReportTemplate* pointer;
             if(_firstReport == NULL)
             {
-                this->_firstReport = &newTempl;
+                Serial.println("Added as First");
+                this->_firstReport = &ClassReportTemplate(className, message, errorCode, priority, isError);
                 this->_actualReportPointer = _firstReport;
+                pointer = _firstReport;
             }
             else
             {
-                getLastNode()->setNextClassReport(&newTempl);
+                Serial.println("Added as Last");
+                getLastNode()->setNextClassReport(&ClassReportTemplate(className, message, errorCode, priority, isError);
+                pointer = getLastNode();
             }
 
             if(lockReport)
             {
-                newTempl.lockReport();
+                pointer->lockReport();
             }
         }
 
@@ -247,7 +272,6 @@ class ClassReportModuleHandler  {
 class ModuleStateSlave
 {
     private:
-        const char* className = "n.S";
         /*  
             classState:
                 classState describes the current state of the class (as the Name says...)
@@ -260,22 +284,9 @@ class ModuleStateSlave
                 6 = Ermg. Class Shutdown
                 7 = Ermg. Class restart
         */
-        short classState = 0;
-        ModuleStateSlave* _nextNode;
-
-        
+        short classState = 0;        
         
     protected:
-        void setNextModuleNode(ModuleStateSlave* newNextNode)
-        {
-            this->_nextNode = newNextNode;
-        }
-
-        ModuleStateSlave* getNextModuleNode()
-        {
-            return _nextNode;
-        }
-        
         void setClassState(short newState)
         {
             if(newState >= 0 && newState <= 7)
@@ -289,9 +300,9 @@ class ModuleStateSlave
             return this->classState;
         }
 
-        virtual void stopClass();
-        virtual void startClass();
-        virtual void restartClass();
+        void stopClass();
+        void startClass();
+        void restartClass();
     
     public:
         ModuleStateSlave() {}
@@ -330,8 +341,9 @@ class ClassRepeatChecker {
     Every Slave Class need one ClassModuleSlave inherits all functionalities like:
         - ClassRepeatChecker -> getCallsPerSecond
         - ClassReportModuleHandler -> Reporting of error and ClassControl
+        - ModuleStateSlave -> Control Class
 */
-class ClassModuleSlave {
+class ClassModuleSlave : protected ModuleStateSlave {
     friend class ClassModuleMaster;
     private:
         const char* className = "n.S";
@@ -344,7 +356,6 @@ class ClassModuleSlave {
         {
             return &reportHandler;
         }
-
     protected:
         //Helper
         void setNextModuleSlave(ClassModuleSlave* _nextSlave)
@@ -369,6 +380,12 @@ class ClassModuleSlave {
             this->repeatChecker.run();
         }
 
+        //repeat checker
+        ulong getCallsPerSecond()
+        {
+            return this->repeatChecker.getCallPerSecond();
+        }
+
     public:
         ClassModuleSlave(const char* className)
         {
@@ -376,120 +393,13 @@ class ClassModuleSlave {
         }
 
         //reporting
-        void newReport(const char* message, short errorCode, bool isError = false, bool lockReport = true)
+        void newReport(String message, short errorCode, short priority = 0, bool isError = false, bool lockReport = true)
         {
-            reportHandler.addReport(className, message, errorCode, isError, lockReport);
-        }
-
-        //repeat checker
-        ulong getCallsPerSecond()
-        {
-            return this->repeatChecker.getCallPerSecond();
+            reportHandler.addReport(className, message, errorCode, priority, isError, lockReport);
         }
 };
 
 
-class ErrorHandlerMaster {
-    private:
-        LED* _errorLed;
-        LED* _workLed;
-    
-    public:
-        ErrorHandlerMaster()
-        {
-            LED dummy;
-            this->_errorLed = &dummy;
-            this->_workLed = &dummy;
-        }
-
-        ErrorHandlerMaster(LED* _errorLed, LED* _workLed)
-        {
-            this->_errorLed = _errorLed;
-            this->_workLed = _workLed;
-        }
-
-        void reportError(const char* className, const char* message, short priority, int code)
-        {
-            _errorLed->ledOn();
-            _workLed->ledOff();
-            logError(className, message, priority, code);
-        }
-
-        void logError(const char* className, const char* message, short priority, int code)
-        {
-            if(!Serial)
-            {
-                Serial.begin(115200);
-            }
-
-
-        }
-
-        const char* getErrorHandlerReaction(int prio)
-        {
-            switch(prio)
-            {
-                case 4:
-                    return "restart Class";
-                    break;
-                case 5:
-                    return "restart Class";
-                    break;
-                case 6:
-                    return "disable Class";
-                    break;
-                default:
-                    return "nothing";
-                    break;
-            };
-            return "false";
-        }
-
-        void preFormattedWarnNotification(const char* className , const char* message, int priority, int code)
-        {
-            String modifiedClassName = "ERROR-Handler";
-            modifiedClassName += "->";
-            modifiedClassName += className;
-            logger logging;
-            String FormatMessage = "\n\n\n##########-WARN-##########\n\n";
-            FormatMessage += "Reporting Class: ";
-            FormatMessage += className;
-            FormatMessage += "\nInternal Class-Priority: ";
-            FormatMessage += priority;
-            FormatMessage += "\nReason: ";
-            FormatMessage += message;
-            FormatMessage += "\nError-Code: ";
-            FormatMessage += code;
-            FormatMessage += "\nAction: nothing - only WARN";
-            FormatMessage += "\n\n###########-END-###########\n\n";
-            logging.SFLog(modifiedClassName.c_str(), "ERROR-HANDLER-LOG", FormatMessage.c_str(), 1);
-            return;
-        }
-
-        void preFormattedErrorNotification(const char* className, const char* message, int priority, int code, bool opticalReport = true)
-        {
-            String modifiedClassName = "ERROR-Handler";
-            modifiedClassName += "->";
-            modifiedClassName += className;
-            logger logging;
-            String FormatMessage = "\n\n\n\n##########-ERROR-##########\n\n";
-            FormatMessage += "Reporting Class: ";
-            FormatMessage += className;
-            FormatMessage += "\nInternal Class-Priority: ";
-            FormatMessage += priority;
-            FormatMessage += "\nOptical Report: ";
-            FormatMessage += opticalReport;
-            FormatMessage += "\nReason: ";
-            FormatMessage += message;
-            FormatMessage += "\nError-Code: ";
-            FormatMessage += code;
-            FormatMessage += "\n Action: ";
-            FormatMessage += getErrorHandlerReaction(priority);
-            FormatMessage += "\n\n###########-END-###########\n\n\n";
-            logging.SFLog(modifiedClassName.c_str(), "ERROR-HANDLER-LOG", FormatMessage.c_str(), 2);
-            return;
-        }
-};
 
 
 
@@ -498,22 +408,17 @@ class ErrorHandlerMaster {
 
     only one instance is needed in the "main" Class - The Master control all registered Classes and Report Errors and States
 */
-
-/*
-class Test {
-    ClassModuleSlave test2;
-
-    void test()
-    {
-        test2.
-    }
-}
-*/
 class ClassModuleMaster {
     private:
-        ClassModuleSlave* _firstSlave;
-        ClassModuleSlave* _actualSlavePointer;
-        ErrorHandlerMaster errorHandler;
+        ClassModuleSlave* _firstSlave = NULL;
+        ClassModuleSlave* _actualSlavePointer = NULL;
+        Filemanager* FM = NULL;
+        LED* _workLed = NULL;
+        LED* _errorLed = NULL;
+        
+        bool opticalSignalActive = false;
+        ulong opticalSignalActuveUntil = 0;
+
 
         //set
         void toNextModuleSlave()
@@ -544,34 +449,119 @@ class ClassModuleMaster {
             }
         }
 
+        /*
+            mode = fale -> blinkLed
+            mode = true -> solidLed
+            time in ms
+        */
+        void setOpticalSignal(short time, bool mode = false)
+        {
+            opticalSignalActive = true;
+            _workLed->ledOff();
+            if(mode)
+            {
+                _errorLed->ledOn();
+            }
+            else
+            {
+                _errorLed->blink(500);
+            }
+            opticalSignalActuveUntil = millis() + time;
+        }
+
+        void checkOpticalReport()
+        {
+            if(millis() >= opticalSignalActuveUntil && opticalSignalActive)
+            {
+                _errorLed->ledOff();
+                _workLed->ledOn();
+                opticalSignalActive = false;
+                opticalSignalActuveUntil = 0;
+            }
+        }
+
         void reportControl()
         {
-            if(_actualSlavePointer == NULL)
+            if(_firstSlave == NULL)
             {
                 return;
             }
 
-            _actualSlavePointer->reportHandler.toFirstReport(); //set to First Report to increment the complete list
-            ClassReportModuleHandler* cacheReportHandler = _actualSlavePointer->getReportHandler();
+            _actualSlavePointer = _firstSlave;
 
-            while(cacheReportHandler->getActualReport() != NULL)
-            {
-                ClassReportTemplate* actualReport = cacheReportHandler->getActualReport();
+            do {
+                ClassReportModuleHandler* _cacheReportHandler = _actualSlavePointer->getReportHandler(); //set report Handler of the current checked Module
 
-                
+                _cacheReportHandler->toFirstReport(); //set to the First report
+
+                while(_cacheReportHandler->getActualReport() != NULL)
+                {
+
+                    ClassReportTemplate* _actualReport = _cacheReportHandler->getActualReport();
+                    Serial.println(_actualReport->priority);
+                    SysLogger tempLogger(FM, "inModule.h Defined");
+
+                    if(_actualReport->getError()) //Show an Error Message
+                    {
+                        tempLogger.logIt("MasterReport", "##########-ERROR-##########", 5);
+                        tempLogger.logIt("MasterReport", " ", 5);
+                        String message = "Reporting Class: " + String(_actualReport->getClassname());
+                        tempLogger.logIt("MasterReport", message, 5);
+                        message = "Reason: : " + String(_actualReport->getErrorMessage());
+                        tempLogger.logIt("MasterReport", message, 5);
+                        message = "Error-Code: " + String(_actualReport->getErrorCode());
+                        tempLogger.logIt("MasterReport", message, 5);
+                        tempLogger.logIt("MasterReport", " ", 5);
+                        tempLogger.logIt("MasterReport", "##########-ERROR-##########", 5);
+                        setOpticalSignal(10000, true);
+                    }
+                    else //Show Warn Message
+                    {
+                        tempLogger.logIt("MasterReport", "##########-WARN-##########", 4);
+                        tempLogger.logIt("MasterReport", " ", 4);
+                        String message = "Reporting Class: " + String(_actualReport->getClassname());
+                        tempLogger.logIt("MasterReport", message, 4);
+                        message = "Reason: : " + String(_actualReport->getErrorMessage());
+                        tempLogger.logIt("MasterReport", message, 4);
+                        message = "Error-Code: " + String(_actualReport->getErrorCode());
+                        tempLogger.logIt("MasterReport", message, 4);
+                        tempLogger.logIt("MasterReport", " ", 4);
+                        tempLogger.logIt("MasterReport", "##########-WARN-##########", 4);
+                    }
+                    
+                    #ifdef opticalOnWarn
+                        setOpticalSignal(10000);
+                    #endif
+
+                    _cacheReportHandler->removeActualReport();
+                    _cacheReportHandler->toFirstReport();
+                }
             }
+            while(_actualSlavePointer->getNextModuleSlave() != NULL);
         }
-
-    protected:
-        void removeActualReport()
-        {
-            
-        }
-
     public:
-        ClassModuleMaster(ClassModuleSlave* _firstSlave)
+    /*
+        ClassModuleMaster(ClassModuleSlave* _firstSlave, LED* errorLed, LED* workLed)
         {
             this->_firstSlave = _firstSlave;
+        }
+    */
+        ClassModuleMaster()
+        {
+            LED dummy;
+            this->_errorLed = &dummy;
+            this->_workLed = &dummy;
+        }
+
+        ClassModuleMaster(LED* _errorLed, LED* _workLed)
+        {
+            this->_errorLed = _errorLed;
+            this->_workLed = _workLed;
+        }
+
+        ClassModuleMaster(LED* _errorLed)
+        {
+            this->_errorLed = _errorLed;
         }
 
         void addModuleSlave(ClassModuleSlave* _newSlave)
@@ -590,9 +580,8 @@ class ClassModuleMaster {
         void run()
         {
             reportControl();
+            checkOpticalReport();
         }
-    
-
 };
 
 #endif //J54J6_MODULESTATE_H
