@@ -4,7 +4,6 @@
     #include <ArduinoJson.h>
     #include <SPI.h>
     #include <LittleFS.h>
-    #include "logging.h"
 
 
     class Filemanager {

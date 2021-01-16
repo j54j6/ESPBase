@@ -4,34 +4,19 @@ bool Filemanager::checkForInit()
 {
     if(!init)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "checkForInit", "Filesystem not mounted!", 2);
-        #endif
         if(autoFix)
         {
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-                logger::SFLog(className, "checkForInit", "AutoFix enabled - try to mount Filesystem");
-            #endif
             if(mount())
             {
-                #ifdef J54J6_LOGGING_H //use logging Libary if included
-                    logger::SFLog(className, "checkForInit", "Filesystem successfully mounted");
-                #endif
                 return true;
             }
             else
             {
-                #ifdef J54J6_LOGGING_H //use logging Libary if included
-                    logger::SFLog(className, "checkForInit", "Can't mount Filesyste", 2);
-                #endif
                 return false;
             }   
         }
         else
         {
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-                    logger::SFLog(className, "checkForInit", "AutoFix disabled - SKIP");
-            #endif
             return false;
         }   
     }
@@ -40,65 +25,36 @@ bool Filemanager::checkForInit()
 
 
 Filemanager::Filemanager(bool tryAutoFix)
-{
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-        logger::SFLog(className, "Filemanager", "Start Filemanager");
-    #endif
-    
+{    
     if(tryAutoFix)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-        logger::SFLog(className, "Filemanager", "Autofix enabled");
-        #endif
         this->autoFix = true;
     }
     else
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-        logger::SFLog(className, "Filemanager", "Autofix disabled");
-        #endif
         this->autoFix = false;
     }
 }
 
 bool Filemanager::begin()
 {
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-        logger::SFLog(className, "begin", "Mount Filesystem");
-    #endif
-
     if(this->init)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "begin", "Filesystem already mounted - SKIP", 1);
-        #endif
         return true;
     }
     else
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "begin", "Try to mount Filesystem");
-        #endif
         if(LittleFS.begin())
         {
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-                logger::SFLog(className, "begin", "Filesystem mounted");
-            #endif
             this->init = true;
             return true;
         }
         else
         {
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-                logger::SFLog(className, "begin", "Can't init Filesystem!", 2);
-            #endif
             this->init = false;
             return false;
         }
     }
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-        logger::SFLog(className, "begin", "undefined - unexcepted Jump! \n further assistance needed", 2);
-    #endif
     return false;
 }
 
@@ -109,21 +65,12 @@ bool Filemanager::mount()
 
 void Filemanager::end() //Stop/unmount Filesystem
 {
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-        logger::SFLog(className, "end", "Stop LitteFS Filesystem");
-    #endif
     if(init)
     {
         init = false;
         LittleFS.end();
         return;
     }
-    else
-    {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "end", "Just for dev. - init state maybe inconsistent - init = false! - please check...");
-        #endif
-    } 
 }
 
 void Filemanager::unmount()
@@ -137,29 +84,16 @@ bool Filemanager::format()
     { //simple helper so i don't need to write it two times ^^
         if(LittleFS.format())
         {
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog("Filemanager", "lambda - formatFS", "filesystem successfully formatted");
-            #endif
             return true;
         }
         else
         {
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog("Filemanager", "lambda - formatFS", "filesystem can't be formatted - please check...");
-            #endif
             return false;
         }
     }; 
 
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog("Filemanager", "format", "try to format Filesystem");
-    #endif
     if(init)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog("Filemanager", "end", "FS isn't initialized...");
-        #endif
-
         return formatFS();       
     }
     else
@@ -175,85 +109,43 @@ bool Filemanager::mkdir(const char* path) //create Directory with $path - first 
     bool alreadyTriedToFix = false;
     startPoint:
 
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-        logger::SFLog(className, "mkdir", "try to create Folder");
-    #endif
     if(!init)
     { 
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "mkdir", "can't create Directory - no Filesystem mounted!", 2);
-        #endif
         if(!autoFix || alreadyTriedToFix)
         {
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-                logger::SFLog(className, "mkdir", "AutoFix disabled or already tried - End with Fail", 2);
-            #endif
             return false;
         }
         else
         {
             alreadyTriedToFix = true;
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-                logger::SFLog(className, "mkdir", "AutoFix anabled - mount Filesystem");
-            #endif
             if(this->begin())
             {
-                #ifdef J54J6_LOGGING_H //use logging Libary if included
-                    logger::SFLog(className, "mkdir", "Filesystem successfully mounted");
-                #endif
                 goto startPoint; //only to restart the function - i ddon't want to call this function recursive
-            }
-            else
-            {
-                #ifdef J54J6_LOGGING_H //use logging Libary if included
-                    logger::SFLog(className, "mkdir", "Can't mount Filesystem - please check...", 2);
-                #endif
             }
         }
     }
 
     if(LittleFS.mkdir(path))
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "mkdir", "Directory created");
-        #endif
         return true;
     }
     else
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "mkdir", "Directory created");
-        #endif
         return false;
     }
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-        logger::SFLog(className, "mkdir", "undefined - unexcepted Jump! \n further assistance needed", 2);
-    #endif
     return false;
 }
 
 bool Filemanager::openDir(const char* path)
 {
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-        String message = "open Dir '";
-        message += path;
-        message += "'";
-        logger::SFLog(className, "openDir", message.c_str());
-    #endif
     if(LittleFS.exists(path))
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "openDir", "Dir opened");
-        #endif
         internOpenDir = true;
         actualDir = LittleFS.openDir(path);
         return true;
     }
     else
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "openDir", "Can't open Dir", 1);
-        #endif
         return false;
     }
     return false;
@@ -261,21 +153,12 @@ bool Filemanager::openDir(const char* path)
 
 Dir Filemanager::aOpenDir(const char* path)
 {
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-        String message = "Open Dir '";
-        message += path;
-        message += "'";
-        logger::SFLog(className, "aOpenDir", message.c_str());
-    #endif
     if(LittleFS.exists(path))
     {
         return LittleFS.openDir(path);
     }
     else
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "aOpenDir", "Can't open Dir  ", 1);
-        #endif
         return {};
     }
     return {};
@@ -293,28 +176,14 @@ Dir Filemanager::aCd(const char* path)
 
 bool Filemanager::rename(const char* oldName, const char* newName)
 {
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-        logger::SFLog(className, "rename", "rename File", 0);
-    #endif
     if(!LittleFS.exists(oldName))
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            String message = "Can't rename/move File - ";
-            message += oldName;
-            message += " to ";
-            message += newName;
-            message += " - File does not exist!";
-            logger::SFLog(className, "rename", message.c_str(), 1);
-        #endif
         return false;
     }
     else
     {
         if(LittleFS.rename(oldName, newName))
         {
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-                logger::SFLog(className, "rename", "File successfully renamed/moved ", 0);
-            #endif
             return true;
         }
         else
@@ -324,14 +193,6 @@ bool Filemanager::rename(const char* oldName, const char* newName)
                     Return ErrorVal RCx from FS.h 
                     ->AutoFix enabled: use int Code to fix problem (checked: isMounted, isPath/[0])
             */
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-                String message = "Can't rename/move File - ";
-                message += oldName;
-                message += " to ";
-                message += newName;
-                message += " - function return 'false'!";
-                logger::SFLog(className, "rename", message.c_str(), 1);
-            #endif
             return false;
         }
     }
@@ -363,140 +224,58 @@ FSInfo64 Filemanager::info64()
 
 bool Filemanager::fOpen(const char* path, String mode)
 {
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-        String message = "try to open File - ";
-        message += path;
-        message += " with mode: ";
-        message += mode;
-        logger::SFLog(className, "fOpen", message.c_str(), 0);
-    #endif
     if(!init)
     {
         if(autoFix)
         {
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-                logger::SFLog(className, "fOpen", "Filesystem not mounted - try to mount it...", 0);
-            #endif
-            if(mount())
+            if(!mount())
             {
-                #ifdef J54J6_LOGGING_H //use logging Libary if included
-                logger::SFLog(className, "fOpen", "Filesystem mounted... - continue", 0);
-                #endif
-            }
-            else
-            {
-                #ifdef J54J6_LOGGING_H //use logging Libary if included
-                    logger::SFLog(className, "fOpen", "Can't mount Filesystem", 2);
-                #endif
                 return false;
             } 
         }
         else
         {
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fOpen", "Filesystem not mounted and autoFix disabled", 2);
-            #endif
             return false;
         } 
     }
 
     if(mode != "r" && mode != "r+" && mode != "w" && mode != "w+" && mode != "a" && mode != "a+")
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            message = "Mode ";
-            message += mode;
-            message += "is not supported. Please only use : 'w(+) (writing) - r(+) reading - a(+) (append)";
-            message += "for further information please check Link: https://arduino-esp8266.readthedocs.io/en/latest/filesystem.html#open";
-            logger::SFLog(className, "fOpen", message.c_str(), 1);
-        #endif
         return false;
     }
     if(LittleFS.exists(path))
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fOpen", "File opened", 0);
-        #endif
         internFileOpen = true;
         internalFileHandle = LittleFS.open(path, mode.c_str());
         return true;
-    }
-    else
-    {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            message = "File ";
-            message += path;
-            message += "doesn't exist!";
-            logger::SFLog(className, "fOpen", message.c_str(), 2);
-        #endif
     }
     return false;
 }
 
 File Filemanager::fdOpen(const char* path, String mode)
 {
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-        String message = "try to open File - ";
-        message += path;
-        message += " with mode: ";
-        message += mode;
-        logger::SFLog(className, "fOpen", mode.c_str(), 0);
-    #endif
     if(!init)
     {
         if(autoFix)
         {
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-                logger::SFLog(className, "fOpen", "Filesystem not mounted - try to mount it...", 0);
-            #endif
-            if(mount())
+            if(!mount())
             {
-                #ifdef J54J6_LOGGING_H //use logging Libary if included
-                logger::SFLog(className, "fOpen", "Filesystem mounted... - continue", 0);
-                #endif
-            }
-            else
-            {
-                #ifdef J54J6_LOGGING_H //use logging Libary if included
-                    logger::SFLog(className, "fOpen", "Can't mount Filesystem", 2);
-                #endif
                 return {};
             } 
         }
         else
         {
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fOpen", "Filesystem not mounted and autoFix disabled", 2);
-            #endif
             return {};
         } 
     }
 
     if(mode != "r" && mode != "r+" && mode != "w" && mode != "w+" && mode != "a" && mode != "a+")
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            message = "Mode ";
-            message += mode;
-            message += "is not supported. Please only use : 'w(+) (writing) - r(+) reading - a(+) (append)";
-            message += "for further information please check Link: https://arduino-esp8266.readthedocs.io/en/latest/filesystem.html#open";
-            logger::SFLog(className, "fOpen", message.c_str(), 1);
-        #endif
         return {};
     }
     if(LittleFS.exists(path))
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fOpen", "File opened", 0);
-        #endif
         return LittleFS.open(path, mode.c_str());
-    }
-    else
-    {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            message = "File ";
-            message += path;
-            message += "doesn't exist!";
-            logger::SFLog(className, "fOpen", message.c_str(), 2);
-        #endif
     }
     return {};
 }
@@ -505,9 +284,6 @@ bool Filemanager::fClose()
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fClose", "init check failed!");
-        #endif
         return false;
     }
     internalFileHandle.close();
@@ -519,9 +295,6 @@ void Filemanager::fClose(File actualFile)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fClose", "init check failed!");
-        #endif
         return;
     }
     actualFile.close();
@@ -531,9 +304,6 @@ bool Filemanager::fDelete(const char* path)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fClose", "init check failed!");
-        #endif
         return false;
     }
 
@@ -541,24 +311,15 @@ bool Filemanager::fDelete(const char* path)
     {
         if(LittleFS.remove(path))
         {
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-                logger::SFLog(className, "fDelete", "File removed!");
-            #endif
             return true;
         }
         else
         {   
-            #ifdef J54J6_LOGGING_H //use logging Libary if included
-                logger::SFLog(className, "fDelete", "can't remove File - undefined Error - implemented soon :)");
-            #endif
             return false;
         } 
     }
     else
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fDelete", "File doesn't exist!", 2);
-        #endif
         return false;
     }
     return false;
@@ -588,25 +349,16 @@ bool Filemanager::fWrite(const char* content)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fWrite", "Error Init. Check - writing failed!", 2);
-        #endif
         return false;
     }
 
     if(!internFileOpen)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fWrite", "There is no opened File!", 2);
-        #endif
         return false;
     }
     else
     {
         internalFileHandle.write(content);
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fWrite", "Content is written in File!", 0);
-        #endif
         return true;
     }
     return false;
@@ -616,16 +368,10 @@ bool Filemanager::fWrite(File actualFile, const char* content)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fWrite", "Error Init. Check - writing failed!", 2);
-        #endif
         return false;
     }
     
     actualFile.write(content);
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-        logger::SFLog(className, "fWrite", "Content is written in File!", 0);
-    #endif
     return true;
 }
 
@@ -633,19 +379,9 @@ bool Filemanager::fExist(const char* path)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fWrite", "Error Init. Check - writing failed!", 2);
-        #endif
         return false;
     }
     bool res = LittleFS.exists(path);
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-            String message = "File ";
-            message += path;
-            message += " exists?: ";
-            message += res;
-            logger::SFLog(className, "fExist", message.c_str(), 0);
-    #endif
     return res;
 }
 
@@ -656,24 +392,15 @@ bool Filemanager::dNext()
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "dNext", "Error Init. Check - writing failed!", 2);
-        #endif
         return false;
     }
 
     if(internOpenDir)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "dNext", "pointer to next File in Dir or end reached...", 0);
-        #endif
         return actualDir.next();
     }
     else
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "dNext", "No Dir opened - please use (a)openDir()", 2);
-        #endif
         return false;
     }
     return false;
@@ -683,9 +410,6 @@ bool Filemanager::dNext(Dir usedDir)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "dNext", "Error Init. Check - writing failed!", 2);
-        #endif
         return false;
     }
     return usedDir.next();
@@ -695,24 +419,15 @@ const char* Filemanager::getFName()
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFName", "Error Init. Check - writing failed!", 2);
-        #endif
         return false;
     }
 
     if(internOpenDir)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFName", "pointer to next File in Dir or end reached...", 0);
-        #endif
         return actualDir.fileName().c_str();
     }
     else
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFName", "No Dir opened - please use (a)openDir()", 2);
-        #endif
         return false;
     }
     return false;
@@ -722,9 +437,6 @@ const char* Filemanager::getFName(Dir usedDir)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFName", "Error Init. Check - writing failed!", 2);
-        #endif
         return false;
     }
     return usedDir.fileName().c_str();
@@ -734,24 +446,15 @@ uint Filemanager::getFileSize()
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFileSize", "Error Init. Check - writing failed!", 2);
-        #endif
         return false;
     }
 
     if(internOpenDir)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFileSize", "pointer to next File in Dir or end reached...", 0);
-        #endif
         return actualDir.fileSize();
     }
     else
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFileSize", "No Dir opened - please use (a)openDir()", 2);
-        #endif
         return false;
     }
     return false;
@@ -761,9 +464,6 @@ uint Filemanager::getFileSize(Dir usedDir)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFName", "Error Init. Check - writing failed!", 2);
-        #endif
         return false;
     }
     return usedDir.fileSize();
@@ -773,24 +473,15 @@ bool Filemanager::rewind()
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFileSize", "Error Init. Check - writing failed!", 2);
-        #endif
         return false;
     }
 
     if(internOpenDir)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFileSize", "pointer to next File in Dir or end reached...", 0);
-        #endif
         return actualDir.rewind();
     }
     else
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFileSize", "No Dir opened - please use (a)openDir()", 2);
-        #endif
         return false;
     }
     return false;
@@ -800,9 +491,6 @@ bool Filemanager::rewind(Dir usedDir)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFName", "Error Init. Check - writing failed!", 2);
-        #endif
         return false;
     }
     return usedDir.rewind();
@@ -812,25 +500,16 @@ bool Filemanager::dClose()
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFileSize", "Error Init. Check - writing failed!", 2);
-        #endif
         return false;
     }
 
     if(internOpenDir)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFileSize", "pointer to next File in Dir or end reached...", 0);
-        #endif
         internOpenDir = false;
         return true;
     }
     else
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getFileSize", "No Dir opened - please use (a)openDir()", 2);
-        #endif
         return false;
     }
     return false;
@@ -840,17 +519,11 @@ bool Filemanager::seek(uint8 offset, const char* mode)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "seek", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     
     if(!internFileOpen)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "seek", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     return internalFileHandle.seek(offset);
@@ -860,9 +533,6 @@ bool Filemanager::seek(File usedFile, uint8 offset, const char* mode)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "seek", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     
@@ -873,17 +543,11 @@ uint8 Filemanager::position()
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "position", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     
     if(!internFileOpen)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "position", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     return internalFileHandle.position();
@@ -893,9 +557,6 @@ uint8 Filemanager::position(File usedFile)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "position", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     
@@ -906,17 +567,11 @@ uint8 Filemanager::size()
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "size", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     
     if(!internFileOpen)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "size", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     return internalFileHandle.size();
@@ -926,9 +581,6 @@ uint8 Filemanager::size(File usedFile)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "size", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     
@@ -939,17 +591,11 @@ const char* Filemanager::name()
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "name", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     
     if(!internFileOpen)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "name", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     return internalFileHandle.name();
@@ -959,9 +605,6 @@ const char* Filemanager::name(File usedFile)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "name", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     
@@ -972,17 +615,11 @@ const char* Filemanager::fullName()
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fullName", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     
     if(!internFileOpen)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fullName", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     return internalFileHandle.fullName();
@@ -992,9 +629,6 @@ const char* Filemanager::fullName(File usedFile)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "fullName", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     return usedFile.fullName();
@@ -1004,17 +638,11 @@ long Filemanager::getLastWrite()
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getLastWrite", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     
     if(!internFileOpen)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getLastWrite", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     return internalFileHandle.getLastWrite();
@@ -1024,9 +652,6 @@ long Filemanager::getLastWrite(File usedFile)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getLastWrite", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     
@@ -1037,17 +662,11 @@ long Filemanager::getCreationTime()
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getCreationTime", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     
     if(!internFileOpen)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getCreationTime", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     return internalFileHandle.getCreationTime();
@@ -1057,9 +676,6 @@ long Filemanager::getCreationTime(File usedFile)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getCreationTime", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     return usedFile.getCreationTime();
@@ -1069,9 +685,6 @@ bool Filemanager::writeInFile(const char* Filename, const char* pattern, const c
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getCreationTime", "Error Init. Check!", 2);
-        #endif
         return false;
     }
 
@@ -1100,17 +713,11 @@ bool Filemanager::writeJsonFile(const char* Filename,  const char* jsonPattern[]
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "writeJsonFile", "Error Init. Check!", 2);
-        #endif
         return false;
     }
 
     if(amountOfData == 0)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "writeJsonFile", "no Data given (AmountData = 0) - SKIP", 1);
-        #endif
         return true;
     }
     const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
@@ -1133,9 +740,6 @@ bool Filemanager::writeJsonFile(const char* Filename, DynamicJsonDocument jsonFi
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getCreationTime", "Error Init. Check!", 2);
-        #endif
         return false;
     }
 
@@ -1165,9 +769,6 @@ bool Filemanager::changeJsonValueFile(const char* Filename, const char* key, con
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "changeJsonValueFile", "Error Init. Check!", 2);
-        #endif
         return false;
     }
 
@@ -1176,9 +777,6 @@ bool Filemanager::changeJsonValueFile(const char* Filename, const char* key, con
     bool val1 = writeJsonFile(Filename, jsonFile, "w");
     if(!val1)
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "changeJsonValueFile", "Can't write in JSON File", 2);
-        #endif
         return false;
     }
 
@@ -1187,13 +785,6 @@ bool Filemanager::changeJsonValueFile(const char* Filename, const char* key, con
     {
         return true;
     }
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-        String message = "Strings does not match: Key: ";
-        message += key;
-        message += " returned from File: ";
-        message += String(jsonFile[key].as<String>());
-        logger::SFLog(className, "changeJsonValueFile", message.c_str(), 2);
-    #endif
     return false;
 }
 
@@ -1201,9 +792,6 @@ String Filemanager::readFile(const char* Filename)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getCreationTime", "Error Init. Check!", 2);
-        #endif
         return {};
     }
     if(!LittleFS.exists(Filename))
@@ -1224,18 +812,12 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
 { 
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "readJsonFileValue", "Error Init. Check!", 2);
-        #endif
         return {};
     }
     const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
     DynamicJsonDocument jsonDocument(capacity);
     if(!LittleFS.exists(Filename))
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "readJsonFileValue", "File doesn't exist!", 2);
-        #endif
         return {};
     }
 
@@ -1243,9 +825,6 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
 
     if(!readFile)
     { 
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "readJsonFileValue", "File can't be opened!", 2);
-        #endif
         return {};
     }
     String output = this->readFile(Filename);
@@ -1253,20 +832,9 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
     DeserializationError error = deserializeJson(jsonDocument, output);
     if(error)
     {
-       #ifdef J54J6_LOGGING_H //use logging Libary if included
-            String message = "LittleFS ERROR!";
-            message += "\n Error: \n";
-            message += error.c_str();
-            logger::SFLog(className, "readJsonFileValue", message.c_str(), 2);
-        #endif
         return {};
     }
     const char* returnVal = jsonDocument[pattern]; //pattern need quotes too! e.g pattern = "\"id\""
-    #ifdef J54J6_LOGGING_H //use logging Libary if included
-            String message = "Output String: ";
-            message += returnVal;
-            logger::SFLog(className, "readJsonFileValue", message.c_str());
-        #endif
     return returnVal;
 }
 
@@ -1276,9 +844,6 @@ DynamicJsonDocument Filemanager::readJsonFile(const char* Filename)
     DynamicJsonDocument jsonDocument(capacity);
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "readJsonFile", "Error Init. Check!", 2);
-        #endif
         return jsonDocument;
     }
     
@@ -1300,12 +865,6 @@ DynamicJsonDocument Filemanager::readJsonFile(const char* Filename)
     if(error)
     {
         this->error = true;
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            String message = "Can't readout JsonDoc from File - Error: \n ";
-            message += error.c_str();
-            logging.SFLog(className, "readJsonFile", message.c_str(), 2);
-        #endif
         return jsonDocument;
     }
     return jsonDocument;
@@ -1316,9 +875,6 @@ float Filemanager::getFreeSpace(short mode)
     FSInfo fs_info;
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getCreationTime", "Error Init. Check!", 2);
-        #endif
         return 0;
     }
     LittleFS.info(fs_info);
@@ -1418,9 +974,6 @@ bool Filemanager::createFile(const char* Filename)
 {
     if(!checkForInit())
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            logger::SFLog(className, "getCreationTime", "Error Init. Check!", 2);
-        #endif
         return false;
     }
     if(LittleFS.exists(Filename))
@@ -1440,29 +993,14 @@ bool Filemanager::returnAsBool(const char* val)
     format.replace(" ", "");
     if(format == "False" || format == "false" || format == "FALSE")
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            String message = "Return False - given: ";
-            message += format;
-            logger::SFLog(className, "returnAsBool", message.c_str());
-        #endif
         return false;
     }
     else if(format == "True" || format == "true" || format == "TRUE")
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            String message = "Return True - given: ";
-            message += format;
-            logger::SFLog(className, "returnAsBool", message.c_str());
-        #endif
         return true;
     }
     else
     {
-        #ifdef J54J6_LOGGING_H //use logging Libary if included
-            String message = "Return False - undefined value! - given: ";
-            message += format;
-            logger::SFLog(className, "returnAsBool", message.c_str(), 1);
-        #endif
         return false;
     }
 }
@@ -1471,10 +1009,6 @@ bool Filemanager::checkForKeyInJSONFile(const char* filename, const char* key)
 {
     if(!fExist(filename))
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "checkForKeyInJSONFile", "Can't check for Json Key - File doesn't exist!", 2);
-        #endif
         return false;
     }
 
@@ -1485,24 +1019,10 @@ bool Filemanager::checkForKeyInJSONFile(const char* filename, const char* key)
         
     if(cacheDocument.containsKey(key))
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            String message = "Service \"";
-            message += key;
-            message += "\" exist! - return true";
-            logging.SFLog(className, "checkForKeyInJSONFile", message.c_str());
-        #endif
         return true;
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            String message = "Can't find Service \"";
-            message += key;
-            message += "\" in serviceList - return false";
-            logging.SFLog(className, "checkForKeyInJSONFile", message.c_str());
-        #endif
         return false;
     }
 }
@@ -1515,10 +1035,6 @@ bool Filemanager::appendJsonKey(const char* filename, const char* newKey, const 
     {
         if(checkForKeyInJSONFile(filename, newKey))
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "appendJsonKey", "Key already exist - SKIP", 0);
-            #endif 
             return true;
         }
 
@@ -1547,19 +1063,11 @@ bool Filemanager::appendJsonKey(const char* filename, const char* newKey, const 
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "appendJsonKey", "An Error occured while adding the Key please check!", 2);
-            #endif
             return false;
         }
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "appendJsonKey", "Can't append Json Key! - File doesn't exist!", 1);
-        #endif
         return false;
     }
 }
@@ -1568,19 +1076,11 @@ bool Filemanager::delJsonKeyFromFile(const char* filename, const char* key)
 {
     if(fExist(filename))
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "delJsonKeyFromFile", "Can't delete Key, filename doesn't exist!", 1);
-        #endif
         return false;
     }
 
     if(!checkForKeyInJSONFile(filename, key))
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "delJsonKeyFromFile", "Can't delete Key, serviceList doesn't contains the specified Key! - SKIP", 1);
-        #endif
         return true;
     }
 
@@ -1593,15 +1093,7 @@ bool Filemanager::delJsonKeyFromFile(const char* filename, const char* key)
 
     if(checkForKeyInJSONFile(filename, key))
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "delJsonKeyFromFile", "An Error occured while deleting the Key - please check!", 2);
-        #endif
         return false;
     }
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "delJsonKeyFromFile", "Key successfully deleted!");
-    #endif
     return true;
 }
