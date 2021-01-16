@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "errorHandler.h"
 #include "led.h"
+#include "logger.h"
 
 /*
     ClassReportTemplate
@@ -593,4 +594,5 @@ class ClassModuleMaster {
     
 
 };
+
 #endif //J54J6_MODULESTATE_H

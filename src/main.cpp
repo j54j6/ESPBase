@@ -1,6 +1,7 @@
 #include <Arduino.h>
+#include "logger.h"
 #include "filemanager.h"
-#include "logging.h"
+#include "logger.h"
 #include "network.h"
 #include "led.h"
 #include "button.h"
@@ -9,18 +10,18 @@
 #include "wifiManager.h"
 #include "mqttHandler.h"
 #include "moduleState.h"
-#include "logger.h"
+
 
 LED wifiLed(D1);
 LED errorLed(D7);
 LED workLed(D2);
 Button mainButton(D6, 3);
-WiFiManager wifiManager(&wifiLed);
 Filemanager FM;
+WiFiManager wifiManager(&wifiLed, &FM);
 Network test(&FM, &wifiManager);
 ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
 ServiceHandler networkIdent(&FM, &wifiManager);
-udpManager udpManage(&wifiManager, 63547);
+udpManager udpManage(&FM, &wifiManager, 63547);
 MQTTHandler mqtthandler(&FM, &wifiManager, &networkIdent);
 ErrorHandlerMaster testHandler(&errorLed, &workLed);
 //SysLogger testLogger(&FM, "MainClass");
