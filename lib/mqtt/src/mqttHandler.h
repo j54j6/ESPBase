@@ -10,7 +10,7 @@
 #include "serviceHandler.h"
 
 #include "errorHandler.h"
-#include "logging.h"
+#include "logger.h"
 
 /*
     MQTT Config Blueprint
@@ -66,9 +66,8 @@ struct lastMqttCallback {
 
 class MQTTHandler : public ErrorSlave {
     private:
-        
         Filemanager* FM;
-        logger logging;
+        SysLogger logging;
         WiFiManager* wifiManager;
         ServiceHandler* services;
         PubSubClient mqttHandlerClient;
