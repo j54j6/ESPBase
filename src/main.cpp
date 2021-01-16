@@ -19,11 +19,11 @@ Button mainButton(D6, 3);
 Filemanager FM;
 WiFiManager wifiManager(&wifiLed, &FM);
 Network test(&FM, &wifiManager);
-ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
+ErrorHandler mainHandler(test.getINode(), &errorLed, &workLed);
 ServiceHandler networkIdent(&FM, &wifiManager);
 udpManager udpManage(&FM, &wifiManager, 63547);
 MQTTHandler mqtthandler(&FM, &wifiManager, &networkIdent);
-ErrorHandlerMaster testHandler(&errorLed, &workLed);
+ClassModuleMaster testHandler(&errorLed, &workLed);
 //SysLogger testLogger(&FM, "MainClass");
 //SysLogger testLogger("MainClass");
 
@@ -95,11 +95,9 @@ void setup() {
   workLed.ledOn();
 
   //define className shown in ErrorHandler
-  wifiManager.setClassName("wifiManager");
   test.setClassName("network");
 
   //add modules to dedicated ErrorHandler
-  mainHandler.addNewNode(test.getINode(), "network");
   mainHandler.addNewNode(networkIdent.getINode(), "NetworkIdent");
   mainHandler.addNewNode(mqtthandler.getINode(), "mqtt");
   
@@ -127,6 +125,8 @@ void setup() {
   //bool mqt = mqtthandler.setServer(mqserv, 1883);
   //mqtthandler.setCallback(getMqtt);
   //testLogger.logIt("Setup", "This is a Test Message", 6);
+
+  testHandler.addModuleSlave(wifiManager.getClassModuleSlave());
 }
 
 void loop() {
@@ -156,6 +156,10 @@ void loop() {
 
 
   mqtthandler.run();
+
+  //ModuleStateMaster
+  testHandler.run();
+
 
   if(mqtthandler.getCallback()->payload != "")
   {
