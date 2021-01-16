@@ -1,9 +1,31 @@
 # ESPBase
+[![CodeFactor](https://www.codefactor.io/repository/github/j54j6/espbase/badge)](https://www.codefactor.io/repository/github/j54j6/espbase)
+[![Build status](https://ci.appveyor.com/api/projects/status/frplrd0e9tny2gy7?svg=true)](https://ci.appveyor.com/project/j54j6/espbase)
+[![Coverage Status](https://coveralls.io/repos/github/j54j6/ESPBase/badge.svg?branch=master)](https://coveralls.io/github/j54j6/ESPBase?branch=master)
+
+This project is not finished yet
+
+
+IMPORTANT: To get this program working you need to pre flash the files saved in Data/* to your ESP with LittleFS Flasher != SPIFFS Flash !!!!
+
+Current dev in dev_linearWeb!
+
 A little Sketch to Handle all common things for you like Network (WiFi, DNS, MDNS, Captive Portals, Filehandling, config creation (as Json), Webserver, MQTT)
 
-Note: This is my first "complete Project" - I'm a newbie ^^ (2020)
+If you find any bugs please report it, i'll fix it as fast as possible... This is my private project in a very early state, i might change some functionalities but i try to add and change all features without changing the general function, you dont need any changes if i update my Baseprogram, only new functionalities or parameters will change. Only if there is no other way than a complete change e.g security fixes i will change complete interfaces but in this case i will write it in README and ChangeLog
 
-If you find any bugs please report it, i'll fix it as fast as possible... This is my private project in a very early state, i might change some functionalities but i try to add and change all features without changing the general function, you dont need any changes if i update my Baseprogram, only new functionalities or parameters will change. Only if there is no other way than a complete change e.g security fixes i will change complete interfaces but in this case i will write it in README and CahngeLog
+priority work:
+
+    -> Add @PJON to this project as NetworkBase
+
+postponed work:
+
+    -> switch from linear Webserver to Async Webserver (branch: dev)
+    
+Current work:
+
+    -> Wrap current global sketch content into single Class - WIP
+    -> rewrite Logging and Reporting Module to get get better ErrorHandling and deviceControl
 
 
 bucket list:
@@ -13,9 +35,7 @@ bucket list:
     mini "sketch store" for simple devices e.g mqtt thermometers/you tell me...
     communitystore integration
     launch blog website nodework.de
-    Network: captive Portal for easy SignUp
-    Network: MDNS Support
-    Network: DNS Support
+    Network: add SSDP
     Network: DNS Homeintegration
     Network: WPS Support
     Network: Dynamic LED Support
@@ -33,16 +53,19 @@ bucket list:
     General: Mod store for this system (e.g for LED control or thermometer)
     Button: detect push sequences (eg. long - short -long - short)
     General: Create a wrapper class for hook up functionality
+    General: Add modular Config Website for devices - every module (class) can add own website-part (module) to be configured
 
 what's working:
 
     Filemanager
         create and read Json Strings or Objects
-        Save stuff to SPIFFS (char, String, Json)
+        create Config FIles and edit them
+        Save stuff to LittleFS (char, String, Json, whatever)
         Save pretty Json from unformatted String or Json
         delete Files
         create Files
         Rename Files
+        all a filemanager need to do
 
     LED
         Create LED Object(s)
@@ -59,4 +82,12 @@ what's working:
         config creation
         AP start
         Captive Portal (register and saving to LittleFS (using Filemanager))
+        MQTT
+        Webserver + custom service add
+        ServiceSearch (NetworkIdent by j54j6) - later as JServiceManager with SSDP, UPnP and all common discovery protocols
+        udp Communication
+        Network: captive Portal for easy SignUp
+        Network: MDNS Support
+        Network: DNS Support
+    
 
