@@ -2,21 +2,23 @@
 #include "defines.h"
 
 
-WiFiManager::WiFiManager()
+WiFiManager::WiFiManager(Filemanager* FM)
 {
   LED voidLed(-1);
   this->wifiLed = &voidLed;
   disableWiFi();
   WiFi.persistent(false);
   lastCall = millis();
+  this->logging = SysLogger(FM, "WiFiManager");
 }
 
-WiFiManager::WiFiManager(LED *newWifiLed)
+WiFiManager::WiFiManager(LED *newWifiLed, Filemanager* FM)
 {
     this->wifiLed = newWifiLed; //Reference to WiFi LED to Control it with Handler class
     disableWiFi();
     WiFi.persistent(false);
     lastCall = millis();
+    this->logging = SysLogger(FM, "WiFiManager");
 }
 
 /*
@@ -141,53 +143,53 @@ String WiFiManager::getLocalIP()
 
 void WiFiManager::setShieldState(bool newState)
 {
-  #ifdef J54J6_LOGGING_H
-      logger logging;
+  #ifdef J54J6_SysLogger
+      
       String message = "Update ShieldState: ";
       message += shieldState;
       message += " -> ";
       message += newState;
-      logging.SFLog(className, "setShieldState", message.c_str());
+      logging.logIt("setShieldState", message.c_str());
   #endif
   shieldState = newState;
 }
 
 void WiFiManager::setOverrideSettingsToPreventError(bool newValue)
 {
-  #ifdef J54J6_LOGGING_H
-      logger logging;
+  #ifdef J54J6_SysLogger
+      
       String message = "Update OverrideSettingsToPreventError: ";
       message += overrideSettingsToPreventError;
       message += " -> ";
       message += newValue;
-      logging.SFLog(className, "setOverrideSettingsToPreventError", message.c_str());
+      logging.logIt("setOverrideSettingsToPreventError", message.c_str());
   #endif
   overrideSettingsToPreventError = newValue;
 }
 
 void WiFiManager::setCheckDelay(int newValue)
 {
-  #ifdef J54J6_LOGGING_H
-      logger logging;
+  #ifdef J54J6_SysLogger
+      
       String message = "Update CheckDelay: ";
       message += checkDelay;
       message += " -> ";
       message += newValue;
-      logging.SFLog(className, "setCheckDelay", message.c_str());
+      logging.logIt("setCheckDelay", message.c_str());
   #endif
   checkDelay = newValue;
 }
 
 void WiFiManager::setLockClass(bool newValue)
 {
-  #ifdef J54J6_LOGGING_H
-      logger logging;
+  #ifdef J54J6_SysLogger
+      
       String message = "Update LockClass: ";
       message += lockClass;
       message += " -> ";
       message += newValue;
 
-      logging.SFLog(className, "setLockClass", message.c_str());
+      logging.logIt("setLockClass", message.c_str());
   #endif
   if(newValue)
   {
@@ -195,9 +197,9 @@ void WiFiManager::setLockClass(bool newValue)
     error.ErrorCode = 214;
     error.message = "WiFiManager Class locked!";
     error.priority = 5;
-    #ifdef J54J6_LOGGING_H
-     logger logging;
-     logging.SFLog(className, "setLockClass", "Report lock to ErrorHandler!", 0);
+    #ifdef J54J6_SysLogger
+     
+     logging.logIt("setLockClass", "Report lock to ErrorHandler!", 0);
     #endif
   }
   lockClass = newValue;
@@ -207,25 +209,25 @@ bool WiFiManager::setWiFiAutoConnect(bool newValue)
 {
   if(WiFi.setAutoConnect(newValue))
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
+    #ifdef J54J6_SysLogger
+      
       String message = "Update WiFi->AutoConnect: ";
       message += getWiFiAutoConnect();
       message += " -> ";
       message += newValue;
-      logging.SFLog(className, "setWiFiAutoConnect", message.c_str());
+      logging.logIt("setWiFiAutoConnect", message.c_str());
     #endif
     return true;
   }
   else
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
+    #ifdef J54J6_SysLogger
+      
       String message = "Can't Update WiFi->AutoConnect: ";
       message += getWiFiAutoConnect();
       message += " -> ";
       message += newValue;
-      logging.SFLog(className, "setWiFiAutoConnect", message.c_str(), 2);
+      logging.logIt("setWiFiAutoConnect", message.c_str(), 2);
     #endif
     error.ErrorCode = 99;
     error.message = "Can't update Autoconnect!";
@@ -238,25 +240,25 @@ bool WiFiManager::setWiFiAutoReconnect(bool newValue)
 {
   if(WiFi.setAutoReconnect(newValue))
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
+    #ifdef J54J6_SysLogger
+      
       String message = "Update WiFi->AutoReconnect: ";
       message += getWiFiAutoReconnect();
       message += " -> ";
       message += newValue;
-      logging.SFLog(className, "setWiFiAutoReconnect", message.c_str());
+      logging.logIt("setWiFiAutoReconnect", message.c_str());
     #endif
     return true;
   }
   else
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
+    #ifdef J54J6_SysLogger
+      
       String message = "Can't Update WiFi->AutoReconnect: ";
       message += getWiFiAutoReconnect();
       message +=" -> ";
       message += newValue;
-      logging.SFLog(className, "setWiFiAutoReconnect", message.c_str(), 2);
+      logging.logIt("setWiFiAutoReconnect", message.c_str(), 2);
     #endif
     error.ErrorCode = 99;
     error.message = "Can't update AutoReconnect!";
@@ -269,34 +271,34 @@ bool WiFiManager::setWiFiHostname(const char* hostname)
 {
   if(hostname == WiFi.hostname().c_str())
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "setWiFiHostname", "Hostname already set! - SKIP", 1);
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("setWiFiHostname", "Hostname already set! - SKIP", 1);
     #endif
     return true;
   }
 
   if(WiFi.hostname(hostname))
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
+    #ifdef J54J6_SysLogger
+      
       String message = "Update WiFi->Hostname: ";
       message += WiFi.hostname();
       message += " -> ";
       message += hostname;
-      logging.SFLog(className, "setWiFiHostname", message.c_str());
+      logging.logIt("setWiFiHostname", message.c_str());
     #endif
     return true;
   }
   else
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
+    #ifdef J54J6_SysLogger
+      
       String message = "Can't Update WiFi->Hostname: ";
       message += WiFi.hostname();
       message += " -> ";
       message += hostname;
-      logging.SFLog(className, "setWiFiHostname", message.c_str(), 2);
+      logging.logIt("setWiFiHostname", message.c_str(), 2);
     #endif
     error.ErrorCode = 99;
     error.message = "Can't update Hostname!";
@@ -309,17 +311,17 @@ bool WiFiManager::setWiFiConfig(IPAddress local_ip, IPAddress gateway, IPAddress
 {
   if(WiFi.config(local_ip, gateway, subnet, dns1, dns2))
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "setWiFiConfig", "WiFi Config successfully updated!", 0);
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("setWiFiConfig", "WiFi Config successfully updated!", 0);
     #endif
     return true;
   }
   else
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "setWiFiConfig", "Can't update WiFi Config - Report!", 2);
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("setWiFiConfig", "Can't update WiFi Config - Report!", 2);
     #endif
     error.error = true;
     error.ErrorCode = 432;
@@ -337,9 +339,9 @@ void WiFiManager::enableWiFi(WiFiMode_t mode)
 {
   if(!shieldState)
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "enableWiFi", "enable WiFi");
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("enableWiFi", "enable WiFi");
     #endif
     shieldState = true; //wifi enabled
     wifi_fpm_do_wakeup();
@@ -348,9 +350,9 @@ void WiFiManager::enableWiFi(WiFiMode_t mode)
   }
   else
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "enableWiFi", "WiFi already enabled - SKIP", 1);
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("enableWiFi", "WiFi already enabled - SKIP", 1);
     #endif
   }
 }
@@ -359,9 +361,9 @@ void WiFiManager::disableWiFi()
 {
   if(shieldState)
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "disableWiFi", "disable WiFi");
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("disableWiFi", "disable WiFi");
     #endif
     shieldState = false; //wifi disabled
     wifi_station_disconnect();
@@ -370,9 +372,9 @@ void WiFiManager::disableWiFi()
   }
   else
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "disableWiFi", "WiFi already disabled - SKIP", 1);
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("disableWiFi", "WiFi already disabled - SKIP", 1);
     #endif
   }
 }
@@ -387,9 +389,9 @@ bool WiFiManager::startWifiAP(const char *ssid, const char *passwd, int hidden, 
 {
   if(apActive)
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "startWifiAP", "AP already enabled - SKIP", 1);
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("startWifiAP", "AP already enabled - SKIP", 1);
     #endif
     return true;
   }
@@ -398,18 +400,18 @@ bool WiFiManager::startWifiAP(const char *ssid, const char *passwd, int hidden, 
   {
     if(this->overrideSettingsToPreventError)
     {
-      #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "startWifiAP", "Override setting - enable WiFi before starting WiFi AP!", 1);
+      #ifdef J54J6_SysLogger
+        
+        logging.logIt("startWifiAP", "Override setting - enable WiFi before starting WiFi AP!", 1);
       #endif
       enableWiFi();
     }
     else
     {
-      #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "startWifiAP", "Can't start WiFi AP - WiFi is not enabled - Overriding is disabled!", 2);
-        logging.SFLog(className, "startWifiAP", "Report to ErrorHandler!", 2);
+      #ifdef J54J6_SysLogger
+        
+        logging.logIt("startWifiAP", "Can't start WiFi AP - WiFi is not enabled - Overriding is disabled!", 2);
+        logging.logIt("startWifiAP", "Report to ErrorHandler!", 2);
       #endif
       error.error = true;
       error.ErrorCode = 0;
@@ -422,18 +424,18 @@ bool WiFiManager::startWifiAP(const char *ssid, const char *passwd, int hidden, 
   
   if(WiFi.softAP(ssid, passwd, channel, hidden))
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "startWifiAP", "AP successfully enabled!");
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("startWifiAP", "AP successfully enabled!");
     #endif
     apActive = true;
     return true;
   }
   else
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "startWifiAP", "Can't start WiFi AP - softAP return 'false'", 2);
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("startWifiAP", "Can't start WiFi AP - softAP return 'false'", 2);
     #endif
     Serial.println(ssid);
     Serial.println(passwd);
@@ -452,9 +454,9 @@ bool WiFiManager::stopWifiAP(bool wifioff) //if wifiOff = true - softAP mode wil
 {
   if(!apActive)
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "stopWifiAP", "AP already disabled - SKIP", 1);
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("stopWifiAP", "AP already disabled - SKIP", 1);
     #endif
   }
 
@@ -462,9 +464,9 @@ bool WiFiManager::stopWifiAP(bool wifioff) //if wifiOff = true - softAP mode wil
   if(WiFi.softAPdisconnect(wifioff))
   {
     apActive = false;
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "stopWifiAP", "AP successfully disabled");
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("stopWifiAP", "AP successfully disabled");
     #endif
     return true;
   }
@@ -472,24 +474,24 @@ bool WiFiManager::stopWifiAP(bool wifioff) //if wifiOff = true - softAP mode wil
   {
     if(overrideSettingsToPreventError)
     {
-      #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "stopWifiAP", "Can't disable AP - Try to Fix Problem - invert wifiOff value", 1);
+      #ifdef J54J6_SysLogger
+        
+        logging.logIt("stopWifiAP", "Can't disable AP - Try to Fix Problem - invert wifiOff value", 1);
       #endif
 
       if(WiFi.softAPdisconnect(!wifioff))
       {
-        #ifdef J54J6_LOGGING_H
-          logger logging;
-          logging.SFLog(className, "stopWifiAP", "AP successfully disabled - with inverted settings! - AutoFix used!");
+        #ifdef J54J6_SysLogger
+          
+          logging.logIt("stopWifiAP", "AP successfully disabled - with inverted settings! - AutoFix used!");
         #endif
         return true;
       }
       else
       {
-        #ifdef J54J6_LOGGING_H
-          logger logging;
-          logging.SFLog(className, "stopWifiAP", "Can't disable AP - Report to ErrorHandler", 1);
+        #ifdef J54J6_SysLogger
+          
+          logging.logIt("stopWifiAP", "Can't disable AP - Report to ErrorHandler", 1);
         #endif
         error.error = true;
         error.ErrorCode = 3;
@@ -498,9 +500,9 @@ bool WiFiManager::stopWifiAP(bool wifioff) //if wifiOff = true - softAP mode wil
         return false;
       }
     }
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "stopWifiAP", "Can't disable AP - Report to ErrorHandler", 1);
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("stopWifiAP", "Can't disable AP - Report to ErrorHandler", 1);
     #endif
     error.error = true;
     error.ErrorCode = 4;
@@ -521,20 +523,20 @@ uint8_t WiFiManager::getConnectedStations()
   if(!apActive)
   {
     /*
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "getConnectedStations", "AP is disabled - return 0", 1);
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("getConnectedStations", "AP is disabled - return 0", 1);
     #endif
     */
     return 0;
   }
   /*
-  #ifdef J54J6_LOGGING_H
-      logger logging;
+  #ifdef J54J6_SysLogger
+      
       String message = "Return connected Stations: ";
       message += WiFi.softAPgetStationNum();
       message += " devices.";
-      logging.SFLog(className, "getConnectedStations", message.c_str());
+      logging.logIt("getConnectedStations", message.c_str());
     #endif
   */
   return WiFi.softAPgetStationNum();
@@ -546,25 +548,25 @@ uint8_t WiFiManager::getConnectedStations()
 
 bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMode_t mode, bool restart, int32_t channel, const uint8_t *bssid, bool connect)
 {
-  #ifdef J54J6_LOGGING_H
-    logger logging;
-    logging.SFLog(className, "startWifiStation", "Start Wifi Station");
+  #ifdef J54J6_SysLogger
+    
+    logging.logIt("startWifiStation", "Start Wifi Station");
   #endif
 
   if(staActive)
   {
     if(!restart)
     {
-      #ifdef J54J6_LOGGING_H
-        logging.SFLog(className, "startWifiStation", "Station already enabled - SKIP", 1);
+      #ifdef J54J6_SysLogger
+        logging.logIt("startWifiStation", "Station already enabled - SKIP", 1);
       #endif
       return true;
     }
     else
     {
-      #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "startWifiStation", "Station Already enabled - Restart!", 1);
+      #ifdef J54J6_SysLogger
+        
+        logging.logIt("startWifiStation", "Station Already enabled - Restart!", 1);
       #endif
       delay(50);
     }
@@ -574,18 +576,18 @@ bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMo
   {
     if(this->overrideSettingsToPreventError)
     {
-      #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "startWifiStation", "Override setting - enable WiFi before starting WiFi Station!", 1);
+      #ifdef J54J6_SysLogger
+        
+        logging.logIt("startWifiStation", "Override setting - enable WiFi before starting WiFi Station!", 1);
       #endif
       enableWiFi();
     }
     else
     {
-      #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "startWifiStation", "Can't start WiFi Station - WiFi is not enabled - Overriding is disabled!", 2);
-        logging.SFLog(className, "startWifiStation", "Report to ErrorHandler!", 2);
+      #ifdef J54J6_SysLogger
+        
+        logging.logIt("startWifiStation", "Can't start WiFi Station - WiFi is not enabled - Overriding is disabled!", 2);
+        logging.logIt("startWifiStation", "Report to ErrorHandler!", 2);
       #endif
       error.error = true;
       error.ErrorCode = 0;
@@ -598,16 +600,16 @@ bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMo
   
   if(WiFi.mode(mode))
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "startWifiStation", "Station successfully enabled - try to connect...");
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("startWifiStation", "Station successfully enabled - try to connect...");
     #endif
   }
   else
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "startWifiStation", "Can't enable WiFi Station - Wifi.mode(sta) return 'false'", 2);
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("startWifiStation", "Can't enable WiFi Station - Wifi.mode(sta) return 'false'", 2);
     #endif
     error.error = true;
     error.ErrorCode = 1;
@@ -617,8 +619,8 @@ bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMo
     return false;
   }
 
-  #ifdef J54J6_LOGGING_H
-    logging.SFLog(className, "startWifiStation", "WiFi Station successfully started");
+  #ifdef J54J6_SysLogger
+    logging.logIt("startWifiStation", "WiFi Station successfully started");
   #endif
   staActive = true;
   WiFi.begin(ssid, passwd, channel, bssid, connect);
@@ -629,9 +631,9 @@ bool WiFiManager::stopWifiStation(bool wifioff)
 {
   if(!staActive)
   {
-    #ifdef J54J6_LOGGING_H
-    logger logging;
-    logging.SFLog(className, "stopWifiStation", "WiFi Station not enabled - SKIP", 1);
+    #ifdef J54J6_SysLogger
+    
+    logging.logIt("stopWifiStation", "WiFi Station not enabled - SKIP", 1);
   #endif
   return true;
   }
@@ -640,9 +642,9 @@ bool WiFiManager::stopWifiStation(bool wifioff)
   if(WiFi.disconnect(wifioff))
   {
     staActive = false;
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "stopWifiStation", "Station successfully disabled");
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("stopWifiStation", "Station successfully disabled");
     #endif
     return true;
   }
@@ -650,24 +652,24 @@ bool WiFiManager::stopWifiStation(bool wifioff)
   {
     if(overrideSettingsToPreventError)
     {
-      #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "stopWifiStation", "Can't disable Station - Try to Fix Problem - invert wifiOff value", 1);
+      #ifdef J54J6_SysLogger
+        
+        logging.logIt("stopWifiStation", "Can't disable Station - Try to Fix Problem - invert wifiOff value", 1);
       #endif
 
       if(WiFi.disconnect(!wifioff))
       {
-        #ifdef J54J6_LOGGING_H
-          logger logging;
-          logging.SFLog(className, "stopWifiStation", "Station successfully disabled - with inverted settings! - AutoFix used!");
+        #ifdef J54J6_SysLogger
+          
+          logging.logIt("stopWifiStation", "Station successfully disabled - with inverted settings! - AutoFix used!");
         #endif
         return true;
       }
       else
       {
-        #ifdef J54J6_LOGGING_H
-          logger logging;
-          logging.SFLog(className, "stopWifiStation", "Can't disable Station - Report to ErrorHandler", 1);
+        #ifdef J54J6_SysLogger
+          
+          logging.logIt("stopWifiStation", "Can't disable Station - Report to ErrorHandler", 1);
         #endif
         error.error = true;
         error.ErrorCode = 7;
@@ -676,9 +678,9 @@ bool WiFiManager::stopWifiStation(bool wifioff)
         return false;
       }
     }
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "stopWifiStation", "Can't disable Station - Report to ErrorHandler", 1);
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("stopWifiStation", "Can't disable Station - Report to ErrorHandler", 1);
     #endif
     error.error = true;
     error.ErrorCode = 8;
@@ -824,9 +826,9 @@ void WiFiManager::internalControl()
 {
   if(!shieldState && (apActive || staActive))
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "checkVarIntegrity", "Undefined State! - Check Code! - shieldState was false but Station or AP is active -> Fixed -> Report to ErrorHandler", 1);
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("checkVarIntegrity", "Undefined State! - Check Code! - shieldState was false but Station or AP is active -> Fixed -> Report to ErrorHandler", 1);
     #endif
     error.ErrorCode = 104;
     error.message = "undefied Class State reported! - state fixed";

@@ -8,7 +8,8 @@
 
 
 #include "led.h"
-#include "logging.h"
+#include "logger.h"
+#include "filemanager.h"
 #include "errorHandler.h"
 
 #define WiFiCheckDelay 50
@@ -61,7 +62,7 @@ class WiFiManager : public ErrorSlave {
 
         //Hardware Handler
         LED* wifiLed;
-
+        SysLogger logging;
 
         //Wifi Information
         uint32_t deviceMac;
@@ -75,8 +76,8 @@ class WiFiManager : public ErrorSlave {
         
     public:
         //Constructor
-        WiFiManager(); //no LED only voidLed
-        WiFiManager(LED *newWifiLed);
+        WiFiManager(Filemanager* FM); //no LED only voidLed
+        WiFiManager(LED *newWifiLed, Filemanager* FM);
         //WiFiManager(LED &newWifiLed, LED &newErrorLed);
 
 
