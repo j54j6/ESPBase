@@ -32,8 +32,7 @@ class ClassReportTemplate {
                  3 - Class can't work but try to fix it automatically - Handler wait for further Error - after 3 times -> auto set to prio 4 -> class restart
                  4 - Class can't work, theoretically able to fix problem but failed - only restart Class by Handler
                  5 - Class can't work, can't fix it automatically - only restart of class by Handler
-                 6 - Class can't work, can't fix it automatically - device can be Damaged - ErrorHandler stop complete Device
-                
+                 6 - Class can't work, can't fix it automatically - device can be Damaged - ErrorHandler stop complete Device  
         */
         short priority = 0;
 
@@ -237,18 +236,19 @@ class ClassReportModuleHandler  {
 
         void addReport(const char* className, String message, short errorCode, short priority, bool isError, bool lockReport = false)
         {
+            new ClassReportTemplate(className, message, errorCode, priority, isError);
             ClassReportTemplate* pointer;
             if(_firstReport == NULL)
             {
                 Serial.println("Added as First");
-                this->_firstReport = &ClassReportTemplate(className, message, errorCode, priority, isError);
+                this->_firstReport = &newTempl;
                 this->_actualReportPointer = _firstReport;
                 pointer = _firstReport;
             }
             else
             {
                 Serial.println("Added as Last");
-                getLastNode()->setNextClassReport(&ClassReportTemplate(className, message, errorCode, priority, isError);
+                getLastNode()->setNextClassReport(&newTempl);
                 pointer = getLastNode();
             }
 
@@ -333,7 +333,6 @@ class ClassRepeatChecker {
 
 };
 
-
 /*
     ClassModuleSlave
 
@@ -399,10 +398,6 @@ class ClassModuleSlave : protected ModuleStateSlave {
         }
 };
 
-
-
-
-
 /*
     ClassModuleMaster
 
@@ -418,7 +413,6 @@ class ClassModuleMaster {
         
         bool opticalSignalActive = false;
         ulong opticalSignalActuveUntil = 0;
-
 
         //set
         void toNextModuleSlave()
@@ -532,7 +526,6 @@ class ClassModuleMaster {
                     #ifdef opticalOnWarn
                         setOpticalSignal(10000);
                     #endif
-
                     _cacheReportHandler->removeActualReport();
                     _cacheReportHandler->toFirstReport();
                 }
@@ -583,5 +576,4 @@ class ClassModuleMaster {
             checkOpticalReport();
         }
 };
-
 #endif //J54J6_MODULESTATE_H
