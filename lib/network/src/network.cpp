@@ -173,10 +173,9 @@ void Network::startWorking() //fkt. Nr. -3
     {
         #ifdef J54J6_SysLogger
             
-            logging.logIt("startWorking", "No ConfigFile found! - use default PSK and SSID station credentials", 2);
+            logging.logIt("startWorking", "No ConfigFile found! - start Setup", 2);
         #endif
-        staSSID = "hotspot";
-        staPSK = "hotspot1234";
+        runFunction = -2;
     }
 
     #ifdef J54J6_SysLogger
@@ -191,7 +190,7 @@ void Network::startWorking() //fkt. Nr. -3
     #endif
 
     wifiManager->startWifiStation(staSSID.c_str(), staPSK.c_str());
-    runFunction = 0;
+    runFunction = 2; //updateHostname
 }
 
 void Network::startSetupMode() //fkt Nr. -2
@@ -517,24 +516,6 @@ void Network::internalBegin()
 
 
     //Start Setup - all files are created
-    if(this->hostName == "")
-    {
-        this->hostName = wifiManager->getStationMacAsChar();
-    }
-
-    if(wifiManager->setWiFiHostname(this->hostName))
-    {
-        #ifdef J54J6_SysLogger
-            logging.logIt("internalBegin", "Hostname set!", 0);
-        #endif
-    }
-    else
-    {
-        #ifdef J54J6_SysLogger
-            logging.logIt("internalBegin", "can't set Hostname!", 2);
-        #endif
-        classControl.newReport("Can't set WiFi Hostname!", 14, 2);
-    }
     const char* wifiConfigured = FM->readJsonFileValue(configFile, "wiFiConfigured");
     res = FM->returnAsBool(FM->readJsonFileValue(configFile, "wiFiConfigured"));
     if(!res)
@@ -582,6 +563,36 @@ void Network::internalBegin()
         runFunction = -3; //startWorking()
         return;
     }
+}
+
+
+void Network::updateHostname(const char* newHostname)
+{
+    String toSetHostname;
+    if(wifiManager->isConnected())
+    {
+        if(strcmp(newHostname, "") == 0)
+        {
+            toSetHostname = wifiManager->getStationMacAsString();
+            toSetHostname.replace(":","-");
+        }
+
+        if(wifiManager->setWiFiHostname(toSetHostname.c_str()))
+        {
+            #ifdef J54J6_SysLogger
+                logging.logIt("updateHostname", "Hostname set!", 0);
+            #endif
+        }
+        else
+        {
+            #ifdef J54J6_SysLogger
+                logging.logIt("updateHostname", "can't set Hostname: " + String(toSetHostname), 2);
+            #endif
+            classControl.newReport("Can't set WiFi Hostname: " + String(toSetHostname), 14, 2);
+        }
+        runFunction = 0;
+    }
+   
 }
 
 void Network::serverHandleSetup()
@@ -876,9 +887,10 @@ void Network::run()
                 startSetupMode();
                 break;
             case 1:
-                internalBegin();;
+                internalBegin();
                 break;
             case 2:
+                updateHostname();
                 break;
             case 3:
                 break;

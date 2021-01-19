@@ -132,6 +132,7 @@ class Network
         void autoResetLock(); // called by run()
         void lock(ulong time); //alternative to delay();
         void internalBegin();
+        void updateHostname(const char* newHostname = "");
         //bool internalDnsStart(); - replaced by startDNSServer
 
         
