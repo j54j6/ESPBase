@@ -11,7 +11,6 @@
 #include "mqttHandler.h"
 #include "moduleState.h"
 
-
 LED wifiLed(D1);
 LED errorLed(D7);
 LED workLed(D2);
@@ -19,13 +18,10 @@ Button mainButton(D6, 3);
 Filemanager FM;
 WiFiManager wifiManager(&wifiLed, &FM);
 Network test(&FM, &wifiManager);
-ErrorHandler mainHandler(test.getINode(), &errorLed, &workLed);
-ServiceHandler networkIdent(&FM, &wifiManager);
+ServiceHandler networkIdent(&FM, &wifiManager, 30);
 udpManager udpManage(&FM, &wifiManager, 63547);
 MQTTHandler mqtthandler(&FM, &wifiManager, &networkIdent);
 ClassModuleMaster testHandler(&errorLed, &workLed);
-//SysLogger testLogger(&FM, "MainClass");
-//SysLogger testLogger("MainClass");
 
 void handleTest()
 {
@@ -34,55 +30,6 @@ void handleTest()
    webserver->send(200, "text/plain", "Das ist eine Testnachricht");
    
 }
-
-
-void errorHandle()
-{
-  mainHandler.checkForError();  
-}
-
-void getPerformance()
-{
-  int outputDelay = 30000;
-  static ulong lastCall = millis();
-  ulong wifiPerformace = wifiManager.getCallPerSecond();
-  ulong networkPerformance = test.getCallPerSecond();
-
-  if(millis() >= (lastCall + outputDelay))
-  {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      String message = "\nWiFi-Manager: ";
-      message += wifiPerformace;
-      message += "x/s \n";
-      message += "WiFi-State: ";
-      message += wifiManager.getWiFiState();
-      message += "\nNetwork: ";
-      message += networkPerformance;
-      message += "x/s";
-      logging.SFLog("Main", "getPerformance", message.c_str(), 0);
-    #endif
-    lastCall = millis();
-  }
-}
-
-void getMqtt(char* topic, byte* payload, unsigned int length)
-{
-  Serial.println("------------------");
-  Serial.println("Message received!");
-  Serial.print("Topic: ");
-  Serial.println(topic);
-  Serial.print("payload: ");
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println("");
-  Serial.print("length: ");
-  Serial.println(length);
-  
-}
-
-
 
 void setup() {
   Serial.begin(921600);
@@ -93,12 +40,6 @@ void setup() {
 
   //default enable workLed
   workLed.ledOn();
-
-  //define className shown in ErrorHandler
-  test.setClassName("network");
-
-  //add modules to dedicated ErrorHandler
-  mainHandler.addNewNode(networkIdent.getINode(), "NetworkIdent");
   
   //preMount Filesystem
   FM.mount();
@@ -109,24 +50,14 @@ void setup() {
   //start Network
   test.begin();
 
-  //add webservice to webserver@Network
-  //test.addService("/new", handleTest);
-  //test.startWebserver(80);
-
   //start Listening on UDP-NetworkIdentPort
   networkIdent.beginListen();
 
-  //networkIdent.addService("NetworkIdent", "63547");
-  //networkIdent.addService(true, false, "mqttConfigServer", "1883", IPAddress(192,168,178,27));
-  //networkIdent.addService(false, false, "mqtt", "1883", IPAddress(192,168,178,27));
-  //MQTT
-  //IPAddress mqserv = IPAddress(192,168,178,27);
-  //bool mqt = mqtthandler.setServer(mqserv, 1883);
-  //mqtthandler.setCallback(getMqtt);
-  //testLogger.logIt("Setup", "This is a Test Message", 6);
-
   testHandler.addModuleSlave(wifiManager.getClassModuleSlave());
   testHandler.addModuleSlave(mqtthandler.getClassModuleSlave());
+  testHandler.addModuleSlave(networkIdent.getClassModuleSlave());
+  testHandler.addModuleSlave(test.getClassModuleSlave());
+  testHandler.addModuleSlave(udpManage.getClassModuleSlave());
 }
 
 void loop() {
@@ -142,12 +73,6 @@ void loop() {
 
   //wifiManager
   wifiManager.run();
-
-  //dedicated ErrorHandler
-  errorHandle();
-
-  //performanceControl
-  getPerformance();
 
   //NetworkIdent
   networkIdent.loop();
@@ -205,6 +130,10 @@ void loop() {
     if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "getMac")
     {
       mqtthandler.publish("/home/public", wifiManager.getDeviceMac().c_str());
+    }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "delay")
+    {
+      delay(2000);
     }
     mqtthandler.getCallback()->reset();
   }
