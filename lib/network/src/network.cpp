@@ -45,10 +45,7 @@ bool Network::createConfig() //Fkt Nr. 19
         }
         if(!FM->fExist(configFile))
         {
-            error.error = true;
-            error.ErrorCode = 43;
-            error.message = "Can't create Config File - 3 tries failed!";
-            error.priority = 4;
+            classControl.newReport("Can't create Config File - 3 tries failed!", 43, 4, true);
         }
     }
     
@@ -77,10 +74,7 @@ bool Network::createConfig() //Fkt Nr. 19
             
             logging.logIt("createConfig", "Unable to create Config File - ErrorCode: 119", 2);
         #endif
-        error.error = true;
-        error.ErrorCode = 119;
-        error.message = "Unable to create Config File";
-        error.priority = 5;
+        classControl.newReport("Unable to create Config File", 119, 5, true);
         return false;
     }
     else
@@ -120,10 +114,7 @@ bool Network::createSetupFile() //Fkt. Nr 120
             #ifdef J54J6_SysLogger
                 logging.logIt("createSetupFile", "Can't create setup File - ErrorCode: 234", 2);
             #endif
-            error.error = true;
-            error.ErrorCode = 234;
-            error.message = "Can't create setup File";
-            error.priority = 6;
+            classControl.newReport("Can't create setup File", 234, 6, true);
             return false;
         }
     }
@@ -153,16 +144,12 @@ bool Network::createSetupFile() //Fkt. Nr 120
             
             logging.logIt("createSetupFile", "Unable to create Setupfile - Can't write in File - ErrorCode: 120", 2);
         #endif
-        error.error = true;
-        error.ErrorCode = 120;
-        error.message = "Unable to create Setupfile -  Can't write in File";
-        error.priority = 6;
+        classControl.newReport("Unable to create Setupfile -  Can't write in File", 120, 6, true);
         return false;
     }
     else
     {
         #ifdef J54J6_SysLogger
-            
             logging.logIt("createSetupFile", "Config File successfully created!");
         #endif
         return true;
@@ -191,10 +178,6 @@ void Network::startWorking() //fkt. Nr. -3
         staSSID = "hotspot";
         staPSK = "hotspot1234";
     }
-    
-
-     
-    
 
     #ifdef J54J6_SysLogger
         
@@ -250,12 +233,9 @@ void Network::startSetupMode() //fkt Nr. -2
             
             logging.logIt("startSetupMode", "Can't configure AP! ERROR-Code: 23", 2);
         #endif
-        error.error = true;
-        error.ErrorCode = 23;
-        error.message = "Can't configure AP!";
-        error.priority = 5;
+        classControl.newReport("Can't configure AP!", 23, 5, true);
     }
-    delay(500);
+    delay(150);
     Serial.println("##########################################");
     Serial.println(apSSID.c_str());
     Serial.println(apPSK.c_str());
@@ -278,12 +258,9 @@ void Network::startSetupMode() //fkt Nr. -2
             
             logging.logIt("startSetupMode", "Can't start AP - ERROR-Code: 24", 2);
         #endif
-        error.error = true;
-        error.ErrorCode = 24;
-        error.message = "Can't start AP!";
-        error.priority = 5;
+        classControl.newReport("Can't start AP!", 24, 5, true);
     }
-    delay(500);
+    delay(200);
     /*
         Start DNS Server
     */
@@ -349,15 +326,9 @@ bool Network::startDnsServer() //fkt Nr 5 / direct called in startup
     if(!dnsServer.start(DNSPort, "*", apIpAddress))
     {
         #ifdef J54J6_SysLogger
-            
             logging.logIt("startDnsServer", "Cant start DNS Server!", 2);
-            
         #endif
-        error.error = false;
-        error.ErrorCode = 14;
-        error.message = "Can't start DNS Server!";
-        error.priority = 2;
-
+        classControl.newReport("Can't start DNS Server!", 14, 2);
         return false;
     }
     else
@@ -395,20 +366,10 @@ bool Network::startMDnsServer(const char* newHostname) //fkt Nr. 4 / direct call
         
         logging.logIt("startMDnsServer", "ERROR Starting MDNS Server", 2);
         #endif
-        error.error = false;
-        error.ErrorCode = 16;
-        error.message = "Can't Start MDNS Server";
-        error.priority = 2;
+        classControl.newReport("Can't Start MDNS Server", 16, 2);
         return false;
     }  
 }
-
-void Network::internalControl() //At this time only for performance checking
-{
-  this->callPerSecond = 1000/(millis() - lastCall);
-}
-
-
 /*
     Protected functions
 */
@@ -496,10 +457,7 @@ void Network::internalBegin()
                 logging.logIt("internalBegin", "uneable to create configFile - ERRORCODE: 12", 2);
                 logging.logIt("internalBegin", "disable Network! - ERRORCODE: 12", 2);
             #endif
-            error.error = true;
-            error.ErrorCode = 12;
-            error.message = "Can't create Config File!";
-            error.priority = 6;
+            classControl.newReport("Can't create Config File!", 12, 6, true);
         }
     }
 
@@ -553,16 +511,17 @@ void Network::internalBegin()
                 logging.logIt("internalBegin", "uneable to create setupFile - ERRORCODE: 13", 2);
                 logging.logIt("internalBegin", "disable Network! - ERRORCODE: 13", 2);
             #endif
-            error.error = true;
-            error.ErrorCode = 13;
-            error.message = "Can't create Setup File!";
-            error.priority = 6;
+            classControl.newReport("Can't create Setup File!", 13, 6, true);
         }
     }
 
 
     //Start Setup - all files are created
-    
+    if(this->hostName == "")
+    {
+        this->hostName = wifiManager->getStationMacAsChar();
+    }
+
     if(wifiManager->setWiFiHostname(this->hostName))
     {
         #ifdef J54J6_SysLogger
@@ -574,10 +533,7 @@ void Network::internalBegin()
         #ifdef J54J6_SysLogger
             logging.logIt("internalBegin", "can't set Hostname!", 2);
         #endif
-        error.error = false;
-        error.ErrorCode = 14;
-        error.message = "Can't set WiFi Hostname!";
-        error.priority = 2;
+        classControl.newReport("Can't set WiFi Hostname!", 14, 2);
     }
     const char* wifiConfigured = FM->readJsonFileValue(configFile, "wiFiConfigured");
     res = FM->returnAsBool(FM->readJsonFileValue(configFile, "wiFiConfigured"));
@@ -604,10 +560,7 @@ void Network::internalBegin()
             #ifdef J54J6_SysLogger
                 logging.logIt("internalBegin", "can't set WiFiConfig!", 2);
             #endif
-            error.error = false;
-            error.ErrorCode = 14;
-            error.message = "Can't set WiFi Config!";
-            error.priority = 2;
+            classControl.newReport("Can't set WiFi Config!", 14, 2, false);
         }
 
 
@@ -833,13 +786,9 @@ void Network::dnsStart()
 }
 
 
-        /*
-            Get Stuff
-        */
-ulong Network::getCallPerSecond()
-{
-    return this->callPerSecond;
-}
+/*
+    Get Stuff
+*/
 
 bool Network::getClassDisabled()
 {
@@ -903,11 +852,11 @@ bool Network::saveCredentials(const String* ssid, const String* psk, const char*
 */
 void Network::run()
 {
+    classControl.run();
     if(millis() < (lastCall + checkDelay))
     {
         return;
     }
-    internalControl();
     autoResetLock();
     dnsServer.processNextRequest();
     MDNS.update();
@@ -970,9 +919,7 @@ bool Network::startWebserver(int port)
         logging.logIt("startWebserver", "Webserver already active - report", 1);
         #endif
 
-        this->error.error = false;
-        this->error.message = "Webserver already active!";
-        this->error.priority = 2;
+        classControl.newReport("Webserver already active!", 823, 2);
         return false;
     }    
 }

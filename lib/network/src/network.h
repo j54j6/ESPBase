@@ -10,19 +10,16 @@
 #include <DNSServer.h>
 #include <PubSubClient.h>
 //#include <PJON.h>
-
-
-#include "logger.h"
 #include "wifiManager.h"
 #include "filemanager.h"
-#include "errorHandler.h"
 #include "../webSrc/setupPage.h"
+#include "moduleState.h"
 
 extern "C" {
   #include "user_interface.h"
 }
 typedef std::function<void()> webService;
-class Network : public ErrorSlave
+class Network
 {
     /*
         Notes:
@@ -43,7 +40,7 @@ class Network : public ErrorSlave
         const char* configFile = "/config/network.json"; //class Intern ConfigFile
         const char* setupFile = "/setup/setup.json"; //first init File wih AP credentials
         const char* className = "Network"; //only for Debugging
-        const char* hostName = "NodeWork"; //Network WiFi Hostname
+        const char* hostName = ""; //Network WiFi Hostname
         const char* registerHostname = "registration";
         const char* backupAPSSID = "NodeworkNewDevice";
         const char* backupAPPSK = "NodeworkDevice1234";
@@ -88,6 +85,7 @@ class Network : public ErrorSlave
         ESP8266WebServer webserver;
         PubSubClient mqttHandler;
         SysLogger logging;
+        ClassModuleSlave classControl = ClassModuleSlave("Network", 50);
         
 
         /*
@@ -126,8 +124,6 @@ class Network : public ErrorSlave
         
         bool startDnsServer();
         bool startMDnsServer(const char* newHostname = "undefinedDevice");
-
-        void internalControl();
         
         void serverHandleSetup();
         void serverHandleCaptiveNotFound();
@@ -155,10 +151,12 @@ class Network : public ErrorSlave
 
 
         //get Stuff
-        ulong getCallPerSecond();
         bool getClassDisabled();
         bool getDeviceIsConfigured() { return deviceConfigured;};
-
+        ClassModuleSlave* getClassModuleSlave()
+        {
+            return &classControl;
+        }
 
         //set Stuff
         void setClassDisabled(bool newVal);
