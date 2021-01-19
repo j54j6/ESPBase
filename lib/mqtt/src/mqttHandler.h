@@ -11,6 +11,7 @@
 
 #include "errorHandler.h"
 #include "logger.h"
+#include "moduleState.h"
 
 /*
     MQTT Config Blueprint
@@ -71,6 +72,7 @@ class MQTTHandler : public ErrorSlave {
         WiFiManager* wifiManager;
         ServiceHandler* services;
         PubSubClient mqttHandlerClient;
+        ClassModuleSlave classControl = ClassModuleSlave("MQTTHandler");
 
         lastMqttCallback lastCallback;
 
@@ -146,6 +148,10 @@ class MQTTHandler : public ErrorSlave {
     uint8_t getWillQos();
     bool getWillRetain();
     bool getCleanSession();
+    ClassModuleSlave* getClassModuleSlave()
+        {
+            return &classControl;
+        }
 
     /*
         Connect
@@ -231,8 +237,6 @@ class MQTTHandler : public ErrorSlave {
     //control class
     void startClass();
     void stopClass();
-    void pauseClass();
-    void restartClass();
-    void continueClass();     
+    void restartClass();    
 };
 #endif

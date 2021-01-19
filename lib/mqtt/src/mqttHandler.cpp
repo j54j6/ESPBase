@@ -24,10 +24,7 @@ bool MQTTHandler::configCheck()
             
             logging.logIt("configCheck", "Can't create File", 2);
             #endif
-            error.error = true;
-            error.ErrorCode = 321;
-            error.message = "Can't create Config File!";
-            error.priority = 5;
+            classControl.newReport("Can't create Config File!", 321, 5, true);
             return false;
         }
         
@@ -37,10 +34,7 @@ bool MQTTHandler::configCheck()
             
             logging.logIt("configCheck", "Can't write in File", 2);
             #endif
-            error.error = true;
-            error.ErrorCode = 322;
-            error.message = "Can't write in File!";
-            error.priority = 5;
+            classControl.newReport("Can't write in File", 322, 5, true);
             return false;
         }
         #ifdef J54J6_SysLogger
@@ -79,16 +73,13 @@ bool MQTTHandler::setServer(IPAddress ip, uint16 port, bool save, bool asFallbac
         else
         {
             String message = "Error while saving the Serveraddress - Results: \n";
-            message = "IP: ";
+            message += "IP: ";
             message += ipChanged;
             message += "\n Port: ";
             message += portChanged;
             logging.logIt("setServer", message.c_str(), 2);
 
-            error.error = false;
-            error.ErrorCode = 232;
-            error.message = message.c_str();
-            error.priority = 2;
+            classControl.newReport(message, 232, 2, false, true);
             return false;
         }
     }
@@ -109,10 +100,7 @@ bool MQTTHandler::setServer(IPAddress ip, uint16 port, bool save, bool asFallbac
             message += portChanged;
             logging.logIt("setServer - FallbackPart", message.c_str(), 2);
 
-            error.error = false;
-            error.ErrorCode = 232;
-            error.message = message.c_str();
-            error.priority = 2;
+            classControl.newReport(message, 232, 2, false, true);
             return false;
         }
     }
@@ -751,13 +739,10 @@ void MQTTHandler::run()
     
     if(!mqttHandlerClient.loop())
     {
-        this->error.error = true;
-        this->error.ErrorCode = 365;
-        this->error.message = "Error wile running!";
-        this->error.priority = 5;
+        classControl.newReport("Error while running - mqttHandler return false!", 365, 5, true, true);
     }
 
-    //delay(10); //need to fix several stability problems look at https://github.com/256dpi/arduino-mqtt?utm_source=platformio&utm_medium=piohome#notes
+    delay(10); //need to fix several stability problems look at https://github.com/256dpi/arduino-mqtt?utm_source=platformio&utm_medium=piohome#notes
     
 }
 
@@ -791,17 +776,7 @@ void MQTTHandler::stopClass()
     }
 }
 
-void MQTTHandler::pauseClass()
-{
-    this->stopClass();
-}
-
 void MQTTHandler::restartClass()
-{
-    this->startClass();
-}
-
-void MQTTHandler::continueClass()
 {
     this->startClass();
 }
