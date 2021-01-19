@@ -42,10 +42,7 @@ bool udpManager::begin()
             
             logging.logIt("begin", "Can't start UDP - begin() return false!", 2);
         #endif
-        error.error = true;
-        error.ErrorCode = 421;
-        error.message = "Can't start UDP - UDP.begin() return false (0)!";
-        error.priority = 5;
+        classControl.newReport("Can't start UDP - UDP.begin() return false (0)!", 422, 5, true);
         return false;
     }
     else
@@ -124,6 +121,7 @@ void udpManager::sendUdpMessage(const char* workload, IPAddress ip, int port)
 
 void udpManager::run()
 {
+    classControl.run();
     if(classDisabled)
     {
         return;
@@ -219,17 +217,8 @@ void udpManager::stopClass()
     }
 }
 
-void udpManager::pauseClass()
-{
-    this->stopClass();
-}
-
 void udpManager::restartClass()
 {
-    this->startClass();
-}
-
-void udpManager::continueClass()
-{
+    this->stopClass();
     this->startClass();
 }

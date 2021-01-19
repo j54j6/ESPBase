@@ -4,12 +4,9 @@
 #include <WiFiClient.h>
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
-
-#include "logger.h"
-#include "errorHandler.h"
 #include "filemanager.h"
 #include "wifiManager.h"
-
+#include "moduleState.h"
 
 
 struct udpPacketResolve {
@@ -49,7 +46,7 @@ struct udpPacketResolve {
     }
 };
 
-class udpManager : public ErrorSlave {
+class udpManager {
     private:
         const char* className = "udpManager";
         bool classDisabled = false;
@@ -61,6 +58,7 @@ class udpManager : public ErrorSlave {
         WiFiManager* wifiManager;
         udpPacketResolve lastContent;
         SysLogger logging;
+        ClassModuleSlave classControl = ClassModuleSlave("udpManager", 20);
 
     public:
         udpManager(Filemanager* FM, WiFiManager* wifiManager, int port);
@@ -70,7 +68,11 @@ class udpManager : public ErrorSlave {
         int getListenPort();
         int getLocalOutPort();
         udpPacketResolve* getLastUDPPacketLoop();
-
+        
+        ClassModuleSlave* getClassModuleSlave()
+        {
+            return &classControl;
+        }
         //set stuff - nothing 
 
 
@@ -89,9 +91,7 @@ class udpManager : public ErrorSlave {
        */
         void startClass();
         void stopClass();
-        void pauseClass();
         void restartClass();
-        void continueClass();
 };
 
 
