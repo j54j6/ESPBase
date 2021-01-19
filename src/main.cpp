@@ -99,7 +99,6 @@ void setup() {
 
   //add modules to dedicated ErrorHandler
   mainHandler.addNewNode(networkIdent.getINode(), "NetworkIdent");
-  mainHandler.addNewNode(mqtthandler.getINode(), "mqtt");
   
   //preMount Filesystem
   FM.mount();
@@ -127,6 +126,7 @@ void setup() {
   //testLogger.logIt("Setup", "This is a Test Message", 6);
 
   testHandler.addModuleSlave(wifiManager.getClassModuleSlave());
+  testHandler.addModuleSlave(mqtthandler.getClassModuleSlave());
 }
 
 void loop() {

@@ -37,25 +37,17 @@ String ServiceHandler::formatComMessage(bool request, bool generateId, String se
 
     #ifdef J54J6_SysLogger
         
-        
-        String message = "\n********************************\n";
-        message += "Request: ";
-        message += request;
-        message += "\nGenerateID: ";
-        message += generateId;
-        message += "\nserviceName: ";
-        message += serviceName;
-        message += "\nMAC: ";
-        message += MAC;
-        message += "\nIP: ";
-        message += ip;
-        message += "\nservicePort: ";
-        message += port;
-        message += "\nGivenID: ";
-        message += id;
-        message += "\n********************************\n";
-
-        logging.logIt("formatMessage", message.c_str(), -1);
+        logging.logIt("formatMessage", "", 1);
+        logging.logIt("formatMessage", "#####Debug#####", 1);
+        logging.logIt("formatMessage", "Request: " + request, 1);
+        logging.logIt("formatMessage", "GenerateID: " + generateId, 1);
+        logging.logIt("formatMessage", "ServiceName: " + serviceName, 1);
+        logging.logIt("formatMessage", "MAC: " + MAC, 1);
+        logging.logIt("formatMessage", "IP: " + ip, 1);
+        logging.logIt("formatMessage", "ServicePort: " + port, 1);
+        logging.logIt("formatMessage", "ID: " + id, 1);
+        logging.logIt("formatMessage", "#####Debug#####", 1);
+        logging.logIt("formatMessage", "", 1);
     #endif 
 
     long genId = millis() + random(20, 2145895698);
