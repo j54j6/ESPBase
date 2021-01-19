@@ -85,7 +85,7 @@ void loop() {
   //ModuleStateMaster
   testHandler.run();
 
-
+  static bool readActive = false;
   if(mqtthandler.getCallback()->payload != "")
   {
     Serial.println("-------------MQTT Message-------------");
@@ -134,6 +134,35 @@ void loop() {
     if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "delay")
     {
       delay(2000);
+    }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "hostname")
+    {
+      wifiManager.setWiFiHostname("2C-F4-32-79-F3-D3");
+    }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "read" || readActive == true)
+    {
+      if(readActive)
+      {
+        String filename = mqtthandler.getCallback()->payload;
+        filename.replace(" ", "");
+        if(!FM.fExist(filename.c_str()))
+        {
+          Serial.println("Filename '" + filename + String("' doesn't exist!"));
+        }
+        else
+        {
+          Serial.println(FM.readFile(filename.c_str()));
+        }
+        readActive = false;
+        Serial.println("Read Mode disabled!");
+        
+      }
+      else
+      {
+        readActive = true;
+        Serial.println("Read Mode enabled!");
+      }
+      
     }
     mqtthandler.getCallback()->reset();
   }

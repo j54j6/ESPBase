@@ -254,7 +254,6 @@ bool WiFiManager::setWiFiHostname(const char* hostname)
   if(hostname == WiFi.hostname().c_str())
   {
     #ifdef J54J6_SysLogger
-      
       logging.logIt("setWiFiHostname", "Hostname already set! - SKIP", 1);
     #endif
     return true;
