@@ -88,7 +88,23 @@ class SysLogger {
         SysLogger() {};
         ~SysLogger() {};
 
-
+       /*
+        logLevel
+            The logLevel decide what information should be logged - the defualt value is 3 (only info and above will logged)
+    
+            All logLevel inherit the logLevel up next that means if you define logLevel (5) also (6) will be logged - 7 is an extra option and will not be considered if you dont set the logLevel to (7)
+    
+        logLevel meanings:
+            - 0 -> noLogging
+            - 1 -> trace
+            - 2 -> debug
+            - 3 -> info
+            - 4 -> warn
+            - 5 -> error 
+            - 6 -> fatal
+    
+            - 7 -> all
+        */
         void logIt(String function, String message, char priority = 3);
         //void logIt(String message, char priority);
         //void logIt(const char* message, char priority);
