@@ -5,12 +5,8 @@
 #include <SPI.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
-
-
 #include "led.h"
-#include "logger.h"
 #include "filemanager.h"
-#include "errorHandler.h"
 #include "moduleState.h"
 
 #define WiFiCheckDelay 50
@@ -73,7 +69,7 @@ class WiFiManager {
         WiFiClient localWiFiClient;
 
         //Watchdog Slave
-        ClassModuleSlave classControl = ClassModuleSlave("wifiManager");
+        ClassModuleSlave classControl = ClassModuleSlave("wifiManager", 20);
         
     public:
         //Constructor
@@ -88,7 +84,6 @@ class WiFiManager {
         bool getLockClass(); //get State of class
         String getDeviceMac();
         int getCheckDelay();
-        ulong getCallPerSecond();
         ClassModuleSlave* getClassModuleSlave()
         {
             return &classControl;

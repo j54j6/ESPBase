@@ -50,11 +50,6 @@ int WiFiManager::getCheckDelay()
   return checkDelay;
 }
 
-ulong WiFiManager::getCallPerSecond()
-{
-  return callPerSecond;
-}
-
 bool WiFiManager::getWiFiAutoConnect()
 {
   return WiFi.getAutoConnect();
@@ -287,7 +282,7 @@ bool WiFiManager::setWiFiHostname(const char* hostname)
       message += hostname;
       logging.logIt("setWiFiHostname", message.c_str(), 2);
     #endif
-    classControl.newReport("Can't update Hostname!", 56, false, true);
+    classControl.newReport("Can't update Hostname!", 56, 1, false, true);
     return false;
   }
 }
@@ -771,31 +766,11 @@ void WiFiManager::run()
 {
   if(millis() >= (lastCall + checkDelay) && !lockClass)
   {
-    internalControl();
     setOpticalMessage(this->getWiFiState());
     lastCall = millis();
   }
+  classControl.run();
 }
-
-
-/*
-  Internal Class functions
-*/
-void WiFiManager::internalControl()
-{
-  if(!shieldState && (apActive || staActive))
-  {
-    #ifdef J54J6_SysLogger
-      
-      logging.logIt("checkVarIntegrity", "Undefined State! - Check Code! - shieldState was false but Station or AP is active -> Fixed -> Report to ErrorHandler", 1);
-    #endif
-    classControl.newReport("Undefied Class State reported! - state fixed", 104, 1, false, true);
-    shieldState = true;
-  }
-
-  callPerSecond = 1000/(millis() - lastCall);
-}
-
 
 /*
   inherited ErrorSlave
