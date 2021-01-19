@@ -2,7 +2,6 @@
 #define J54J6_MODULESTATE_H
 
 #include <Arduino.h>
-#include "errorHandler.h"
 #include "led.h"
 #include "logger.h"
 #include "filemanager.h"
@@ -171,7 +170,7 @@ class ClassReportModuleHandler  {
             {
                 _firstReport = NULL;
                 _actualReportPointer = NULL;
-                //delete _lastPoint; // needed to aloocate the storage - Object sacved at stack and not in heap
+                delete _lastPoint; // needed to aloocate the storage - Object sacved at stack and not in heap
                 return;
             }
 
@@ -193,7 +192,7 @@ class ClassReportModuleHandler  {
                     _actualReportPointer = _cacheTemplate;
                 }
             }
-            //delete _lastPoint; // needed to aloocate the storage - Object sacved at stack and not in heap
+            delete _lastPoint; // needed to aloocate the storage - Object sacved at stack and not in heap
         }
 
         void toNextReport() { //set actualNodePointer to the next report
@@ -302,15 +301,47 @@ class ClassRepeatChecker {
     private:
         ulong lastCall = 0;
         ulong callPerSecond = 0;
+        int estCallIntervall = 0;
+        bool alreadyReported = false;
         
         void internalRun()
         {
-            this->callPerSecond = 1000/(millis() - lastCall);
+            //this->callPerSecond = 1000/(millis() - lastCall);
+            if(millis() - lastCall <= 1000)
+            {
+                callPerSecond++;
+            }
+            else
+            {
+                callPerSecond = 1;
+            }
+            lastCall = millis();
+            delay(1);
         }
     public:
+        ClassRepeatChecker(int estCallIntervall)
+        {
+            this->estCallIntervall = estCallIntervall;
+        }
+
+        void setWarnIsReported(bool newVal = true)
+        {
+            this->alreadyReported = newVal;
+        }
+
+        bool getWarnIsReported()
+        {
+            return alreadyReported;
+        }
+
         ulong getCallPerSecond()
         {
             return this->callPerSecond;
+        }
+
+        int getEstCallPerSecond()
+        {
+            return estCallIntervall;
         }
 
         void run()
@@ -336,7 +367,7 @@ class ClassModuleSlave : protected ModuleStateSlave {
         ClassModuleSlave* _nextSlave;
 
         ClassReportModuleHandler reportHandler;
-        ClassRepeatChecker repeatChecker;
+        ClassRepeatChecker* _repeatChecker;
 
         ClassReportModuleHandler* getReportHandler()
         {
@@ -360,28 +391,28 @@ class ClassModuleSlave : protected ModuleStateSlave {
                 return _nextSlave;
             }
         }
-        
-        void run()
-        {
-            this->repeatChecker.run();
-        }
 
         //repeat checker
         ulong getCallsPerSecond()
         {
-            return this->repeatChecker.getCallPerSecond();
+            return this->_repeatChecker->getCallPerSecond();
         }
 
     public:
-        ClassModuleSlave(const char* className)
+        ClassModuleSlave(const char* className, int estCallIntervall)
         {
             this->className = className;
+            this->_repeatChecker = new ClassRepeatChecker(estCallIntervall);
         }
 
         //reporting
         void newReport(String message, short errorCode, short priority = 0, bool isError = false, bool lockReport = true)
         {
             reportHandler.addReport(className, message, errorCode, priority, isError, lockReport);
+        }
+        void run()
+        {
+            _repeatChecker->run();
         }
 };
 
@@ -431,7 +462,7 @@ class ClassModuleMaster {
         }
 
         /*
-            mode = fale -> blinkLed
+            mode = false -> blinkLed
             mode = true -> solidLed
             time in ms
         */
@@ -439,6 +470,7 @@ class ClassModuleMaster {
         {
             opticalSignalActive = true;
             _workLed->ledOff();
+            _workLed->setLocked(true);
             if(mode)
             {
                 _errorLed->ledOn();
@@ -455,13 +487,14 @@ class ClassModuleMaster {
             if(millis() >= opticalSignalActuveUntil && opticalSignalActive)
             {
                 _errorLed->ledOff();
+                _workLed->setLocked(false);
                 _workLed->ledOn();
                 opticalSignalActive = false;
                 opticalSignalActuveUntil = 0;
             }
         }
 
-        void reportControl()
+        void ModuleControl()
         {
             if(_firstSlave == NULL)
             {
@@ -470,53 +503,92 @@ class ClassModuleMaster {
 
             _actualSlavePointer = _firstSlave;
 
-            do {
+            while(_actualSlavePointer != NULL) {
+                _actualSlavePointer->run();
                 ClassReportModuleHandler* _cacheReportHandler = _actualSlavePointer->getReportHandler(); //set report Handler of the current checked Module
-
                 _cacheReportHandler->toFirstReport(); //set to the First report
-
                 while(_cacheReportHandler->getActualReport() != NULL)
                 {
-
                     ClassReportTemplate* _actualReport = _cacheReportHandler->getActualReport();
-                    SysLogger tempLogger(FM, "inModule.h Defined");
-
                     if(_actualReport->getError()) //Show an Error Message
                     {
-                        tempLogger.logIt("MasterReport", "##########-ERROR-##########", 5);
-                        tempLogger.logIt("MasterReport", " ", 5);
-                        String message = "Reporting Class: " + String(_actualReport->getClassname());
-                        tempLogger.logIt("MasterReport", message, 5);
-                        message = "Reason: : " + String(_actualReport->getErrorMessage());
-                        tempLogger.logIt("MasterReport", message, 5);
-                        message = "Error-Code: " + String(_actualReport->getErrorCode());
-                        tempLogger.logIt("MasterReport", message, 5);
-                        tempLogger.logIt("MasterReport", " ", 5);
-                        tempLogger.logIt("MasterReport", "##########-ERROR-##########", 5);
-                        setOpticalSignal(10000, true);
+                        showErrorWarnMessage(_actualReport, true);
                     }
                     else //Show Warn Message
                     {
-                        tempLogger.logIt("MasterReport", "##########-WARN-##########", 4);
-                        tempLogger.logIt("MasterReport", " ", 4);
-                        String message = "Reporting Class: " + String(_actualReport->getClassname());
-                        tempLogger.logIt("MasterReport", message, 4);
-                        message = "Reason: : " + String(_actualReport->getErrorMessage());
-                        tempLogger.logIt("MasterReport", message, 4);
-                        message = "Error-Code: " + String(_actualReport->getErrorCode());
-                        tempLogger.logIt("MasterReport", message, 4);
-                        tempLogger.logIt("MasterReport", " ", 4);
-                        tempLogger.logIt("MasterReport", "##########-WARN-##########", 4);
+                        showErrorWarnMessage(_actualReport ,false);
                     }
-                    
-                    #ifdef opticalOnWarn
-                        setOpticalSignal(10000);
-                    #endif
                     _cacheReportHandler->removeActualReport();
-                    _cacheReportHandler->toFirstReport();
+                    _cacheReportHandler->toNextReport();
+                }
+                checkClassRepeatIntervall();
+                _actualSlavePointer = _actualSlavePointer->getNextModuleSlave();
+            }
+        }
+
+
+        void showErrorWarnMessage(ClassReportTemplate* _actualReport, bool error=false)
+        {
+            SysLogger tempLogger(FM, "ReportHandler");
+            if(error)
+            {
+                tempLogger.logIt("MasterReport", "##########-ERROR-##########", 5);
+                tempLogger.logIt("MasterReport", " ", 5);
+                String message = "Reporting Class: " + String(_actualReport->getClassname());
+                tempLogger.logIt("MasterReport", message, 5);
+                message = "Reason: : " + String(_actualReport->getErrorMessage());
+                tempLogger.logIt("MasterReport", message, 5);
+                message = "Error-Code: " + String(_actualReport->getErrorCode());
+                tempLogger.logIt("MasterReport", message, 5);
+                tempLogger.logIt("MasterReport", " ", 5);
+                tempLogger.logIt("MasterReport", "##########-ERROR-##########", 5);
+                setOpticalSignal(10000, true);
+            }
+            else
+            {
+                tempLogger.logIt("MasterReport", "##########-WARN-##########", 4);
+                tempLogger.logIt("MasterReport", " ", 4);
+                String message = "Reporting Class: " + String(_actualReport->getClassname());
+                tempLogger.logIt("MasterReport", message, 4);
+                message = "Reason: : " + String(_actualReport->getErrorMessage());
+                tempLogger.logIt("MasterReport", message, 4);
+                message = "Error-Code: " + String(_actualReport->getErrorCode());
+                tempLogger.logIt("MasterReport", message, 4);
+                tempLogger.logIt("MasterReport", " ", 4);
+                tempLogger.logIt("MasterReport", "##########-WARN-##########", 4);
+                #ifdef opticalOnWarn
+                        setOpticalSignal(10000);
+                #endif
+            }
+        }
+
+
+        void checkClassRepeatIntervall()
+        {
+            if(_actualSlavePointer->_repeatChecker->getCallPerSecond() < _actualSlavePointer->_repeatChecker->getEstCallPerSecond() - ulong(2))
+            {
+                if(!_actualSlavePointer->_repeatChecker->getWarnIsReported())
+                {
+                    _workLed->blink(1000);
+                    SysLogger tempLogger(FM, "ReportHandler");
+                    tempLogger.logIt("IntervallChecker", "######-Speed-######", 1);
+                    tempLogger.logIt("IntervallChecker", "ClassCall/s is fewer than defined!", 1);
+                    tempLogger.logIt("IntervallChecker", "Classname: " + String(_actualSlavePointer->className), 1);
+                    tempLogger.logIt("IntervallChecker", "Excepted Calls/s: " + String(_actualSlavePointer->_repeatChecker->getEstCallPerSecond()), 1);
+                    tempLogger.logIt("IntervallChecker", "Actual Calls/s: " + String(_actualSlavePointer->_repeatChecker->getCallPerSecond()), 1);
+                    tempLogger.logIt("IntervallChecker", "######-END-######", 1);
+                    _actualSlavePointer->_repeatChecker->setWarnIsReported(true);
+                }
+                
+            }
+            if(_actualSlavePointer->_repeatChecker->getCallPerSecond() >= _actualSlavePointer->_repeatChecker->getEstCallPerSecond())
+            {
+                if(_actualSlavePointer->_repeatChecker->getWarnIsReported())
+                {
+                    _actualSlavePointer->_repeatChecker->setWarnIsReported(false);
+                    _workLed->ledOn();
                 }
             }
-            while(_actualSlavePointer->getNextModuleSlave() != NULL);
         }
     public:
     /*
@@ -558,7 +630,7 @@ class ClassModuleMaster {
 
         void run()
         {
-            reportControl();
+            ModuleControl();
             checkOpticalReport();
         }
 };
