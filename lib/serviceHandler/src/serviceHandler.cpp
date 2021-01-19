@@ -4,11 +4,12 @@
     Constructor / Destructor
 */
 
-ServiceHandler::ServiceHandler(Filemanager* FM, WiFiManager* wifiManager)
+ServiceHandler::ServiceHandler(Filemanager* FM, WiFiManager* wifiManager, int ExpcallIntervall)
 {
     this->FM = FM;
     this->wifiManager = wifiManager;
     this->logging = SysLogger(FM, "ServiceHandler");
+    this->classControl = new ClassModuleSlave("ServiceHandler", ExpcallIntervall);
 }
 
 ServiceHandler::~ServiceHandler()
@@ -476,10 +477,7 @@ short ServiceHandler::autoAddService(const char* serviceName)
                                     
                                     logging.logIt("autoAddService", "Can't create new File - create File returns false! - ERROR!", 2);
                                 #endif
-                                error.error = true;
-                                error.ErrorCode = 378;
-                                error.message = "Can't create new File - createFile() returns false!";
-                                error.priority = 5;
+                                classControl->newReport("Can't create new File - createFile() returns false!", 378, 5, true);
                                 lastAutoAddRequest.reset();
                                 autoAddRunning = false;
                                 return 0;
@@ -576,10 +574,7 @@ short ServiceHandler::autoAddService(const char* serviceName)
                                     
                                     logging.logIt("autoAddService", "Can't create new File - create File returns false! - ERROR!", 2);
                                 #endif
-                                error.error = true;
-                                error.ErrorCode = 378;
-                                error.message = "Can't create new File (fallback service) - createFile() returns false!";
-                                error.priority = 5;
+                                classControl->newReport("Can't create new File (fallback service) - createFile() returns false!", 378, 5, true);
                                 lastAutoAddRequest.reset();
                                 autoAddRunning = false;
                                 return 0;
@@ -1075,10 +1070,7 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
                 message += "\" - excepted 0 or 1!: ";
                 logging.logIt("checkForService", message.c_str());
             #endif
-            error.error = true;
-            error.ErrorCode = 893;
-            error.message = "Unexcepted value!";
-            error.priority = 5;
+            classControl->newReport("Unexcepted Value!", 893, 5, true);
     };
 
     #ifdef J54J6_SysLogger
@@ -1175,6 +1167,7 @@ void ServiceHandler::loop()
 {
     //check for new Packets with UDPControl Class on <<NetworkIdentPort>>
     udpControl.run();
+    classControl->run();
 
     //if this class is Disabled - end function
     if(classDisabled)
@@ -1416,17 +1409,8 @@ void ServiceHandler::stopClass()
     }
 }
 
-void ServiceHandler::pauseClass()
-{
-    this->stopClass();
-}
-
 void ServiceHandler::restartClass()
 {
-    this->startClass();
-}
-
-void ServiceHandler::continueClass()
-{
+    this->stopClass();
     this->startClass();
 }

@@ -9,11 +9,12 @@
 #include <ArduinoJson.h> //useage of JSON 
 
 //own Libs
-#include "errorHandler.h" //errorHandling to Control the class and report to other classes
+//#include "errorHandler.h" //errorHandling to Control the class and report to other classes
 #include "filemanager.h" //Filemanager based on LittleFS with Config Addins 
 #include "logger.h" //Serial and File Logging
 #include "wifiManager.h" //control of Wifi Interface
 #include "udpManager.h" //udp Manager to control and receive UDP connection/packets
+#include "moduleState.h"
 
 /*
     networkSearchCacheValueHolder
@@ -155,7 +156,7 @@ struct networkSearchCacheValueHolder {
     }
 */
 
-class ServiceHandler : public ErrorSlave
+class ServiceHandler
 {
     private:
         //internal Class Stuff
@@ -167,7 +168,6 @@ class ServiceHandler : public ErrorSlave
         int networkIdentPort = 63547;
         int timeoutAfterAutoAddWillEnd = 10000;
         const char* serviceConfigBlueprint[1][2] = {{"NetworkIdent", "63547"}}; //port of network scanner - basic Configuration
-
 
         /*  
             autoAddRUnning
@@ -193,6 +193,7 @@ class ServiceHandler : public ErrorSlave
         WiFiManager* wifiManager;
         udpManager udpControl = udpManager(this->FM, this->wifiManager, this->networkIdentPort);
         SysLogger logging;
+        ClassModuleSlave* classControl;
 
     protected:
         //internal helper functions
@@ -223,7 +224,7 @@ class ServiceHandler : public ErrorSlave
 
     public:
         //Constructo / Destructor
-        ServiceHandler(Filemanager* FM, WiFiManager* wifiManager);
+        ServiceHandler(Filemanager* FM, WiFiManager* wifiManager, int ExpcallIntervall);
         ~ServiceHandler();
 
         //Basic Control
@@ -317,6 +318,10 @@ class ServiceHandler : public ErrorSlave
         String getExternalServiceFilename(const char* serviceName, bool fallback = false);
 
 
+        ClassModuleSlave* getClassModuleSlave()
+        {
+            return classControl;
+        }
         /*
             CheckForService
                 res = 0 -> service doesn't exist
@@ -360,9 +365,7 @@ class ServiceHandler : public ErrorSlave
        */
         void startClass();
         void stopClass();
-        void pauseClass();
         void restartClass();
-        void continueClass();
 };
 
 #endif
