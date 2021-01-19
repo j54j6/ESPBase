@@ -721,6 +721,7 @@ bool MQTTHandler::isConnected()
 void MQTTHandler::init()
 {
     mqttHandlerClient.setCallback(([this] (char* topic, uint8* payload, uint length) {MQTTHandler::eventListener(topic, payload, length);}));
+    this->mqttHandlerClient.setClient(wifiManager->getRefWiFiClient());
 }
 
 void MQTTHandler::run()
@@ -737,13 +738,15 @@ void MQTTHandler::run()
         }
     }
     
-    if(!mqttHandlerClient.loop())
+    if(this->wifiManager->isConnected() && this->isConnected())
     {
-        classControl.newReport("Error while running - mqttHandler return false!", 365, 5, true, true);
+        if(!mqttHandlerClient.loop())
+        {
+            classControl.newReport("Error while running - mqttHandler return false!", 365, 5, true, true);
+        }
     }
-
-    delay(10); //need to fix several stability problems look at https://github.com/256dpi/arduino-mqtt?utm_source=platformio&utm_medium=piohome#notes
-    
+    classControl.run();
+    //delay(10); //need to fix several stability problems look at https://github.com/256dpi/arduino-mqtt?utm_source=platformio&utm_medium=piohome#notes
 }
 
 /*

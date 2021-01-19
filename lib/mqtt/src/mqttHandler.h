@@ -8,9 +8,6 @@
 #include "wifiManager.h"
 #include "filemanager.h"
 #include "serviceHandler.h"
-
-#include "errorHandler.h"
-#include "logger.h"
 #include "moduleState.h"
 
 /*
@@ -65,14 +62,14 @@ struct lastMqttCallback {
     }
 };
 
-class MQTTHandler : public ErrorSlave {
+class MQTTHandler {
     private:
         Filemanager* FM;
         SysLogger logging;
         WiFiManager* wifiManager;
         ServiceHandler* services;
         PubSubClient mqttHandlerClient;
-        ClassModuleSlave classControl = ClassModuleSlave("MQTTHandler");
+        ClassModuleSlave classControl = ClassModuleSlave("MQTTHandler", 20);
 
         lastMqttCallback lastCallback;
 
@@ -149,9 +146,9 @@ class MQTTHandler : public ErrorSlave {
     bool getWillRetain();
     bool getCleanSession();
     ClassModuleSlave* getClassModuleSlave()
-        {
-            return &classControl;
-        }
+    {
+        return &classControl;
+    }
 
     /*
         Connect
