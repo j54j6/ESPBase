@@ -44,10 +44,6 @@ class ClassReportTemplate {
             {
                this->_nextNode = _nextClassReport; 
             }
-            else
-            {
-                Serial.println("Error while adding new report!");   
-            }
         }
 
         //Get
@@ -87,13 +83,6 @@ class ClassReportTemplate {
         ClassReportTemplate(){};
         ClassReportTemplate(String className, String message, short errorCode, short priority, bool isError)
         {
-            Serial.println("Object created: ");
-            Serial.println(className);
-            Serial.println(message);
-            Serial.println(errorCode);
-            Serial.println(priority);
-            Serial.println(isError);
-
             this->className = className;
             this->message = message;
             this->errorCode = errorCode;
@@ -173,16 +162,16 @@ class ClassReportModuleHandler  {
 
         void removeActualReport()
         {
+            ClassReportTemplate* _lastPoint = _actualReportPointer;
             if(this->_actualReportPointer == NULL)
             {
                 return;
             }
-
             else if(_actualReportPointer == _firstReport)
             {
                 _firstReport = NULL;
                 _actualReportPointer = NULL;
-                Serial.println("Removed all reports!");
+                //delete _lastPoint; // needed to aloocate the storage - Object sacved at stack and not in heap
                 return;
             }
 
@@ -193,7 +182,6 @@ class ClassReportModuleHandler  {
             }
             if(_cacheTemplate->getNextClassReport() == _actualReportPointer)
             {
-                Serial.println("Remove Now");
                 if(_actualReportPointer->getNextClassReport() != NULL)
                 {
                     _cacheTemplate->setNextClassReport(_actualReportPointer->getNextClassReport());
@@ -205,6 +193,7 @@ class ClassReportModuleHandler  {
                     _actualReportPointer = _cacheTemplate;
                 }
             }
+            //delete _lastPoint; // needed to aloocate the storage - Object sacved at stack and not in heap
         }
 
         void toNextReport() { //set actualNodePointer to the next report
@@ -236,19 +225,17 @@ class ClassReportModuleHandler  {
 
         void addReport(const char* className, String message, short errorCode, short priority, bool isError, bool lockReport = false)
         {
-            new ClassReportTemplate(className, message, errorCode, priority, isError);
+            ClassReportTemplate* newTempl = new ClassReportTemplate(className, message, errorCode, priority, isError);
             ClassReportTemplate* pointer;
             if(_firstReport == NULL)
             {
-                Serial.println("Added as First");
-                this->_firstReport = &newTempl;
+                this->_firstReport = newTempl;
                 this->_actualReportPointer = _firstReport;
                 pointer = _firstReport;
             }
             else
             {
-                Serial.println("Added as Last");
-                getLastNode()->setNextClassReport(&newTempl);
+                getLastNode()->setNextClassReport(newTempl);
                 pointer = getLastNode();
             }
 
@@ -492,7 +479,6 @@ class ClassModuleMaster {
                 {
 
                     ClassReportTemplate* _actualReport = _cacheReportHandler->getActualReport();
-                    Serial.println(_actualReport->priority);
                     SysLogger tempLogger(FM, "inModule.h Defined");
 
                     if(_actualReport->getError()) //Show an Error Message
