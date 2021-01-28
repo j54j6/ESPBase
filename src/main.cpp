@@ -10,6 +10,7 @@
 #include "wifiManager.h"
 #include "mqttHandler.h"
 #include "moduleState.h"
+#include "ota.h"
 
 LED wifiLed(D1);
 LED errorLed(D7);
@@ -22,6 +23,7 @@ ServiceHandler networkIdent(&FM, &wifiManager, 30);
 udpManager udpManage(&FM, &wifiManager, 63547);
 MQTTHandler mqtthandler(&FM, &wifiManager, &networkIdent);
 ClassModuleMaster testHandler(&errorLed, &workLed);
+OTA_Manager otaManager(&FM, &test);
 
 void handleTest()
 {
@@ -163,6 +165,28 @@ void loop() {
         Serial.println("Read Mode enabled!");
       }
       
+    }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "update")
+    {
+      //otaManager.test();
+    }
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "newFeature")
+    {
+      Serial.println("New is installed!");
+      workLed.blink(100);
+      errorLed.blink(100);
+    }
+
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "ota")
+    {
+      Serial.println("and another new^^");
+      workLed.blink(1000);
+      errorLed.blink(800);
+    }
+
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "updateCheck")
+    {
+      otaManager.checkForUpdates("192.168.178.27", 80, "/", "test", "test123");
     }
     mqtthandler.getCallback()->reset();
   }
