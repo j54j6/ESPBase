@@ -11,10 +11,12 @@
 #include "mqttHandler.h"
 #include "moduleState.h"
 #include "ota.h"
+#include "ntpManager.h"
 
 LED wifiLed(D1);
 LED errorLed(D7);
 LED workLed(D2);
+LED dummyLED(NULL);
 Button mainButton(D6, 3);
 Filemanager FM;
 WiFiManager wifiManager(&wifiLed, &FM);
@@ -23,7 +25,8 @@ ServiceHandler networkIdent(&FM, &wifiManager, 30);
 udpManager udpManage(&FM, &wifiManager, 63547);
 MQTTHandler mqtthandler(&FM, &wifiManager, &networkIdent);
 ClassModuleMaster testHandler(&errorLed, &workLed);
-OTA_Manager otaManager(&FM, &test);
+NTPManager ntp(&FM, &wifiManager);
+OTA_Manager otaManager(&FM, &test, &ntp, &wifiManager, &workLed);
 
 void handleTest()
 {
@@ -81,7 +84,7 @@ void loop() {
   static int step = 0;
   static int lastCall = 0;
 
-
+  ntp.run();
   mqtthandler.run();
 
   //ModuleStateMaster
@@ -141,7 +144,7 @@ void loop() {
     {
       wifiManager.setWiFiHostname("2C-F4-32-79-F3-D3");
     }
-    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "read" || readActive == true)
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "readFile" || readActive == true)
     {
       if(readActive)
       {
@@ -188,6 +191,48 @@ void loop() {
     {
       otaManager.checkForUpdates("192.168.178.27", 80, "/", "test", "test123");
     }
+    
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "read")
+    {
+      Serial.println(FM.readFile("config/mainConfig.json"));
+    }
+
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "write")
+    {
+        FM.appendJsonKey("config/mainConfig.json", "id", "20200425222132534785498");
+        FM.appendJsonKey("config/mainConfig.json", "product", "wiFi-thermometer");
+        FM.appendJsonKey("config/mainConfig.json", "updateServer", "https://update.justinritter.de/");
+        FM.appendJsonKey("config/mainConfig.json", "uri", "/");
+        FM.appendJsonKey("config/mainConfig.json", "servertoken", "espWiFiThermometerV1");
+        FM.appendJsonKey("config/mainConfig.json", "serverpass", "rtgzi32u45z4u5hbnfdnfbdsi");
+        FM.appendJsonKey("config/mainConfig.json", "port", "8796");
+        FM.appendJsonKey("config/mainConfig.json", "updateSearch", "true");
+        FM.appendJsonKey("config/mainConfig.json", "autoUpdate", "true");
+        FM.appendJsonKey("config/mainConfig.json", "onUpdate", "false");
+        FM.appendJsonKey("config/mainConfig.json", "usedChip", "ESP8266");
+        FM.appendJsonKey("config/mainConfig.json", "lastUpdate", "20200425");
+        FM.appendJsonKey("config/mainConfig.json", "lastUpdateSearch", "0");
+        FM.appendJsonKey("config/mainConfig.json", "locked", "false");
+        FM.appendJsonKey("config/mainConfig.json", "producedIn", "2020");
+        FM.appendJsonKey("config/mainConfig.json", "ledState", "true");
+        FM.appendJsonKey("config/mainConfig.json", "softwareVersion", "0.0.1");
+        FM.appendJsonKey("config/mainConfig.json", "softwareVersionAvail", "");
+
+
+    }
+
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "remove")
+    {
+      FM.fDelete("config/mainConfig.json");
+    }
+
+    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "changeServer")
+    {
+      otaManager.setUpdateServer("192.168.178.27", 80, "/");
+    }
+
+    
+
     mqtthandler.getCallback()->reset();
   }
 

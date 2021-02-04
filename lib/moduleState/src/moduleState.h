@@ -406,6 +406,16 @@ class ClassModuleSlave : protected ModuleStateSlave {
         }
 
         //reporting
+        /*
+        priority: 
+                 0 - for ignoring like bool error = false
+            min: 1 - Class can work without problems
+                 2 - Class can work but with less functionality
+                 3 - Class can't work but try to fix it automatically - Handler wait for further Error - after 3 times -> auto set to prio 4 -> class restart
+                 4 - Class can't work, theoretically able to fix problem but failed - only restart Class by Handler
+                 5 - Class can't work, can't fix it automatically - only restart of class by Handler
+                 6 - Class can't work, can't fix it automatically - device can be Damaged - ErrorHandler stop complete Device  
+        */
         void newReport(String message, short errorCode, short priority = 0, bool isError = false, bool lockReport = true)
         {
             reportHandler.addReport(className, message, errorCode, priority, isError, lockReport);

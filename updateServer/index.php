@@ -1,4 +1,4 @@
-<?php
+<?PHP
 
 header('Content-type: text/plain; charset=utf8', true);
 
@@ -23,7 +23,7 @@ function sendFile($path) {
 
 if(!check_header('User-Agent', 'ESP8266-http-Update')) {
     header($_SERVER["SERVER_PROTOCOL"].' 403 Forbidden', true, 403);
-    
+    echo "only for ESP8266 updater!\n";
     exit();
 }
 
@@ -55,13 +55,12 @@ $localBinary = "./bin/".$db[$_SERVER['x-ESP8266-STA-MAC']].".bin";
 // Check if version has been set and does not match, if not, check if
 // MD5 hash between local binary and ESP8266 binary do not match if not.
 // then no update has been found.
-if((!check_header('x-ESP8266-sdk-version') && $db[$_SERVER['x-ESP8266-STA-MAC']] != $_SERVER['x-ESP8266-version'])
-    || $_SERVER["x-ESP8266-sketch-md5"] != md5_file($localBinary)) {
+if((!check_header('x-ESP8266-sdk-version') && $db[$_SERVER['x-ESP8266-STA-MAC']] != $_SERVER['x-ESP8266-version']) || $_SERVER["x-ESP8266-sketch-md5"] != md5_file($localBinary)) 
+{
     sendFile($localBinary);
-} else {
+} else 
+{
     header($_SERVER["SERVER_PROTOCOL"].' 304 Not Modified', true, 304);
 }
 
 header($_SERVER["SERVER_PROTOCOL"].' 500 no version for ESP MAC', true, 500);
-
-?>

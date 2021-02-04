@@ -771,13 +771,19 @@ bool Filemanager::changeJsonValueFile(const char* Filename, const char* key, con
     {
         return false;
     }
-
     DynamicJsonDocument jsonFile = readJsonFile(Filename);
-    jsonFile[key] = newValue;
-    bool val1 = writeJsonFile(Filename, jsonFile, "w");
-    if(!val1)
+    if(!checkForKeyInJSONFile(Filename, key))
     {
-        return false;
+        return appendJsonKey(Filename, key, newValue);
+    }
+    else
+    {
+        jsonFile[key] = newValue;
+        bool val1 = writeJsonFile(Filename, jsonFile, "w");
+        if(!val1)
+        {
+            return false;
+        }
     }
 
     jsonFile = readJsonFile(Filename);
@@ -812,12 +818,14 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
 { 
     if(!checkForInit())
     {
+        Serial.println("notInit - return NULL");
         return {};
     }
     const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
     DynamicJsonDocument jsonDocument(capacity);
     if(!LittleFS.exists(Filename))
     {
+        Serial.println("File doesn't exist!");
         return {};
     }
 
@@ -825,6 +833,7 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
 
     if(!readFile)
     { 
+        Serial.println("Can't read File!");
         return {};
     }
     String output = this->readFile(Filename);
@@ -832,6 +841,7 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
     DeserializationError error = deserializeJson(jsonDocument, output);
     if(error)
     {
+        Serial.println("Error while reading File!");
         return {};
     }
     const char* returnVal = jsonDocument[pattern]; //pattern need quotes too! e.g pattern = "\"id\""
@@ -1068,7 +1078,8 @@ bool Filemanager::appendJsonKey(const char* filename, const char* newKey, const 
     }
     else
     {
-        return false;
+        createFile(filename);
+        return appendJsonKey(filename, newKey, newVal);
     }
 }
 
