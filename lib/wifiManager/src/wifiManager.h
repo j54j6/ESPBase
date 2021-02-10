@@ -73,6 +73,7 @@ class WiFiManager {
         
     public:
         //Constructor
+        WiFiManager();
         WiFiManager(Filemanager* FM); //no LED only voidLed
         WiFiManager(LED *newWifiLed, Filemanager* FM);
         //WiFiManager(LED &newWifiLed, LED &newErrorLed);
@@ -145,6 +146,13 @@ class WiFiManager {
 
         //Class Handler
         void run();
+        void init()
+        {
+            //Disable WifiAutoConnect and onboard WifiConfig
+            WiFi.persistent(false);
+            WiFi.setAutoConnect(false);
+            WiFi.stopSmartConfig();
+        }
 
         //inherited ErrorSlave
         void startClass();

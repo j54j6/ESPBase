@@ -1,6 +1,14 @@
 #include "wifiManager.h"
 #include "defines.h"
 
+WiFiManager::WiFiManager()
+{
+    LED voidLed(-1);
+    this->wifiLed = &voidLed;
+    disableWiFi();
+    WiFi.persistent(false);
+    lastCall = millis();
+}
 
 WiFiManager::WiFiManager(Filemanager* FM)
 {
@@ -654,6 +662,7 @@ bool WiFiManager::isConnected()
   }
   else
   {
+    logging.logIt("isConnected", "WiFi Status is: " + String(WiFi.status()), 2);
     return false;
   }
 }
@@ -726,10 +735,12 @@ void WiFiManager::setOpticalMessage(wl_status_t currentState)
     else if(currentState == WL_CONNECTION_LOST)
     {
       wifiLed->blink(500);
+      return;
     }
     else if(currentState == WL_DISCONNECTED)
     {
       wifiLed->blink(500);
+      return;
     }
   }
   else
