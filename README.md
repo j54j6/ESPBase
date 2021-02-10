@@ -24,9 +24,7 @@ postponed work:
     
 Current work:
 
-    -> Wrap current global sketch content into single Class - WIP
-    -> rewrite Logging and Reporting Module to get get better ErrorHandling and deviceControl
-
+    -> Nothing... -> Coming soon^^
 
 bucket list:
 
