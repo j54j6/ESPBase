@@ -7,6 +7,7 @@ OTA_Manager::OTA_Manager(Filemanager* FM, Network* network, NTPManager* ntp, WiF
     this->_Wifi = _Wifi;
     this->_updateLed = updateLed;
     this->logging = SysLogger(_FM, "OTA-Manager");
+    init();
 }
 
 bool OTA_Manager::checkForFiles() 
@@ -23,6 +24,28 @@ bool OTA_Manager::checkForFiles()
     }
 }
 
+bool OTA_Manager::init()
+{
+    this->automaticUpdateSearch = _FM->returnAsBool(_FM->readJsonFileValue(configFile, "updateSearch"));
+    this->checkIntervall = String(_FM->readJsonFileValue(configFile, "checkDelay")).toFloat();
+    this->lastUpdateCheck = String(_FM->readJsonFileValue(configFile, "lastUpdateSearch")).toFloat();
+    this->autoUpdate = _FM->returnAsBool(_FM->readJsonFileValue(configFile, "autoUpdate"));
+    this->nextUpdateCheck = lastUpdateCheck + checkIntervall;
+
+    this->softwareVersionInstalled = _FM->readJsonFileValue(configFile, "softwareVersion");
+    this->softwareVersionAvailiable = _FM->readJsonFileValue(configFile, "softwareVersionAvail");
+
+    logging.logIt("init", "Automatic update Search: " + String(automaticUpdateSearch));
+    logging.logIt("init", "Checkintervall: " + String(checkIntervall));
+    logging.logIt("init", "last Update Check: " + String(lastUpdateCheck));
+    double nextCheck = (nextUpdateCheck - _Ntp->getEpochTime());
+    nextCheck = nextCheck / 3600;
+    logging.logIt("init", "Next Update Check: " + String(nextCheck) + String("h"));
+    logging.logIt("init", "Firmwareversion: " + String(softwareVersionInstalled));
+    logging.logIt("init", "Firmwareversion Availiable: " + String(softwareVersionAvailiable));
+    logging.logIt("init", "Auto Update: " + String(autoUpdate));
+    return true;
+}
 
 bool OTA_Manager::addHeader(HTTPClient* client, int functionType)
 {
@@ -75,16 +98,10 @@ bool OTA_Manager::checkForUpdates(String host, uint16_t port, String uri, String
 
     // track these headers
     http.collectHeaders(headerkeys, headerkeyssize);
-    const char* user = _FM->readJsonFileValue(configFile, "servertoken");
-    const char* passwd = _FM->readJsonFileValue(configFile, "serverpass");
-    http.setAuthorization(user, passwd); //read server credentials from Flash
+    http.setAuthorization(username.c_str(), password.c_str()); //read server credentials from Flash
 
     int code = http.GET(); 
     int len = http.getSize();
-    logging.logIt("checkForUpdates", String("HTTP Code: ") + String(code), 2);
-    logging.logIt("checkForUpdates", String("Header Size: ") + String(len),2);
-    logging.logIt("checkForUpdates", String("Content: ") + String(http.getString()),2);
-    logging.logIt("checkForUpdates", String("Error: ") + String(http.errorToString(code)),2);
 
     showHeader(&http);
 
@@ -95,7 +112,7 @@ bool OTA_Manager::checkForUpdates(String host, uint16_t port, String uri, String
     }
     else if(!http.hasHeader("x-requestedType") || !http.hasHeader("x-requestResponse"))
     {
-        logging.logIt("checkForUdates", String("Error while checking for updates! - HTTP Response is invalid!"), 4);
+        logging.logIt("checkForUdates", String("Error while checking for updates! - HTTP Response is invalid! - HTTP Code: " + String(code)), 4);
         return false;
     }
     else if(http.header("x-requestedType") != String("updateCheck"))
@@ -115,6 +132,7 @@ bool OTA_Manager::checkForUpdates(String host, uint16_t port, String uri, String
         {
             _FM->changeJsonValueFile(configFile, "lastUpdateSearch", String(_Ntp->getEpochTime()).c_str());
             _FM->changeJsonValueFile(configFile, "softwareVersionAvail", String(http.header("x-versionAvailiable")).c_str());
+            //markerHere
             Serial.println("------Update Check response get");
             showHeader(&http);
             if(http.header("x-requestResponse") == String("makeUpdate")) //device is forced to Update - only used for important update fixes like security
@@ -163,7 +181,6 @@ bool OTA_Manager::getUpdates(String host, uint16_t port, String uri, String user
         return true;
     }
     */
-    Serial.println("1");
     HTTPClient http; //create HTP Object to communicate with a webserver
     
     http.begin(host, port, uri); //change with HTTPClient::begin(String host, uint16_t port, String uri, bool https, String httpsFingerprint) - start coounication
@@ -171,17 +188,13 @@ bool OTA_Manager::getUpdates(String host, uint16_t port, String uri, String user
 
     const char * headerkeys[] = { "x-MD5", "x-requestedType", "x-requestResponse", "x-versionAvailiable"};
     size_t headerkeyssize = sizeof(headerkeys) / sizeof(char*);
-    Serial.println("2");
     // track these headers
     http.collectHeaders(headerkeys, headerkeyssize);
-    const char* user = _FM->readJsonFileValue(configFile, "servertoken");
-    const char* passwd = _FM->readJsonFileValue(configFile, "serverpass");
-    http.setAuthorization(user, passwd); //read server credentials from Flash
+    http.setAuthorization(username.c_str(), password.c_str()); //read server credentials from Flash
 
     int code = http.GET(); 
     int len = http.getSize();
     logging.logIt("checkForUpdates", String("HTTP Code: ") + String(code), 2);
-    Serial.println("3");
 
     if(len > (int) ESP.getFreeSketchSpace()) {
         logging.logIt("getUpdates", "Not enough memory availiable to run the Update! Needed: " + String(len) + String(" bytes, Availiable: ") + String(ESP.getFreeSketchSpace()));
@@ -194,7 +207,6 @@ bool OTA_Manager::getUpdates(String host, uint16_t port, String uri, String user
 
     //WiFiUDP::stopAll(); //later implemented by cconfig
     //WiFiClient::stopAllExcept(tcp);
-    Serial.println("4");
     uint8_t buf[4];
     if(tcp->peekBytes(&buf[0], 4) != 4) {
         logging.logIt("getUpdate", "peakBytes didn't find magic header! - Update failed!", 5);
@@ -209,7 +221,6 @@ bool OTA_Manager::getUpdates(String host, uint16_t port, String uri, String user
         http.end();
         return false;
     }
-    Serial.println("5");
     if (buf[0] == 0xe9) 
     {
         uint32_t bin_flash_size = ESP.magicFlashChipSize((buf[3] & 0xf0) >> 4);
@@ -220,12 +231,10 @@ bool OTA_Manager::getUpdates(String host, uint16_t port, String uri, String user
             return false;
         }
     }
-    Serial.println("6");
     Serial.println("-------getUpdate end");
     showHeader(&http);
     if(installUpdate(*tcp, len, http.header("x-MD5"), 0)) 
     {
-        Serial.println("7");
         logging.logIt("getUpdate", "Update Successful - Save new Version");
 
         _FM->changeJsonValueFile(configFile, "softwareVersion", String(http.header("x-versionAvailiable")).c_str());
@@ -234,7 +243,6 @@ bool OTA_Manager::getUpdates(String host, uint16_t port, String uri, String user
     }
     else 
     {
-        Serial.println("8");
         logging.logIt("getUpdate", "Update failed! - Installation failed!", 5);
         return false;
     }
@@ -249,7 +257,6 @@ bool OTA_Manager::getUpdates(String host, uint16_t port, String uri, String user
  */
 bool OTA_Manager::installUpdate(Stream& in, uint32_t size, const String& md5, int command)
 {
-    Serial.println("A1");
     StreamString error;
 
     if(!Update.begin(size, command)) {
@@ -258,31 +265,45 @@ bool OTA_Manager::installUpdate(Stream& in, uint32_t size, const String& md5, in
         logging.logIt("installUpdate", "Error - Update.begin failed!" + String(error.c_str()), 5);
         return false;
     }
-    Serial.println("A2");
     if(md5.length()) {
         if(!Update.setMD5(md5.c_str())) {
             logging.logIt("installUpdate", "Error - Update.setMD5 failed!" + String(md5.c_str()), 5);
             return false;
         }
     }
-    Serial.println("A3");
     if(Update.writeStream(in) != size) {
         Update.printError(error);
         error.trim(); // remove line ending
         logging.logIt("installUpdate", "Error - Update.writeStream failed!" + String(error.c_str()), 5);
         return false;
     }
-    Serial.println("A4");
     if(!Update.end()) {
         Update.printError(error);
         error.trim(); // remove line ending
         logging.logIt("installUpdate", "Error - Update.end failed!", 5);
         return false;
     }
-    Serial.println("A5");
     return true;
 }
 
+
+bool OTA_Manager::setAutoUpdate(bool autoUpdate)
+{
+    if(autoUpdate)
+    {
+       return _FM->changeJsonValueFile(configFile, "autoUpdate", "true"); 
+    }
+    return _FM->changeJsonValueFile(configFile, "autoUpdate", "false");
+}
+
+bool OTA_Manager::setSearchForUpdatesAutomatic(bool search)
+{
+    if(search)
+    {
+       return _FM->changeJsonValueFile(configFile, "updateSearch", "true"); 
+    }
+    return _FM->changeJsonValueFile(configFile, "updateSearch", "false");
+}
 
 bool OTA_Manager::setUpdateServer(String host, uint16_t port, String uri)
 {
@@ -295,4 +316,74 @@ bool OTA_Manager::setUpdateServer(String host, uint16_t port, String uri)
         return true;
     }
     return false;
+}
+
+bool OTA_Manager::setCheckIntervall(long checkDelay)
+{
+    long checkDelayInSecods = checkDelay * 3600;
+    return _FM->changeJsonValueFile(configFile, "checkDelay", String(checkDelayInSecods).c_str());
+}
+
+bool OTA_Manager::setServerToken(String newToken)
+{
+    return _FM->changeJsonValueFile(configFile, "servertoken", newToken.c_str());
+}
+
+bool OTA_Manager::setServerPass(String newPass)
+{
+    return _FM->changeJsonValueFile(configFile, "serverpass", newPass.c_str());
+}
+
+bool OTA_Manager::getAutoUpdate()
+{
+    return _FM->returnAsBool(_FM->readJsonFileValue(configFile, "autoUpdate"));
+}
+
+bool OTA_Manager::getSearchForUpdatesAutomatic()
+{
+    return _FM->returnAsBool(_FM->readJsonFileValue(configFile, "updateSearch"));
+}
+
+long OTA_Manager::getCheckIntervall()
+{
+    long checkIntervallInSeconds = long(_FM->readJsonFileValue(configFile, "checkDelay"));
+    return checkIntervallInSeconds/3600;
+}
+
+long OTA_Manager::getLastUpdateCheck()
+{
+    long lastCheck = long(_FM->readJsonFileValue(configFile, "lastUpdateSearch"));
+    return lastCheck;
+}
+
+void OTA_Manager::run()
+{
+    static int reInit = 0;
+
+    _Ntp->run();
+    _Network->run();
+    _Wifi->run();
+
+    //check for updateCheck
+    if(automaticUpdateSearch)
+    {
+        if(_Ntp->getEpochTime() > nextUpdateCheck)
+        {
+            int port = String(_FM->readJsonFileValue("config/mainConfig.json", "port")).toInt();
+            bool res = this->checkForUpdates(_FM->readJsonFileValue(configFile, "updateServer"), port, _FM->readJsonFileValue(configFile, "uri"),
+            _FM->readJsonFileValue(configFile, "servertoken"), _FM->readJsonFileValue(configFile, "serverpass"));
+
+            if(!res)
+            {
+                logging.logIt("run->checkForUpdates", "Check for Updates return false!");
+                init();
+            }
+        }
+    }
+
+    if(millis() > reInit)
+    {
+        reInit = millis() + 3600000;
+        init();
+    }
 }

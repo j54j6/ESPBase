@@ -55,6 +55,13 @@ class OTA_Manager
 
         bool afterUpdateCheck = false; //used to take actions after update - in configFile is an 
         bool updatesAvailiable = false;
+        bool autoUpdate = true;
+        long lastUpdateCheck = 0;
+        long checkIntervall = 0;
+        ulong nextUpdateCheck = 0;
+        bool automaticUpdateSearch = true;
+        String softwareVersionInstalled = "0";
+        String softwareVersionAvailiable = "0";
 
         /*
             functionType:
@@ -76,10 +83,40 @@ class OTA_Manager
     protected:
         bool checkForFiles();
     public:
-        OTA_Manager(Filemanager* FM, Network* network, NTPManager* ntp, WiFiManager* _Wifi, LED* updateLed);
+        OTA_Manager(){};
+        OTA_Manager(Filemanager* FM, Network* network, NTPManager* ntp, WiFiManager* _Wifi, LED* updateLed = new LED());
+        bool init();
         bool checkForUpdates(String host, uint16_t port, String uri, String username, String password, bool onlyCheck = false);
         bool getUpdates(String host, uint16_t port, String uri, String username, String password);
         bool installUpdate(Stream& in, uint32_t size, const String& md5, int command);
+        
+        bool checkUpdatesAutoCred()
+        {
+            int port = String(_FM->readJsonFileValue("config/mainConfig.json", "port")).toInt();
+            return checkForUpdates(_FM->readJsonFileValue(configFile, "updateServer"),
+            port, _FM->readJsonFileValue(configFile, "uri"),
+            _FM->readJsonFileValue(configFile, "servertoken"), _FM->readJsonFileValue(configFile, "serverpass"));
+        }
+        bool getUpdatedAutoCred()
+        {
+            int port = String(_FM->readJsonFileValue("config/mainConfig.json", "port")).toInt();
+            return getUpdates(_FM->readJsonFileValue(configFile, "updateServer"),
+            port, _FM->readJsonFileValue(configFile, "uri"),
+            _FM->readJsonFileValue(configFile, "servertoken"), _FM->readJsonFileValue(configFile, "serverpass"));
+        }
+
+        bool setAutoUpdate(bool autoUpdate = true);
+        bool setSearchForUpdatesAutomatic(bool search = true);
         bool setUpdateServer(String host, uint16_t port = 80, String uri = "/");
+        bool setCheckIntervall(long checkDelay = 24); //in hours
+        bool setServerToken(String newToken = "username");
+        bool setServerPass(String newPass = "newPass");
+        
+        bool getAutoUpdate();
+        bool getSearchForUpdatesAutomatic();
+        long getCheckIntervall();
+        long getLastUpdateCheck();
+        void run();
+
 };
 #endif
