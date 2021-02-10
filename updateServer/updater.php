@@ -29,7 +29,7 @@
         readfile($path);
     }
 
-    function updateDevice($row)
+    function updateDevice($row, $pdo)
     {
         file_put_contents("/var/www/test/data.txt", "Start Update" . "\n", FILE_APPEND);
         global $destroyFirmwarePath;
@@ -51,6 +51,16 @@
             file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
             exit();
         }
+        if($row['force_update'] == 1)
+        {
+            try {
+                $pdo->exec("Set force_update = '0'");
+            }
+            catch(PDOException $e)
+            {
+                file_put_contents("/var/www/test/data.txt", "Error while changing Force update: " . $e . "\n", FILE_APPEND);
+            }
+        }
         file_put_contents("/var/www/test/data.txt", "init. send File" . "\n", FILE_APPEND);
         header($_SERVER["SERVER_PROTOCOL"].' 200 OK', true, 200);
         header('Content-Type: application/octet-stream', true);
@@ -61,6 +71,29 @@
         header('x-requestResponse: installUpdate', true);
         header('x-versionAvailiable: ' . $row['device_firmware_version'], true);
         file_put_contents("/var/www/test/data.txt", "readFile" . "\n", FILE_APPEND);
+        
+        $query = "update updates set last_updated = :unixTime WHERE mac_address = :macAddr";
+
+        $utimestamp = time();
+        $macAddress = addslashes($_SERVER['HTTP_X_STA_MAC']);
+        $values = array(
+            ':macAddr' => $macAddress,
+            ':unixTime' => $utimestamp
+        );
+        
+        try
+        {
+            $res = $pdo->prepare($query);
+            $res->execute($values);
+            file_put_contents("/var/www/test/data.txt", "Modified lastUpdated" . "\n", FILE_APPEND);
+        }
+        catch (PDOException $e)
+        {
+           /* If there is an error an exception is thrown */
+           echo 'Error';
+           file_put_contents("/var/www/test/data.txt", "Querry Error (UpdateCheckDate change): " . $e->getMessage() . "\n", FILE_APPEND);
+        }
+
         readfile($firmwareBasePath);
     }
     
@@ -115,7 +148,17 @@
             file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
             exit();
         }
-        else if($softwareVersion < $row['device_firmware_version'])
+        else if($softwareVersion < $row['device_firmware_version'] && $row['force_update'] == 1)
+        {
+            file_put_contents("/var/www/test/data.txt", "Software outdated" . "\n", FILE_APPEND);
+            header('x-requestedType: updateCheck', true);
+            header('x-requestResponse: makeUpdate', true);
+            header('x-versionAvailiable: ' . $row['device_firmware_version'], true);
+            echo 'Update!';
+            file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
+            exit();
+        }
+        else if($softwareVersion < $row['device_firmware_version'] )
         {
             file_put_contents("/var/www/test/data.txt", "Software outdated" . "\n", FILE_APPEND);
             header('x-requestedType: updateCheck', true);
@@ -288,7 +331,7 @@
             else if (check_header('HTTP_X_REQUESTTYPE', 'update'))
             {
                 file_put_contents("/var/www/test/data.txt", "init updateDevice" . "\n", FILE_APPEND);
-                updateDevice($row);
+                updateDevice($row,  $pdo);
                 file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
                 exit();
             }
