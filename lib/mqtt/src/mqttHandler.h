@@ -47,7 +47,7 @@ struct lastMqttCallback {
 
     String getPayload(const char* moduleName = "")
     {
-        if(outputModuleName && !outputModuleName[0] || strcmp(outputModuleName, moduleName) == 0)
+        if((outputModuleName && !outputModuleName[0]) || strcmp(outputModuleName, moduleName) == 0)
         {
             return payload;
         }
@@ -55,7 +55,7 @@ struct lastMqttCallback {
 
     const char* getTopic(const char* moduleName = "")
     {
-        if(outputModuleName && !outputModuleName[0] || strcmp(outputModuleName, moduleName))
+        if((outputModuleName && !outputModuleName[0]) || strcmp(outputModuleName, moduleName))
         {
             return topic;
         }
