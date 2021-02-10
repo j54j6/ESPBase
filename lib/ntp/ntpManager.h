@@ -17,7 +17,7 @@ class NTPManager {
         NTPClient* ntpClient;
         WiFiManager* wifi;
         
-        const long utcOffsetInSeconds = 3600;
+        const long utcOffsetInSeconds;
         bool beginSuccess = false;
         
     public:

@@ -1,6 +1,6 @@
 #include "ntpManager.h"
 
-NTPManager::NTPManager(Filemanager* FM, WiFiManager* wifi, bool setUpdateIntervall, int updateIntervall) 
+NTPManager::NTPManager(Filemanager* FM, WiFiManager* wifi, bool setUpdateIntervall, int updateIntervall):utcOffsetInSeconds(3600) 
 {
     this->FM = FM;
     this->wifi = wifi;
@@ -30,6 +30,7 @@ bool NTPManager::updateTime()
 {
     if(!wifi->isConnected())
     {
+        logging.logIt("updateTime", "WiFi is not connected - can't update Time", 4);
         return false;
     }
     return ntpClient->forceUpdate();
