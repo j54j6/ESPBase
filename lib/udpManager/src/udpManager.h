@@ -1,5 +1,5 @@
 #ifndef J54J6_udpManager
-#define j54J6_udpManager
+#define J54J6_udpManager
 
 #include <WiFiClient.h>
 #include <ESP8266WiFi.h>
