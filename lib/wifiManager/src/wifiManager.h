@@ -5,11 +5,9 @@
 #include <SPI.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
-
-
 #include "led.h"
-#include "logging.h"
-#include "errorHandler.h"
+#include "filemanager.h"
+#include "moduleState.h"
 
 #define WiFiCheckDelay 50
 #define FPM_SLEEP_MAX_TIME 0xFFFFFFF
@@ -27,7 +25,7 @@ struct macAdress {
 
 //typedef std::function<void(bool)> solverfkt;
 
-class WiFiManager : public ErrorSlave {
+class WiFiManager {
 /* WifiConState 
  *    State: 
  *    0 = WiFi disabled
@@ -50,9 +48,6 @@ class WiFiManager : public ErrorSlave {
         ulong lastCall; //for sim. multithreading to handle WifiCheckDelay (how often Wifi State and params will checked per Second)
         ulong callPerSecond = 0;
         int checkDelay = 50; //check class every 50ms
-        //classErrorReport error; - replaced by ErrorSlave Class
-
-
 
         // Interface States
         bool shieldState = false;
@@ -61,7 +56,7 @@ class WiFiManager : public ErrorSlave {
 
         //Hardware Handler
         LED* wifiLed;
-
+        SysLogger logging;
 
         //Wifi Information
         uint32_t deviceMac;
@@ -72,11 +67,15 @@ class WiFiManager : public ErrorSlave {
 
         //WiFi Object - for mqtt
         WiFiClient localWiFiClient;
+
+        //Watchdog Slave
+        ClassModuleSlave classControl = ClassModuleSlave("wifiManager", 20);
         
     public:
         //Constructor
-        WiFiManager(); //no LED only voidLed
-        WiFiManager(LED *newWifiLed);
+        WiFiManager();
+        WiFiManager(Filemanager* FM); //no LED only voidLed
+        WiFiManager(LED *newWifiLed, Filemanager* FM);
         //WiFiManager(LED &newWifiLed, LED &newErrorLed);
 
 
@@ -84,10 +83,12 @@ class WiFiManager : public ErrorSlave {
         bool getShieldState(); //return Wifi is Enabled or Disabled
         bool getOverrideSettingsToPreventError(); //change autoFix state (for simple syntax errors...)
         bool getLockClass(); //get State of class
-        uint32_t getDeviceMac();
+        String getDeviceMac();
         int getCheckDelay();
-        ulong getCallPerSecond();
-        classErrorReport getCurrentErrorState();
+        ClassModuleSlave* getClassModuleSlave()
+        {
+            return &classControl;
+        }
         
 
         bool getWiFiAutoConnect();
@@ -145,12 +146,17 @@ class WiFiManager : public ErrorSlave {
 
         //Class Handler
         void run();
+        void init()
+        {
+            //Disable WifiAutoConnect and onboard WifiConfig
+            WiFi.persistent(false);
+            WiFi.setAutoConnect(false);
+            WiFi.stopSmartConfig();
+        }
 
         //inherited ErrorSlave
         void startClass();
         void stopClass();
-        void pauseClass();
         void restartClass();
-        void continueClass();
 };
 #endif

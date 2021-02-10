@@ -4,16 +4,19 @@
     Constructor / Destructor
 */
 
-ServiceHandler::ServiceHandler(Filemanager* FM, WiFiManager* wifiManager)
+ServiceHandler::ServiceHandler(Filemanager* FM, WiFiManager* wifiManager, int ExpcallIntervall)
 {
     this->FM = FM;
     this->wifiManager = wifiManager;
+    this->logging = SysLogger(FM, "ServiceHandler");
+    this->classControl = new ClassModuleSlave("ServiceHandler", ExpcallIntervall);
 }
 
 ServiceHandler::~ServiceHandler()
 {
     this->udpControl.stop();
     this->udpControl.~udpManager();
+    this->logging = SysLogger(FM, "ServiceHandler");
 }
 
 /*
@@ -33,27 +36,19 @@ String ServiceHandler::formatComMessage(bool request, bool generateId, String se
     }
     */
 
-    #ifdef J54J6_LOGGING_H
-        logger logging;
+    #ifdef J54J6_SysLogger
         
-        String message = "\n********************************\n";
-        message += "Request: ";
-        message += request;
-        message += "\nGenerateID: ";
-        message += generateId;
-        message += "\nserviceName: ";
-        message += serviceName;
-        message += "\nMAC: ";
-        message += MAC;
-        message += "\nIP: ";
-        message += ip;
-        message += "\nservicePort: ";
-        message += port;
-        message += "\nGivenID: ";
-        message += id;
-        message += "\n********************************\n";
-
-        logging.SFLog(className, "formatMessage", message.c_str(), -1);
+        logging.logIt("formatMessage", "", 1);
+        logging.logIt("formatMessage", "#####Debug#####", 1);
+        logging.logIt("formatMessage", "Request: " + request, 1);
+        logging.logIt("formatMessage", "GenerateID: " + generateId, 1);
+        logging.logIt("formatMessage", "ServiceName: " + serviceName, 1);
+        logging.logIt("formatMessage", "MAC: " + MAC, 1);
+        logging.logIt("formatMessage", "IP: " + ip, 1);
+        logging.logIt("formatMessage", "ServicePort: " + port, 1);
+        logging.logIt("formatMessage", "ID: " + id, 1);
+        logging.logIt("formatMessage", "#####Debug#####", 1);
+        logging.logIt("formatMessage", "", 1);
     #endif 
 
     long genId = millis() + random(20, 2145895698);
@@ -80,7 +75,7 @@ String ServiceHandler::formatComMessage(bool request, bool generateId, String se
     output += "\", ";
     output += "\"servicePort\" : \"";
     output += port;
-    if(!generateId)
+    if(!generateId && id == "n.S")
     {
         output += "\"";
         output += "}";
@@ -102,8 +97,8 @@ String ServiceHandler::formatComMessage(bool request, bool generateId, String se
             output += "\"}";
         } 
     }
-    #ifdef J54J6_LOGGING_H
-        logging.SFLog(className, "formatMessage", output.c_str(), -1);
+    #ifdef J54J6_SysLogger
+        logging.logIt("formatMessage", output.c_str(), -1);
     #endif 
     return output;
 }
@@ -129,40 +124,40 @@ bool ServiceHandler::createInternalServicesBasicConfigFile()
     FM->mount();
     if(!FM->fExist(offeredServicesPath))
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "createConfigFile", "Config File doesn't exist - try to create", 1);
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("createConfigFile", "Config File doesn't exist - try to create", 1);
         #endif 
 
         if(FM->createFile(offeredServicesPath))
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "createConfigFile", "File created!");
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("createConfigFile", "File created!");
             #endif 
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "createConfigFile", "Can't create File! - return false", 2);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("createConfigFile", "Can't create File! - return false", 2);
             #endif
             return false;
         }
 
         if(FM->writeJsonFile(offeredServicesPath, serviceConfigBlueprint, 1))
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "createConfigFile", "Config Fallback written - return true");
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("createConfigFile", "Config Fallback written - return true");
             #endif
             return true;
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "createConfigFile", "Can't write in File!");
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("createConfigFile", "Can't write in File!");
             #endif
             return false;
         }
@@ -170,9 +165,9 @@ bool ServiceHandler::createInternalServicesBasicConfigFile()
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "createConfigFile", "File already exist - SKIP!");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("createConfigFile", "File already exist - SKIP!");
         #endif
         return true;
     }
@@ -203,17 +198,17 @@ bool ServiceHandler::beginListen()
     createInternalServicesBasicConfigFile();
     if(udpControl.begin())
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "beginListen", "NetworkIdent Service started");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("beginListen", "NetworkIdent Service started");
         #endif
         return true;
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "beginListen", "Can't start NetworkIdent - udpControl return false!", 2);
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("beginListen", "Can't start NetworkIdent - udpControl return false!", 2);
         #endif
         return false;
     }
@@ -223,9 +218,9 @@ bool ServiceHandler::beginListen()
 void ServiceHandler::stopListen()
 {
     udpControl.stop();
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "stopListen", "UDP Listener stopped", 0);
+    #ifdef J54J6_SysLogger
+        
+        logging.logIt("stopListen", "UDP Listener stopped", 0);
     #endif
 }
 
@@ -245,9 +240,9 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
         {
             if(checkForService(serviceName))
             {
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
-                    logging.SFLog(className, "addService", "Service already exist - SKIP", 0);
+                #ifdef J54J6_SysLogger
+                    
+                    logging.logIt("addService", "Service already exist - SKIP", 0);
                 #endif 
                 return true;
             }
@@ -270,18 +265,18 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
             }
             else
             {
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
-                    logging.SFLog(className, "addService", "An Error occured while adding the Service please check! -  Service can't be added", 2);
+                #ifdef J54J6_SysLogger
+                    
+                    logging.logIt("addService", "An Error occured while adding the Service please check! -  Service can't be added", 2);
                 #endif
                 return false;
             }
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "addService", "Can't check for Service - ServiceList File doesn't exist!", 1);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("addService", "Can't check for Service - ServiceList File doesn't exist!", 1);
             #endif
             return false;
         }
@@ -304,9 +299,9 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
 
             if(!setIp || !setMac || !setPort)
             {
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
-                    logging.SFLog(className, "addService", "One or more parameter can't be saved - create or append has failed!", 2);
+                #ifdef J54J6_SysLogger
+                    
+                    logging.logIt("addService", "One or more parameter can't be saved - create or append has failed!", 2);
                 #endif
                 return false;
             }
@@ -314,17 +309,17 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
             {
                 if(checkForService(serviceName) == 2)
                 {
-                    #ifdef J54J6_LOGGING_H
-                        logger logging;
-                        logging.SFLog(className, "addService", "Service successfully added");
+                    #ifdef J54J6_SysLogger
+                        
+                        logging.logIt("addService", "Service successfully added");
                     #endif
                     return true;
                 }
                 else
                 {
-                    #ifdef J54J6_LOGGING_H
-                        logger logging;
-                        logging.SFLog(className, "addService", "File could not be created! - Can't fnd Service after add process! - return false", 2);
+                    #ifdef J54J6_SysLogger
+                        
+                        logging.logIt("addService", "File could not be created! - Can't fnd Service after add process! - return false", 2);
                     #endif
                     return false;
                 }  
@@ -332,9 +327,9 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "addService", "Can't add Service - one or more parameter not set!", 1);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("addService", "Can't add Service - one or more parameter not set!", 1);
             #endif
             return false;
         }   
@@ -350,12 +345,12 @@ short ServiceHandler::autoAddService(const char* serviceName)
         if(!FM->fExist(getExternalServiceFilename(serviceName).c_str()))
         {
             //init main CFG create
-            #ifdef J54J6_LOGGING_H
-                logger logging;
+            #ifdef J54J6_SysLogger
+                
                 String message = "Init. creation of mainCFG for Service \"";
                 message += serviceName;
                 message += "\"";
-                logging.SFLog(className, "autoAddService", message.c_str(), 0);
+                logging.logIt("autoAddService", message.c_str(), 0);
             #endif
 
             searchForService(serviceName);
@@ -371,12 +366,12 @@ short ServiceHandler::autoAddService(const char* serviceName)
         {
             if(!FM->fExist(getExternalServiceFilename(serviceName, true).c_str()))
             {
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
+                #ifdef J54J6_SysLogger
+                    
                     String message = "Init. creation of FallbackCFG for Service \"";
                     message += serviceName;
                     message += "\"";
-                    logging.SFLog(className, "autoAddService", message.c_str(), 0);
+                    logging.logIt("autoAddService", message.c_str(), 0);
                 #endif
 
                 //init main CFG create
@@ -392,12 +387,12 @@ short ServiceHandler::autoAddService(const char* serviceName)
             }
             else
             {
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
+                #ifdef J54J6_SysLogger
+                    
                     String message = "Can't create CFG for Service \"";
                     message += serviceName;
                     message += "\" - Fallback and Main already defined";
-                    logging.SFLog(className, "autoAddService", message.c_str(), 0);
+                    logging.logIt("autoAddService", message.c_str(), 0);
                 #endif
                 return 3;
             } 
@@ -405,35 +400,35 @@ short ServiceHandler::autoAddService(const char* serviceName)
     }
     else if(!autoAddRunning && strcmp(serviceName, "n.S") != 0) //serviceName is not "n.S"
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "autoAddService", "Can't add Service \"n.S\" - it's a placeholder!", 1);
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("autoAddService", "Can't add Service \"n.S\" - it's a placeholder!", 1);
         #endif
         return 0;
     }
     else //autoAdd already running - do loop stuff to check for any responses and add new service if needed
     {
-        if(lastAutoAddRequest.id == 0) //lastRequest is > timeout - disable autoRun
+        if(lastAutoAddRequest.id == -1) //lastRequest is > timeout - disable autoRun
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "autoAddService", "Can't add Service - timeout reached! - return false", 1);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("autoAddService", "Can't add Service - timeout reached! - return false", 1);
             #endif
             autoAddRunning = false;
             return 0;
         }
-        else if(lastAutoAddRequest.id != 0 && lastAutoAddRequest.searchType != 4) //lasRequest was not set by function AutoAdd
+        else if(lastAutoAddRequest.id != -1 && lastAutoAddRequest.searchType != 4) //lasRequest was not set by function AutoAdd
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "autoAddService", "Schedule Problem - lastRequest not set by autoAdd - wrong searchType - disable autoAdd loop and return false", 1);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("autoAddService", "Schedule Problem - lastRequest not set by autoAdd - wrong searchType - disable autoAdd loop and return false", 1);
             #endif
             autoAddRunning = false;
             return 0;
         }
         
         //working normal
-        if(lastAutoAddRequest.id != 0 && lastAutoAddRequest.searchType == 4)
+        if(lastAutoAddRequest.id != -1 && lastAutoAddRequest.searchType == 4)
         {
             StaticJsonDocument<425> lastFetched = getLastData();
 
@@ -442,17 +437,17 @@ short ServiceHandler::autoAddService(const char* serviceName)
             */
             if(!lastFetched.containsKey("id") || !lastFetched.containsKey("serviceName") || !lastFetched.containsKey("ip") || !lastFetched.containsKey("mac") || !lastFetched.containsKey("servicePort"))
             {
-                return 2;
+                return 10;
             }
             else
             {
-                /*
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
-                    logging.SFLog(className, "autoAddService", "Received useable Packet", -1);
+                
+                #ifdef J54J6_SysLogger
+                    
+                    logging.logIt("autoAddService", "Received useable Packet", -1);
                 #endif
 
-                */
+                
                 //lastReceived Packet does contain all needed keys to create a new Service - check for id and serviceName
                 String castedLastRequestID = String(lastAutoAddRequest.id);
                 String castedLastReceivedID = lastFetched["id"];
@@ -471,21 +466,18 @@ short ServiceHandler::autoAddService(const char* serviceName)
                         if(!FM->fExist(getExternalServiceFilename(lastAutoAddRequest.serviceName, false).c_str()))
                         {
                             //create mainServiceCfg
-                            #ifdef J54J6_LOGGING_H
-                                logger logging;
-                                logging.SFLog(className, "autoAddService", "Creating new Service Main CFG");
+                            #ifdef J54J6_SysLogger
+                                
+                                logging.logIt("autoAddService", "Creating new Service Main CFG");
                             #endif
 
                             if(!FM->createFile(getExternalServiceFilename(lastAutoAddRequest.serviceName).c_str()))
                             {
-                                #ifdef J54J6_LOGGING_H
-                                    logger logging;
-                                    logging.SFLog(className, "autoAddService", "Can't create new File - create File returns false! - ERROR!", 2);
+                                #ifdef J54J6_SysLogger
+                                    
+                                    logging.logIt("autoAddService", "Can't create new File - create File returns false! - ERROR!", 2);
                                 #endif
-                                error.error = true;
-                                error.ErrorCode = 378;
-                                error.message = "Can't create new File - createFile() returns false!";
-                                error.priority = 5;
+                                classControl->newReport("Can't create new File - createFile() returns false!", 378, 5, true);
                                 lastAutoAddRequest.reset();
                                 autoAddRunning = false;
                                 return 0;
@@ -498,12 +490,12 @@ short ServiceHandler::autoAddService(const char* serviceName)
 
                                 if(ipAdded && macAdded && portAdded)
                                 {
-                                    #ifdef J54J6_LOGGING_H
-                                        logger logging;
+                                    #ifdef J54J6_SysLogger
+                                        
                                         String message = "New Service Main CFG \"";
                                         message += lastAutoAddRequest.serviceName;
                                         message += "\" successfully added - return true";
-                                        logging.SFLog(className, "autoAddService", message.c_str());
+                                        logging.logIt("autoAddService", message.c_str());
                                     #endif
 
                                     String data = FM->readFile(getExternalServiceFilename(lastAutoAddRequest.serviceName).c_str());
@@ -524,12 +516,12 @@ short ServiceHandler::autoAddService(const char* serviceName)
                                 }
                                 else
                                 {
-                                    #ifdef J54J6_LOGGING_H
-                                        logger logging;
+                                    #ifdef J54J6_SysLogger
+                                        
                                         String message = "New Service Main CFG \"";
                                         message += lastAutoAddRequest.serviceName;
                                         message += "\" can't be added - Error while insert JSON- return false";
-                                        logging.SFLog(className, "autoAddService", message.c_str(), 2);
+                                        logging.logIt("autoAddService", message.c_str(), 2);
                                     #endif
                                     lastAutoAddRequest.reset();
                                     autoAddRunning = false;
@@ -544,18 +536,18 @@ short ServiceHandler::autoAddService(const char* serviceName)
                             */
                             if(strcmp(FM->readJsonFileValue(getExternalServiceFilename(lastAutoAddRequest.serviceName).c_str(), "serviceName"), "") != 0) //file has config
                             {
-                                #ifdef J54J6_LOGGING_H
-                                    logger logging;
-                                    logging.SFLog(className, "autoAddService", "Can't create Servicefile - service already configured - stop AutoAdd - return true", 1);
+                                #ifdef J54J6_SysLogger
+                                    
+                                    logging.logIt("autoAddService", "Can't create Servicefile - service already configured - stop AutoAdd - return true", 1);
                                 #endif
                                 autoAddRunning = 0;
                                 return 1;
                             }
                             else
                             {
-                                #ifdef J54J6_LOGGING_H
-                                    logger logging;
-                                    logging.SFLog(className, "autoAddService", "Can't create Servicefile - servicefile already exist - but not correct configured! - stop AutoAdd - return false", 2);
+                                #ifdef J54J6_SysLogger
+                                    
+                                    logging.logIt("autoAddService", "Can't create Servicefile - servicefile already exist - but not correct configured! - stop AutoAdd - return false", 2);
                                 #endif
                                 autoAddRunning = 0;
                                 return 0;
@@ -571,21 +563,18 @@ short ServiceHandler::autoAddService(const char* serviceName)
                         if(!FM->fExist(getExternalServiceFilename(lastAutoAddRequest.serviceName, true).c_str()))
                         {
                             //create mainServiceCfg
-                            #ifdef J54J6_LOGGING_H
-                                logger logging;
-                                logging.SFLog(className, "autoAddService", "Creating new Service Fallback CFG");
+                            #ifdef J54J6_SysLogger
+                                
+                                logging.logIt("autoAddService", "Creating new Service Fallback CFG");
                             #endif
 
                             if(!FM->createFile(getExternalServiceFilename(lastAutoAddRequest.serviceName, true).c_str()))
                             {
-                                #ifdef J54J6_LOGGING_H
-                                    logger logging;
-                                    logging.SFLog(className, "autoAddService", "Can't create new File - create File returns false! - ERROR!", 2);
+                                #ifdef J54J6_SysLogger
+                                    
+                                    logging.logIt("autoAddService", "Can't create new File - create File returns false! - ERROR!", 2);
                                 #endif
-                                error.error = true;
-                                error.ErrorCode = 378;
-                                error.message = "Can't create new File (fallback service) - createFile() returns false!";
-                                error.priority = 5;
+                                classControl->newReport("Can't create new File (fallback service) - createFile() returns false!", 378, 5, true);
                                 lastAutoAddRequest.reset();
                                 autoAddRunning = false;
                                 return 0;
@@ -598,12 +587,12 @@ short ServiceHandler::autoAddService(const char* serviceName)
 
                                 if(ipAdded && macAdded && portAdded)
                                 {
-                                    #ifdef J54J6_LOGGING_H
-                                        logger logging;
+                                    #ifdef J54J6_SysLogger
+                                        
                                         String message = "New Service Fallback CFG \"";
                                         message += lastAutoAddRequest.serviceName;
                                         message += "\" successfully added - return true";
-                                        logging.SFLog(className, "autoAddService", message.c_str());
+                                        logging.logIt("autoAddService", message.c_str());
                                     #endif
 
                                     String data = FM->readFile(getExternalServiceFilename(lastAutoAddRequest.serviceName, true).c_str());
@@ -624,12 +613,12 @@ short ServiceHandler::autoAddService(const char* serviceName)
                                 }
                                 else
                                 {
-                                    #ifdef J54J6_LOGGING_H
-                                        logger logging;
+                                    #ifdef J54J6_SysLogger
+                                        
                                         String message = "New Service Fallback CFG \"";
                                         message += lastAutoAddRequest.serviceName;
                                         message += "\" can't be added - Error while insert JSON- return false";
-                                        logging.SFLog(className, "autoAddService", message.c_str(), 2);
+                                        logging.logIt("autoAddService", message.c_str(), 2);
                                     #endif
                                     lastAutoAddRequest.reset();
                                     autoAddRunning = false;
@@ -644,18 +633,18 @@ short ServiceHandler::autoAddService(const char* serviceName)
                             */
                             if(strcmp(FM->readJsonFileValue(getExternalServiceFilename(lastAutoAddRequest.serviceName, true).c_str(), "serviceName"), "") != 0)
                             {
-                                #ifdef J54J6_LOGGING_H
-                                    logger logging;
-                                    logging.SFLog(className, "autoAddService", "Can't create Service Fallback file - service already configured - stop AutoAdd - return true", 1);
+                                #ifdef J54J6_SysLogger
+                                    
+                                    logging.logIt("autoAddService", "Can't create Service Fallback file - service already configured - stop AutoAdd - return true", 1);
                                 #endif
                                 autoAddRunning = 0;
                                 return 1;
                             }
                             else
                             {
-                                #ifdef J54J6_LOGGING_H
-                                    logger logging;
-                                    logging.SFLog(className, "autoAddService", "Can't create Service Fallback file - servicefile already exist - but not correct configured! - stop AutoAdd - return false", 2);
+                                #ifdef J54J6_SysLogger
+                                    
+                                    logging.logIt("autoAddService", "Can't create Service Fallback file - servicefile already exist - but not correct configured! - stop AutoAdd - return false", 2);
                                 #endif
                                 autoAddRunning = 0;
                                 return 0;
@@ -679,18 +668,18 @@ bool ServiceHandler::delService(const char* serviceName, bool selfOffered, bool 
         */
        if(!FM->fExist(offeredServicesPath))
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "delService", "Can't delete Service, serviceList doesn't exist!", 1);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("delService", "Can't delete Service, serviceList doesn't exist!", 1);
             #endif
             return false;
         }
 
         if(!checkForService(serviceName))
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "delService", "Can't delete Service, serviceList doesn't contains the specified Service! - SKIP", 1);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("delService", "Can't delete Service, serviceList doesn't contains the specified Service! - SKIP", 1);
             #endif
             return true;
         }
@@ -705,15 +694,15 @@ bool ServiceHandler::delService(const char* serviceName, bool selfOffered, bool 
         
         if(checkForService(serviceName))
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "delService", "An Error occured while deleting the Service - please check!", 2);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("delService", "An Error occured while deleting the Service - please check!", 2);
             #endif
             return false;
         }
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "delService", "Service successfully deleted!");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("delService", "Service successfully deleted!");
         #endif
         return true;
     }
@@ -724,17 +713,17 @@ bool ServiceHandler::delService(const char* serviceName, bool selfOffered, bool 
         */
         if(FM->fDelete(getExternalServiceFilename(serviceName, fallback).c_str()))
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "delService", "Service removed");
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("delService", "Service removed");
             #endif
             return true;
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "delService", "Can't remove Service - function returns false", 2);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("delService", "Can't remove Service - function returns false", 2);
             #endif
         }
     }
@@ -755,22 +744,22 @@ IPAddress ServiceHandler::getServiceIP(const char* serviceName, bool fallback)
         String ipCached = cacheDoc["ip"];
         if(returnIp.fromString(ipCached))
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
+            #ifdef J54J6_SysLogger
+                
                 String message = "returned IP for Service \"";
                 message += serviceName;
                 message += "\" with IP \"";
                 message += returnIp.toString();
                 message += "\" - success";
-                logging.SFLog(className, "getServiceIP", message.c_str());
+                logging.logIt("getServiceIP", message.c_str());
             #endif 
             return returnIp;
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "getServiceIP", "Can't read IP! - return errorIP", 2);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("getServiceIP", "Can't read IP! - return errorIP", 2);
             #endif 
             return IPAddress(0,0,0,0);
         }
@@ -779,22 +768,22 @@ IPAddress ServiceHandler::getServiceIP(const char* serviceName, bool fallback)
     {
         if(returnIp.fromString(String(FM->readJsonFileValue(getExternalServiceFilename(serviceName, true).c_str(), "ip"))))
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
+            #ifdef J54J6_SysLogger
+                
                 String message = "returned fallback IP for Service \"";
                 message += serviceName;
                 message += "\" with IP \"";
                 message += returnIp.toString();
                 message += "\" - success";
-                logging.SFLog(className, "getServiceIP", message.c_str());
+                logging.logIt("getServiceIP", message.c_str());
             #endif 
             return returnIp;
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "getServiceIP", "Can't read fallback IP! - return errorIP", 2);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("getServiceIP", "Can't read fallback IP! - return errorIP", 2);
             #endif 
             return IPAddress(0,0,0,0);
         }
@@ -809,22 +798,22 @@ String ServiceHandler::getServiceMAC(const char* serviceName, bool fallback)
         String mac = FM->readJsonFileValue(getExternalServiceFilename(serviceName).c_str(), "mac");
         if(mac != "")
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
+            #ifdef J54J6_SysLogger
+                
                 String message = "returned MAC for Service \"";
                 message += serviceName;
                 message += "\" with MAC \"";
                 message += mac;
                 message += "\" - success";
-                logging.SFLog(className, "getServiceMAC", message.c_str());
+                logging.logIt("getServiceMAC", message.c_str());
             #endif 
             return mac;
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "getServiceMAC", "Can't read MAC! - return \"failed\"", 2);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("getServiceMAC", "Can't read MAC! - return \"failed\"", 2);
             #endif 
             return "failed";
         }
@@ -834,22 +823,22 @@ String ServiceHandler::getServiceMAC(const char* serviceName, bool fallback)
         String mac = FM->readJsonFileValue(getExternalServiceFilename(serviceName, true).c_str(), "mac");
         if(mac != "")
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
+            #ifdef J54J6_SysLogger
+                
                 String message = "returned MAC for Service \"";
                 message += serviceName;
                 message += "\" with MAC \"";
                 message += mac;
                 message += "\" - success";
-                logging.SFLog(className, "getServiceMAC", message.c_str());
+                logging.logIt("getServiceMAC", message.c_str());
             #endif 
             return mac;
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "getServiceMAC", "Can't read MAC! - return \"failed\"", 2);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("getServiceMAC", "Can't read MAC! - return \"failed\"", 2);
             #endif 
             return "failed";
         }
@@ -857,29 +846,60 @@ String ServiceHandler::getServiceMAC(const char* serviceName, bool fallback)
     return "failed";
 }
 
-int ServiceHandler::getServicePort(const char* serviceName, bool fallback)
+int ServiceHandler::getServicePort(const char* serviceName, bool fallback, bool selfOffered)
 {
-    if(!fallback)
+    if(selfOffered) //self offered Services - only return the port by reading serviceName Key Value from JSON
+    {
+        if(FM->fExist(offeredServicesPath) && checkForService(serviceName, false) == 1 || checkForService(serviceName, false) == 4 || checkForService(serviceName, false) == 5)
+        {
+            String result = FM->readJsonFileValue(offeredServicesPath, serviceName);
+            if(result.toInt())
+            {
+                return result.toInt();
+            }
+            else
+            {
+                #ifdef J54J6_SysLogger
+                    
+                    logging.logIt("getServicePort", "Can't read ServicePort (selfOffered)! - return \"failed\"", 2);
+                #endif
+                return -1;
+
+            }
+            
+        }
+        else
+        {
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("getServicePort", "Can't read ServicePort (selfOffered) - offeredServices File doesn't exist or Service doesn't exist! - return \"failed\"", 1);
+            #endif
+            return -1; //no selfoffered Service found or !
+        }
+        
+    }
+
+    if(!fallback && !selfOffered) //external Service
     {   
         String port = FM->readJsonFileValue(getExternalServiceFilename(serviceName).c_str(), "port");
         if(port != "")
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
+            #ifdef J54J6_SysLogger
+                
                 String message = "returned Port for Service \"";
                 message += serviceName;
                 message += "\" with Port \"";
                 message += port;
                 message += "\" - success";
-                logging.SFLog(className, "getServicePort", message.c_str());
+                logging.logIt("getServicePort", message.c_str());
             #endif 
             return port.toInt();
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "getServicePort", "Can't read Port! - return -1", 2);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("getServicePort", "Can't read Port! - return -1", 2);
             #endif 
             return -1;
         }
@@ -889,22 +909,22 @@ int ServiceHandler::getServicePort(const char* serviceName, bool fallback)
         String port = FM->readJsonFileValue(getExternalServiceFilename(serviceName, true).c_str(), "port");
         if(port != "")
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
+            #ifdef J54J6_SysLogger
+                
                 String message = "returned Port for Service \"";
                 message += serviceName;
                 message += "\" with Port \"";
                 message += port;
                 message += "\" - success";
-                logging.SFLog(className, "getServicePort", message.c_str());
+                logging.logIt("getServicePort", message.c_str());
             #endif 
             return port.toInt();
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "getServicePort", "Can't read Port! - return -1", 2);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("getServicePort", "Can't read Port! - return -1", 2);
             #endif 
             return -1;
         }
@@ -924,10 +944,11 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
         bool skip = false;
         if(!FM->fExist(offeredServicesPath))
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "checkForService", "Can't check for internal Service - serviceFile doesn't exist!", 2);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("checkForService", "Can't check for internal Service - serviceFile doesn't exist!", 2);
             #endif
+            skip = true;
         }
         if(!skip)
         {
@@ -942,23 +963,23 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
             */  
             if(cacheDocument.containsKey(serviceName))
             {
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
+                #ifdef J54J6_SysLogger
+                    
                     String message = "Service \"";
                     message += serviceName;
                     message += "\" exist! - result = 1";
-                    logging.SFLog(className, "checkForService", message.c_str());
+                    logging.logIt("checkForService", message.c_str());
                 #endif
                 result = 1;
             }
             else
             {
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
+                #ifdef J54J6_SysLogger
+                    
                     String message = "Can't find Service \"";
                     message += serviceName;
                     message += "\" in serviceList - return false";
-                    logging.SFLog(className, "checkForService", message.c_str());
+                    logging.logIt("checkForService", message.c_str());
                 #endif
             }
         }
@@ -967,27 +988,97 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
     /*
         Check for external Service
     */
-    if(FM->fExist(getExternalServiceFilename(serviceName, false).c_str()) || FM->fExist(getExternalServiceFilename(serviceName, true).c_str()))
-    {
-        switch (result)
-        {
-        case 0:
-            result = 2;
-            break;
-        case 1:
-            result = 3;
-        default:
-            break;
-        }
-    }
 
-    #ifdef J54J6_LOGGING_H
-        logger logging;
+    bool existMainCfg = FM->fExist(getExternalServiceFilename(serviceName, false).c_str());
+    bool existBackupCfg = FM->fExist(getExternalServiceFilename(serviceName, true).c_str());
+    #ifdef J54J6_SysLogger
+        
+    #endif
+    switch(result) //devide into section - self Offered found(1) and not found (0)
+    {
+        case 0: //no self offered found
+            if(existMainCfg && existBackupCfg)
+            {
+                #ifdef J54J6_SysLogger
+                    logging.logIt("checkForService", "Return 3", -1);
+                #endif
+                return 3;
+                break;
+            }
+            else if(existMainCfg && !existBackupCfg)
+            {
+                #ifdef J54J6_SysLogger
+                    logging.logIt("checkForService", "Return 2", -1);
+                #endif
+                return 2;
+                break;
+            }
+            else if(!existMainCfg && existBackupCfg)
+            {
+                #ifdef J54J6_SysLogger
+                    logging.logIt("checkForService", "Return 10", -1);
+                #endif
+                return 10;
+                break;
+            }
+            else
+            {
+                #ifdef J54J6_SysLogger
+                    logging.logIt("checkForService", "Return 0", -1);
+                #endif
+                return 0;
+                break;
+            }
+        case 1:
+            if(existMainCfg && existBackupCfg)
+            {
+                #ifdef J54J6_SysLogger
+                    logging.logIt("checkForService", "Return 5", -1);
+                #endif
+                return 5;
+                break;
+            }
+            else if(existMainCfg && !existBackupCfg)
+            {
+                #ifdef J54J6_SysLogger
+                    logging.logIt("checkForService", "Return 4", -1);
+                #endif
+                return 4;
+                break;
+            }
+            else if(!existMainCfg && existBackupCfg)
+            {
+                #ifdef J54J6_SysLogger
+                    logging.logIt("checkForService", "Return 10", -1);
+                #endif
+                return 10;
+                break;
+            }
+            else
+            {
+                #ifdef J54J6_SysLogger
+                    logging.logIt("checkForService", "Return 1", -1);
+                #endif
+                return 1;
+                break;
+            }
+        default:
+            #ifdef J54J6_SysLogger
+                
+                String message = "Unexcepted Value -  \"";
+                message += result;
+                message += "\" - excepted 0 or 1!: ";
+                logging.logIt("checkForService", message.c_str());
+            #endif
+            classControl->newReport("Unexcepted Value!", 893, 5, true);
+    };
+
+    #ifdef J54J6_SysLogger
         String message = "Return State for Service \"";
         message += serviceName;
         message += "\": ";
         message += result;
-        logging.SFLog(className, "checkForService", message.c_str());
+        logging.logIt("checkForService", message.c_str());
     #endif
     return result;
 }
@@ -1005,9 +1096,9 @@ bool ServiceHandler::changeConfigValue(const char* serviceName, const char* toCh
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "changeConfigValue", "Can't change Value  File doesn't exist!", 2);
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("changeConfigValue", "Can't change Value  File doesn't exist!", 2);
             #endif
             return false;
         }
@@ -1028,9 +1119,9 @@ bool ServiceHandler::changeConfigValue(const char* serviceName, const char* toCh
             }
             else
             {
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
-                    logging.SFLog(className, "changeConfigValue", "Can't change Value - Fallback file doesn't exist!", 2);
+                #ifdef J54J6_SysLogger
+                    
+                    logging.logIt("changeConfigValue", "Can't change Value - Fallback file doesn't exist!", 2);
                 #endif
                 return false;
             }
@@ -1046,9 +1137,9 @@ bool ServiceHandler::changeConfigValue(const char* serviceName, const char* toCh
             }
             else
             {
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
-                    logging.SFLog(className, "changeConfigValue", "Can't change Value - Main file doesn't exist!", 2);
+                #ifdef J54J6_SysLogger
+                    
+                    logging.logIt("changeConfigValue", "Can't change Value - Main file doesn't exist!", 2);
                 #endif
                 return false;
             }
@@ -1076,6 +1167,7 @@ void ServiceHandler::loop()
 {
     //check for new Packets with UDPControl Class on <<NetworkIdentPort>>
     udpControl.run();
+    classControl->run();
 
     //if this class is Disabled - end function
     if(classDisabled)
@@ -1122,12 +1214,12 @@ void ServiceHandler::loop()
     */
     if(error)
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
+        #ifdef J54J6_SysLogger
+            
             String message = "Can't parse last UDP Content to Json - Json returned: \n!";
             message += error.c_str();
             message += "\n";
-            logging.SFLog(className, "loop", message.c_str(), 1);
+            logging.logIt("loop", message.c_str(), 1);
         #endif
         return;
     }
@@ -1184,43 +1276,56 @@ void ServiceHandler::loop()
                 check for interal saved addresses matching the json.servername
             */
 
-            if(checkForService(udpLastReceivedDataDocument["serviceName"]) != 0)
+            if(checkForService(udpLastReceivedDataDocument["serviceName"]) != 0) //Service exist
             {
-                #ifdef J54J6_LOGGING_H
+                #ifdef J54J6_SysLogger
                     
-                    logger logging;
+                    
                     String message = "Service ";
                     message += serviceNameCached;
-                    message += "exist - return true";
-                    logging.SFLog(className, "loop", message.c_str(), 1);
+                    message += " exist - return true";
+                    logging.logIt("loop", message.c_str(), 0);
                 #endif
                 
                 String fmsg;
+
+                /*
+    	            Request uses ID identification
+                */   
                 if(udpLastReceivedDataDocument.containsKey("id"))
                 {
-                    #ifdef J54J6_LOGGING_H
-                        logger logging;
-                        logging.SFLog(className, "loop", "ID will be appended", -1);
+                    #ifdef J54J6_SysLogger
+                        
+                        logging.logIt("loop", "ID will be appended", -1);
                     #endif
 
-                    if(checkForService(udpLastReceivedDataDocument["serviceName"]) == 1 || checkForService(udpLastReceivedDataDocument["serviceName"]) == 3)
+                    if(checkForService(udpLastReceivedDataDocument["serviceName"]) == 1 || checkForService(udpLastReceivedDataDocument["serviceName"]) == 3) //send internal service
                     {
                         fmsg = formatComMessage(false, true, udpLastReceivedDataDocument["serviceName"], WiFi.macAddress(), wifiManager->getLocalIP(), FM->readJsonFileValue(offeredServicesPath, serviceNameCached.c_str()), udpLastReceivedDataDocument["id"]);
                         udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                        #ifdef J54J6_SysLogger
+                            
+                            logging.logIt("loop", "Sended Answer Data with internal Service cred.", -1);
+                        #endif
+                        return;
                     }
-                    else
+                    else //send external service 
                     {
                         
-                        //fmsg = formatComMessage(false, false, udpLastReceivedDataDocument["serviceName"], getServiceMAC(udpLastReceivedDataDocument["serviceName"]), getServiceIP(udpLastReceivedDataDocument["serviceName"]).toString() , FM->readJsonFileValue(externalServicesPath, serviceNameCached.c_str()));
-                        //udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
-                        
+                        fmsg = formatComMessage(false, false, udpLastReceivedDataDocument["serviceName"], getServiceMAC(udpLastReceivedDataDocument["serviceName"]), getServiceIP(udpLastReceivedDataDocument["serviceName"]).toString(), String(getServicePort(udpLastReceivedDataDocument["serviceName"])), udpLastReceivedDataDocument["id"]);
+                        udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
+                        #ifdef J54J6_SysLogger
+                            
+                            logging.logIt("loop", "Sended Answer Data with external Service cred.", -1);
+                        #endif
+                        return;                   
                     }
                 }
-                else
+                else 
                 {
-                    #ifdef J54J6_LOGGING_H
-                        logger logging;
-                        logging.SFLog(className, "loop", "ID will generated", -1);
+                    #ifdef J54J6_SysLogger
+                        
+                        logging.logIt("loop", "ID will generated", -1);
                     #endif
                     
                     if(checkForService(udpLastReceivedDataDocument["serviceName"]) == 1 || checkForService(udpLastReceivedDataDocument["serviceName"]) == 3)
@@ -1230,10 +1335,10 @@ void ServiceHandler::loop()
                     }
                     else
                     {
-                        /*
+                        
                         fmsg = formatComMessage(false, true, udpLastReceivedDataDocument["serviceName"], getServiceMAC(udpLastReceivedDataDocument["serviceName"]), getServiceIP(udpLastReceivedDataDocument["serviceName"]).toString() , FM->readJsonFileValue(externalServicesPath, serviceNameCached.c_str()));
                         udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
-                        */
+                        
                     }
                 }
                 /*
@@ -1243,14 +1348,14 @@ void ServiceHandler::loop()
                 //udpControl.sendUdpMessage(formatMessage(false, false, cacheDocument["serviceName"], WiFi.macAddress().c_str(), wifiManager->getLocalIP().c_str(), FM->readJsonFileValue(serviceListPath, serviceNameCached.c_str())).c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
                 */
             }
-            else
+            else //requested Setvice is not defined on the device!
             {
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
+                #ifdef J54J6_SysLogger
+                    
                     String message = "Service ";
                     message += serviceNameCached;
                     message += "doesn't exist - return nothing";
-                    logging.SFLog(className, "loop", message.c_str(), 1);
+                    logging.logIt("loop", message.c_str(), 1);
                 #endif 
             }   
         }
@@ -1261,14 +1366,14 @@ void ServiceHandler::loop()
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logger logging;
+            #ifdef J54J6_SysLogger
+                
                 const char* cachedType = udpLastReceivedDataDocument["type"];
                 String message = "Syntax of UDP Packet is wrong - packet-type: \n!";
                 message += "Type: ";
                 message += cachedType;
                 message += "\n";
-                logging.SFLog(className, "loop", message.c_str(), 1);
+                logging.logIt("loop", message.c_str(), 1);
             #endif
         }
     }
@@ -1304,17 +1409,8 @@ void ServiceHandler::stopClass()
     }
 }
 
-void ServiceHandler::pauseClass()
-{
-    this->stopClass();
-}
-
 void ServiceHandler::restartClass()
 {
-    this->startClass();
-}
-
-void ServiceHandler::continueClass()
-{
+    this->stopClass();
     this->startClass();
 }

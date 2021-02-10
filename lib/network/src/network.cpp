@@ -8,6 +8,7 @@ Network::Network(Filemanager* FM, WiFiManager* wifiManager) //basic Constructor 
 {
     this->FM = FM;
     this->wifiManager = wifiManager;
+    this->logging = SysLogger(FM, "Network");
 }
 
 Network::Network(Filemanager* FM, WiFiManager* wifiManager, LED* wifiLed) //Default Constructor with full functionalities
@@ -15,6 +16,7 @@ Network::Network(Filemanager* FM, WiFiManager* wifiManager, LED* wifiLed) //Defa
     this->FM = FM;
     this->wifiManager = wifiManager;
     this->wifiLed = wifiLed;
+    this->logging = SysLogger(FM, "Network");
 }
 
 /*
@@ -26,42 +28,39 @@ bool Network::createConfig() //Fkt Nr. 19
     bool res = false;
     if(!FM->fExist(configFile))
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "createConfig", "ConfigFile doesn't exist - try to create");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("createConfig", "ConfigFile doesn't exist - try to create");
         #endif
         for(int i = 0; i < 3; i++)
         {
             FM->createFile(configFile);
             if(FM->fExist(configFile))
             {
-                #ifdef J54J6_LOGGING_H
-                    logging.SFLog(className, "createConfig", "File successfully created! - return");
+                #ifdef J54J6_SysLogger
+                    logging.logIt("createConfig", "File successfully created! - return");
                 #endif
                 break;
             }
         }
         if(!FM->fExist(configFile))
         {
-            error.error = true;
-            error.ErrorCode = 43;
-            error.message = "Can't create Config File - 3 tries failed!";
-            error.priority = 4;
+            classControl.newReport("Can't create Config File - 3 tries failed!", 43, 4, true);
         }
     }
     
     if(FM->fExist(configFile))
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "createConfig", "File exist - try to write in File");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("createConfig", "File exist - try to write in File");
         #endif
         for(int i = 0; i < 3; i++)
         {
             if(FM->writeJsonFile(configFile, configFileFallback, 12))
             {
-                #ifdef J54J6_LOGGING_H
-                    logging.SFLog(className, "createConfig", "Successfully created and written in File - Return");
+                #ifdef J54J6_SysLogger
+                    logging.logIt("createConfig", "Successfully created and written in File - Return");
                 #endif
                 res = true;
                 break;
@@ -71,21 +70,18 @@ bool Network::createConfig() //Fkt Nr. 19
 
     if(!res)
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "createConfig", "Unable to create Config File - ErrorCode: 119", 2);
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("createConfig", "Unable to create Config File - ErrorCode: 119", 2);
         #endif
-        error.error = true;
-        error.ErrorCode = 119;
-        error.message = "Unable to create Config File";
-        error.priority = 5;
+        classControl.newReport("Unable to create Config File", 119, 5, true);
         return false;
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "createConfig", "ConfigFile successfully created!");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("createConfig", "ConfigFile successfully created!");
         #endif
         return true;
     }
@@ -96,9 +92,9 @@ bool Network::createSetupFile() //Fkt. Nr 120
     bool res = false;
     if(!FM->fExist(setupFile))
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "createSetupFile", "SetupFile doesn't exist - try to create");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("createSetupFile", "SetupFile doesn't exist - try to create");
         #endif
         bool res = false;
         for(int i = 0; i < 3; i++)
@@ -107,37 +103,34 @@ bool Network::createSetupFile() //Fkt. Nr 120
             if(FM->fExist(setupFile))
             {
                 res = true;
-                #ifdef J54J6_LOGGING_H
-                    logging.SFLog(className, "createSetupFile", "File successfully created! - return");
+                #ifdef J54J6_SysLogger
+                    logging.logIt("createSetupFile", "File successfully created! - return");
                 #endif
                 break;
             }
         }
         if(!res)
         {
-            #ifdef J54J6_LOGGING_H
-                logging.SFLog(className, "createSetupFile", "Can't create setup File - ErrorCode: 234", 2);
+            #ifdef J54J6_SysLogger
+                logging.logIt("createSetupFile", "Can't create setup File - ErrorCode: 234", 2);
             #endif
-            error.error = true;
-            error.ErrorCode = 234;
-            error.message = "Can't create setup File";
-            error.priority = 6;
+            classControl.newReport("Can't create setup File", 234, 6, true);
             return false;
         }
     }
     
     if(FM->fExist(setupFile))
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "createSetupFile", "File exist - try to write in File");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("createSetupFile", "File exist - try to write in File");
         #endif
         for(int i = 0; i < 3; i++)
         {
             if(FM->writeJsonFile(setupFile, setupFileFallback, 3))
             {
-                #ifdef J54J6_LOGGING_H
-                    logging.SFLog(className, "createSetupFile", "Successfully created and written in File - Return");
+                #ifdef J54J6_SysLogger
+                    logging.logIt("createSetupFile", "Successfully created and written in File - Return");
                 #endif
                 res = true;
                 break;
@@ -147,21 +140,17 @@ bool Network::createSetupFile() //Fkt. Nr 120
 
     if(!res)
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "createSetupFile", "Unable to create Setupfile - Can't write in File - ErrorCode: 120", 2);
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("createSetupFile", "Unable to create Setupfile - Can't write in File - ErrorCode: 120", 2);
         #endif
-        error.error = true;
-        error.ErrorCode = 120;
-        error.message = "Unable to create Setupfile -  Can't write in File";
-        error.priority = 6;
+        classControl.newReport("Unable to create Setupfile -  Can't write in File", 120, 6, true);
         return false;
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "createSetupFile", "Config File successfully created!");
+        #ifdef J54J6_SysLogger
+            logging.logIt("createSetupFile", "Config File successfully created!");
         #endif
         return true;
     }
@@ -169,95 +158,127 @@ bool Network::createSetupFile() //Fkt. Nr 120
 
 void Network::startWorking() //fkt. Nr. -3
 {
-    String staSSID = FM->readJsonFileValue(configFile, "ssid");
-    String staPSK = FM->readJsonFileValue(configFile, "psk");
-    
+    String staSSID;
+    String staPSK;
+    if(FM->fExist(configFile))
+    {
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("startWorking", "configFileExist");
+        #endif
+        staSSID = FM->readJsonFileValue(configFile, "ssid");
+        staPSK = FM->readJsonFileValue(configFile, "psk");
+    }
+    else
+    {
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("startWorking", "No ConfigFile found! - start Setup", 2);
+        #endif
+        runFunction = -2;
+    }
 
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "startSetupMode", "AP successfully started");
-        String message = "Credentials: \n";
+    #ifdef J54J6_SysLogger
+        
+        logging.logIt("startWorking", "AP successfully started");
+        String message = "Credentials: ";
         message += " SSID: ";
         message += staSSID;
-        message += "\n PSK: ";
-        message += "don't hope that I log any passwords ;)";
-        logging.SFLog(className, "startSetupMode", message.c_str());
+        message += " PSK: ";
+        message += " - ";
+        logging.logIt("startWorking", message.c_str());
     #endif
 
     wifiManager->startWifiStation(staSSID.c_str(), staPSK.c_str());
-    runFunction = 0;
+    runFunction = 2; //updateHostname
 }
 
 void Network::startSetupMode() //fkt Nr. -2
 {
     Serial.println("Start setup");
-    delay(500);
-    String apSSID = FM->readJsonFileValue(setupFile, "ssid");
-    String apPSK = FM->readJsonFileValue(setupFile, "psk");
+    String apSSID;
+    String apPSK;
+    if(FM->fExist(setupFile))
+    {
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("startSetupMode", "setup File exist - read credentials");
+        #endif
+        apSSID = FM->readJsonFileValue(setupFile, "ssid");
+        apPSK = FM->readJsonFileValue(setupFile, "psk");
+    }
+    else
+    {
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("startSetupMode", "SetupFile doesnt exist - use default APCredentials");
+        #endif
+        apSSID = backupAPSSID;
+        apPSK = backupAPPSK;
+    }
+    
+    
     
     if(wifiManager->configWiFiAP(apIpAddress, apIpAddress, apNetMsk))
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "startSetupMode", "AP successfully configured!");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("startSetupMode", "AP successfully configured!");
         #endif
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "startSetupMode", "Can't configure AP! ERROR-Code: 23", 2);
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("startSetupMode", "Can't configure AP! ERROR-Code: 23", 2);
         #endif
-        error.error = true;
-        error.ErrorCode = 23;
-        error.message = "Can't configure AP!";
-        error.priority = 5;
+        classControl.newReport("Can't configure AP!", 23, 5, true);
     }
-    delay(500);
+    delay(150);
+    Serial.println("##########################################");
+    Serial.println(apSSID.c_str());
+    Serial.println(apPSK.c_str());
     if(wifiManager->startWifiAP(apSSID.c_str(), apPSK.c_str()))
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "startSetupMode", "AP successfully started");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("startSetupMode", "AP successfully started");
             String message = "Credentials: \n";
             message += " SSID: ";
             message += apSSID;
             message += "\n PSK: ";
             message += apPSK;
-            logging.SFLog(className, "startSetupMode", message.c_str());
+            logging.logIt("startSetupMode", message.c_str());
         #endif
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "startSetupMode", "Can't start AP - ERROR-Code: 24", 2);
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("startSetupMode", "Can't start AP - ERROR-Code: 24", 2);
         #endif
-        error.error = true;
-        error.ErrorCode = 24;
-        error.message = "Can't start AP!";
-        error.priority = 5;
+        classControl.newReport("Can't start AP!", 24, 5, true);
     }
-    delay(500);
+    delay(200);
     /*
         Start DNS Server
     */
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "startSetupMode", "Try starting DNS Server");
+    #ifdef J54J6_SysLogger
+        
+        logging.logIt("startSetupMode", "Try starting DNS Server");
     #endif
     if(startDnsServer())
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "startSetupMode", "DNS Server started!");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("startSetupMode", "DNS Server started!");
         #endif
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "startSetupMode", "Can't start DNS Server!");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("startSetupMode", "Can't start DNS Server!");
         #endif
     }
     delay(500);
@@ -267,17 +288,17 @@ void Network::startSetupMode() //fkt Nr. -2
 
    if(startMDnsServer(registerHostname))
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "startSetupMode", "MDNS Server started!");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("startSetupMode", "MDNS Server started!");
         #endif
     }
     else
     {
         MDNS.addService("http", "tcp", 80);
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "startSetupMode", "Can't start MDNS Server!");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("startSetupMode", "Can't start MDNS Server!");
         #endif
     }
     delay(500);
@@ -303,23 +324,17 @@ bool Network::startDnsServer() //fkt Nr 5 / direct called in startup
     dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
     if(!dnsServer.start(DNSPort, "*", apIpAddress))
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "startDnsServer", "Cant start DNS Server!", 2);
-            
+        #ifdef J54J6_SysLogger
+            logging.logIt("startDnsServer", "Cant start DNS Server!", 2);
         #endif
-        error.error = false;
-        error.ErrorCode = 14;
-        error.message = "Can't start DNS Server!";
-        error.priority = 2;
-
+        classControl.newReport("Can't start DNS Server!", 14, 2);
         return false;
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "startDnsServer", "DNS Server successfully started!");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("startDnsServer", "DNS Server successfully started!");
             
         #endif
         return true;
@@ -328,42 +343,32 @@ bool Network::startDnsServer() //fkt Nr 5 / direct called in startup
 
 bool Network::startMDnsServer(const char* newHostname) //fkt Nr. 4 / direct called in startup
 {
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "startMDnsServer", "RUN - startMDnsServer");
-        logging.SFLog(className, "startMDnsServer", "try starting MDNS Service");
+    #ifdef J54J6_SysLogger
+        
+        logging.logIt("startMDnsServer", "RUN - startMDnsServer");
+        logging.logIt("startMDnsServer", "try starting MDNS Service");
         String message = "Hostname: ";
         message += newHostname;
-        logging.SFLog(className, "startMDnsServer", message.c_str());
+        logging.logIt("startMDnsServer", message.c_str());
      #endif
     if(MDNS.begin(newHostname))
     {
-        #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "startMDnsServer", "MDNS Server successfully started!");
+        #ifdef J54J6_SysLogger
+        
+        logging.logIt("startMDnsServer", "MDNS Server successfully started!");
         #endif
         return true;
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "startMDnsServer", "ERROR Starting MDNS Server", 2);
+        #ifdef J54J6_SysLogger
+        
+        logging.logIt("startMDnsServer", "ERROR Starting MDNS Server", 2);
         #endif
-        error.error = false;
-        error.ErrorCode = 16;
-        error.message = "Can't Start MDNS Server";
-        error.priority = 2;
+        classControl.newReport("Can't Start MDNS Server", 16, 2);
         return false;
     }  
 }
-
-void Network::internalControl() //At this time only for performance checking
-{
-  this->callPerSecond = 1000/(millis() - lastCall);
-}
-
-
 /*
     Protected functions
 */
@@ -379,9 +384,9 @@ void Network::autoResetLock() //internal useage of delay() as sim. threading alt
         if(millis() >= unlockAt)
         {
             locked = false;
-            #ifdef J54J6_LOGGING_H
-                logger logging;
-                logging.SFLog(className, "autoResetLock", "unlock run!");
+            #ifdef J54J6_SysLogger
+                
+                logging.logIt("autoResetLock", "unlock run!");
             #endif
             return;           
         }
@@ -394,12 +399,12 @@ void Network::autoResetLock() //internal useage of delay() as sim. threading alt
 
 void Network::lock(ulong time) //lock run() - only handling is enabled
 {
-    #ifdef J54J6_LOGGING_H
-        logger logging;
+    #ifdef J54J6_SysLogger
+        
         String message = "lock for ";
         message += time;
         message += "ms";
-        logging.SFLog(className, "autoResetLock", message.c_str());
+        logging.logIt("autoResetLock", message.c_str());
     #endif
     locked = true;
     unlockAt = millis() + time;
@@ -407,23 +412,23 @@ void Network::lock(ulong time) //lock run() - only handling is enabled
 
 void Network::internalBegin()
 {
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "internalBegin", "RUN - begin()");
-        logging.SFLog(className, "internalBegin", "check for Files");
+    #ifdef J54J6_SysLogger
+        
+        logging.logIt("internalBegin", "RUN - begin()");
+        logging.logIt("internalBegin", "check for Files");
     #endif
  
 
     bool res = FM->fExist(configFile);
 
-    #ifdef J54J6_LOGGING_H
+    #ifdef J54J6_SysLogger
         if(res)
         {
-            logging.SFLog(className, "internalBegin", "configFile exist!");
+            logging.logIt("internalBegin", "configFile exist!");
         }
         else
         {
-            logging.SFLog(className, "internalBegin", "configFile doesn't exist - try to create File!", 1);
+            logging.logIt("internalBegin", "configFile doesn't exist - try to create File!", 1);
         }
     #endif
     
@@ -433,41 +438,38 @@ void Network::internalBegin()
         {
             if(createConfig())
             {   
-                #ifdef J54J6_LOGGING_H
-                    logging.SFLog(className, "internalBegin", "configFile successfully created", 0);
+                #ifdef J54J6_SysLogger
+                    logging.logIt("internalBegin", "configFile successfully created", 0);
                 #endif
                 break;
             }
             else
             {   
-                #ifdef J54J6_LOGGING_H
-                    logging.SFLog(className, "internalBegin", "configFile can't be created!", 1);
+                #ifdef J54J6_SysLogger
+                    logging.logIt("internalBegin", "configFile can't be created!", 1);
                 #endif
             } 
         }
         if(!FM->fExist(configFile))
         {
-            #ifdef J54J6_LOGGING_H
-                logging.SFLog(className, "internalBegin", "uneable to create configFile - ERRORCODE: 12", 2);
-                logging.SFLog(className, "internalBegin", "disable Network! - ERRORCODE: 12", 2);
+            #ifdef J54J6_SysLogger
+                logging.logIt("internalBegin", "uneable to create configFile - ERRORCODE: 12", 2);
+                logging.logIt("internalBegin", "disable Network! - ERRORCODE: 12", 2);
             #endif
-            error.error = true;
-            error.ErrorCode = 12;
-            error.message = "Can't create Config File!";
-            error.priority = 6;
+            classControl.newReport("Can't create Config File!", 12, 6, true);
         }
     }
 
     res = FM->fExist(setupFile);
 
-    #ifdef J54J6_LOGGING_H
+    #ifdef J54J6_SysLogger
         if(res)
         {
-            logging.SFLog(className, "internalBegin", "setupFile exist!");
+            logging.logIt("internalBegin", "setupFile exist!");
         }
         else
         {
-            logging.SFLog(className, "internalBegin", "setupFile doesn't exist - try to create File!", 1);
+            logging.logIt("internalBegin", "setupFile doesn't exist - try to create File!", 1);
         }
     #endif
     
@@ -477,79 +479,69 @@ void Network::internalBegin()
         {
             if(createSetupFile())
             {
-                #ifdef J54J6_LOGGING_H 
-                    logging.SFLog(className, "internalBegin", "setupFile successfully created", 0);
+                #ifdef J54J6_SysLogger 
+                    logging.logIt("internalBegin", "setupFile successfully created", 0);
                 #endif
-                break;
+                if(FM->writeInFile(setupFile, "{\"ssid\" : \"newSensor\",\"psk\" : \"dzujkhgffzojh\",\"hostType\" : \"hidden\"}"))
+                {
+                    #ifdef J54J6_SysLogger 
+                        logging.logIt("internalBegin", "setupFile successfully filled with default Credentials", 0);
+                    #endif
+                    break;
+                }
+                else
+                {
+                    #ifdef J54J6_SysLogger 
+                        logging.logIt("internalBegin", "setupFile can't filled with default Credentials", 0);
+                    #endif
+                }
+                
             }
             else
             {
-                #ifdef J54J6_LOGGING_H 
-                    logging.SFLog(className, "internalBegin", "setupFile can't be created!", 1);
+                #ifdef J54J6_SysLogger 
+                    logging.logIt("internalBegin", "setupFile can't be created!", 1);
                 #endif
             } 
         }
         if(!FM->fExist(setupFile))
         {
-            #ifdef J54J6_LOGGING_H
-                logging.SFLog(className, "internalBegin", "uneable to create setupFile - ERRORCODE: 13", 2);
-                logging.SFLog(className, "internalBegin", "disable Network! - ERRORCODE: 13", 2);
+            #ifdef J54J6_SysLogger
+                logging.logIt("internalBegin", "uneable to create setupFile - ERRORCODE: 13", 2);
+                logging.logIt("internalBegin", "disable Network! - ERRORCODE: 13", 2);
             #endif
-            error.error = true;
-            error.ErrorCode = 13;
-            error.message = "Can't create Setup File!";
-            error.priority = 6;
+            classControl.newReport("Can't create Setup File!", 13, 6, true);
         }
     }
 
 
     //Start Setup - all files are created
-    
-    if(wifiManager->setWiFiHostname(this->hostName))
-    {
-        #ifdef J54J6_LOGGING_H
-            logging.SFLog(className, "internalBegin", "Hostname set!", 0);
-        #endif
-    }
-    else
-    {
-        #ifdef J54J6_LOGGING_H
-            logging.SFLog(className, "internalBegin", "can't set Hostname!", 2);
-        #endif
-        error.error = false;
-        error.ErrorCode = 14;
-        error.message = "Can't set WiFi Hostname!";
-        error.priority = 2;
-    }
     const char* wifiConfigured = FM->readJsonFileValue(configFile, "wiFiConfigured");
     res = FM->returnAsBool(FM->readJsonFileValue(configFile, "wiFiConfigured"));
     if(!res)
     {
-        #ifdef J54J6_LOGGING_H
-            logging.SFLog(className, "internalBegin", "Network not configured - start in SetupMode");
+        #ifdef J54J6_SysLogger
+            logging.logIt("internalBegin", "Network not configured - start in SetupMode");
             String message = "Readed Value: ";
             message += wifiConfigured;
             message += " | ";
             message += res;
-            logging.SFLog(className, "internalBegin", message.c_str());
+            logging.logIt("internalBegin", message.c_str());
         #endif
 
         //define WiFi IP Stuff
         if(wifiManager->setWiFiConfig(apIpAddress, apIpGateway, apNetMsk, dnsIP))
         {
-            #ifdef J54J6_LOGGING_H
-                logging.SFLog(className, "internalBegin", "WiFiConfig set!", 0);
+            #ifdef J54J6_SysLogger
+                logging.logIt("internalBegin", "WiFiConfig set!", 0);
             #endif
         }
         else
         {
-            #ifdef J54J6_LOGGING_H
-                logging.SFLog(className, "internalBegin", "can't set WiFiConfig!", 2);
+            #ifdef J54J6_SysLogger
+                logging.logIt("internalBegin", "can't set WiFiConfig!", 2);
             #endif
-            error.error = false;
-            error.ErrorCode = 14;
-            error.message = "Can't set WiFi Config!";
-            error.priority = 2;
+            classControl.newReport("Can't set WiFi Config!", 14, 2, false);
         }
 
 
@@ -559,13 +551,13 @@ void Network::internalBegin()
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logging.SFLog(className, "internalBegin", "Network configured - start in WorkMode");
+        #ifdef J54J6_SysLogger
+            logging.logIt("internalBegin", "Network configured - start in WorkMode");
             String message = "Readed Value: ";
             message += wifiConfigured;
             message += " | ";
             message += res;
-            logging.SFLog(className, "internalBegin", message.c_str());
+            logging.logIt("internalBegin", message.c_str());
         #endif
         deviceConfigured = true;
         runFunction = -3; //startWorking()
@@ -573,11 +565,41 @@ void Network::internalBegin()
     }
 }
 
+
+void Network::updateHostname(const char* newHostname)
+{
+    String toSetHostname;
+    if(wifiManager->isConnected())
+    {
+        if(strcmp(newHostname, "") == 0)
+        {
+            toSetHostname = wifiManager->getStationMacAsString();
+            toSetHostname.replace(":","-");
+        }
+
+        if(wifiManager->setWiFiHostname(toSetHostname.c_str()))
+        {
+            #ifdef J54J6_SysLogger
+                logging.logIt("updateHostname", "Hostname set!", 0);
+            #endif
+        }
+        else
+        {
+            #ifdef J54J6_SysLogger
+                logging.logIt("updateHostname", "can't set Hostname: " + String(toSetHostname), 2);
+            #endif
+            classControl.newReport("Can't set WiFi Hostname: " + String(toSetHostname), 14, 2);
+        }
+        runFunction = 0;
+    }
+   
+}
+
 void Network::serverHandleSetup()
 {
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "serverHandleSetup", "setupWebHandler called!");
+    #ifdef J54J6_SysLogger
+        
+        logging.logIt("serverHandleSetup", "setupWebHandler called!");
     #endif
     webserver.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     webserver.sendHeader("Pragma", "no-cache");
@@ -592,26 +614,26 @@ void Network::serverHandleSetup()
 
 void Network::checkAndTestCredits()
 {
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "checkAndTestCredits", "credits will be checked");
+    #ifdef J54J6_SysLogger
+        
+        logging.logIt("checkAndTestCredits", "credits will be checked");
     #endif
     webserver.send(102); //prevent timeout
 
     if(!webserver.hasArg("ssid") || webserver.arg("ssid") == "" || !webserver.hasArg("psk") || webserver.arg("psk") == "")
     {
-        #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "checkAndTestCredits", "psk or ssid not set");
+        #ifdef J54J6_SysLogger
+        
+        logging.logIt("checkAndTestCredits", "psk or ssid not set");
         #endif
         webserver.sendHeader("Location", String("http://172.20.0.1?wrongInput=true"), true);
         webserver.send( 302, "text/plain", "");
     }
     if(webserver.arg("psk").length() < 8 || webserver.arg("psk").length() > 64)
     {
-        #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "checkAndTestCredits", "psk to long or short");
+        #ifdef J54J6_SysLogger
+        
+        logging.logIt("checkAndTestCredits", "psk to long or short");
         #endif
         webserver.sendHeader("Location", String("http://172.20.0.1?pskfalse=true"), true);
         webserver.send( 302, "text/plain", "");
@@ -622,14 +644,14 @@ void Network::checkAndTestCredits()
         uint connectTimeout = 5000;
         wifiManager->setWiFiMode(WIFI_AP_STA);
         wifiManager->startWifiStation(webserver.arg("ssid").c_str(), webserver.arg("psk").c_str(), WIFI_AP_STA);
-        #ifdef J54J6_LOGGING_H
-        logger logging;
+        #ifdef J54J6_SysLogger
+        
         String message = "Try connect with SSID: |";
         message += webserver.arg("ssid").c_str();
         message += "| and PSk: |";
         message += webserver.arg("psk").c_str();
         message += "|";
-        logging.SFLog(className, "checkAndTestCredits", message.c_str());
+        logging.logIt("checkAndTestCredits", message.c_str());
         #endif
         webserver.send(102);
         while(millis() <= (startConnectTime+connectTimeout))
@@ -638,9 +660,9 @@ void Network::checkAndTestCredits()
             {
                 webserver.sendHeader("Location", String("http://172.20.0.1/?success=true"), true);
                 webserver.send( 302, "text/plain", "");
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
-                    logging.SFLog(className, "checkAndTestCredits", "Connection successfull");
+                #ifdef J54J6_SysLogger
+                    
+                    logging.logIt("checkAndTestCredits", "Connection successfull");
                 #endif
                 break;
             }
@@ -655,18 +677,18 @@ void Network::checkAndTestCredits()
             {
                 webserver.sendHeader("Location", String("http://172.20.0.1/?success=nossid"), true);
                 webserver.send(302, "text/plain", "");
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
-                    logging.SFLog(className, "checkAndTestCredits", "Can't reach SSID anymore", 1);
+                #ifdef J54J6_SysLogger
+                    
+                    logging.logIt("checkAndTestCredits", "Can't reach SSID anymore", 1);
                 #endif
             }
             else
             {
                 webserver.sendHeader("Location", String("http://172.20.0.1/?success=false"), true);
                 webserver.send( 302, "text/plain", "");
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
-                    logging.SFLog(className, "checkAndTestCredits", "SSID or PSK not correct!", 1);
+                #ifdef J54J6_SysLogger
+                    
+                    logging.logIt("checkAndTestCredits", "SSID or PSK not correct!", 1);
                 #endif
             }
         }
@@ -674,33 +696,35 @@ void Network::checkAndTestCredits()
         {
             if(wifiManager->getWiFiState() == 3)
             {
-                #ifdef J54J6_LOGGING_H
-                    logger logging;
-                    logging.SFLog(className, "checkAndTestCredits", "successfully connected to Network - save");
+                #ifdef J54J6_SysLogger
+                    
+                    logging.logIt("checkAndTestCredits", "successfully connected to Network - save");
                 #endif
                 webserver.sendHeader("Location", String("http://172.20.0.1/?success=true"), true);
                 webserver.send( 302, "text/plain", "");
                 bool tmp = false;
                 if(!saveCredentials(&webserver.arg("ssid"), &webserver.arg("psk"), configFile))
                 {
-                    #ifdef J54J6_LOGGING_H
-                        logger logging;
-                        logging.SFLog(className, "checkAndTestCredits", "Can't save WiFi credentials - saveCredentials returns false ", 2);
+                    #ifdef J54J6_SysLogger
+                        
+                        logging.logIt("checkAndTestCredits", "Can't save WiFi credentials - saveCredentials returns false ", 2);
                     #endif
                     tmp = true;
                 }
                 if(!FM->changeJsonValueFile(configFile, "wiFiConfigured", "true"))
                 {
-                    #ifdef J54J6_LOGGING_H
-                        logging.SFLog(className, "checkAndTestCredits", "Can't change to configured Network - FM::changeJsonValueFile returns false!", 2);
+                    #ifdef J54J6_SysLogger
+                        logging.logIt("checkAndTestCredits", "Can't change to configured Network - FM::changeJsonValueFile returns false!", 2);
                     #endif
                     tmp = true;
                 }
                 if(!tmp)
                 {
-                    #ifdef J54J6_LOGGING_H
-                        logging.SFLog(className, "checkAndTestCredits", "Credentials successfully saved!");
+                    #ifdef J54J6_SysLogger
+                        logging.logIt("checkAndTestCredits", "Credentials successfully saved!");
                     #endif
+                    delay(1000);
+                    ESP.restart();
                 }
             }
         }   
@@ -724,9 +748,9 @@ void Network::serverHandleCaptiveNotFound()
         */
 void Network::begin() //check for Files and init Network Communication - set as in configFile or setupFile
 {
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "begin", "SET - begin()");
+    #ifdef J54J6_SysLogger
+        
+        logging.logIt("begin", "SET - begin()");
     #endif
     runFunction = 1;
     return;
@@ -734,9 +758,9 @@ void Network::begin() //check for Files and init Network Communication - set as 
 
 void Network::startSetup() //start Fkt. Nr 2
 {
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "begin", "SET - startSetup()");
+    #ifdef J54J6_SysLogger
+        
+        logging.logIt("begin", "SET - startSetup()");
     #endif
     runFunction = 2;
     return;
@@ -744,9 +768,9 @@ void Network::startSetup() //start Fkt. Nr 2
 
 void Network::startWifiAP()
 {
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "begin", "SET - startWifiAP()");
+    #ifdef J54J6_SysLogger
+        
+        logging.logIt("begin", "SET - startWifiAP()");
     #endif
     runFunction = 3;
     return;
@@ -754,9 +778,9 @@ void Network::startWifiAP()
 
 void Network::mdnsStart()
 {
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "begin", "SET - mDNSStart()");
+    #ifdef J54J6_SysLogger
+        
+        logging.logIt("begin", "SET - mDNSStart()");
     #endif
     runFunction = 4;
     return;
@@ -764,22 +788,18 @@ void Network::mdnsStart()
 
 void Network::dnsStart()
 {
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "begin", "SET - dnsStart()");
+    #ifdef J54J6_SysLogger
+        
+        logging.logIt("begin", "SET - dnsStart()");
     #endif
     runFunction = 5;
     return;
 }
 
 
-        /*
-            Get Stuff
-        */
-ulong Network::getCallPerSecond()
-{
-    return this->callPerSecond;
-}
+/*
+    Get Stuff
+*/
 
 bool Network::getClassDisabled()
 {
@@ -792,13 +812,13 @@ bool Network::getClassDisabled()
         */
 void Network::setClassDisabled(bool newVal)
 {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
+    #ifdef J54J6_SysLogger
+      
       String message = "Update ClassDisabled: ";
       message += classDisabled;
       message += " -> ";
       message += newVal;
-      logging.SFLog(className, "setClassDisabled", message.c_str());
+      logging.logIt("setClassDisabled", message.c_str());
   #endif
   this->classDisabled = newVal;
 }
@@ -807,9 +827,9 @@ bool Network::saveCredentials(const String* ssid, const String* psk, const char*
 {
   if(!FM->fExist(File))
   {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      logging.SFLog(className, "saveCredentials", "Can't save credentials - File doesn't exist!", 2);
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt("saveCredentials", "Can't save credentials - File doesn't exist!", 2);
     #endif
     return false;
   }
@@ -817,21 +837,21 @@ bool Network::saveCredentials(const String* ssid, const String* psk, const char*
   {
     if(!FM->changeJsonValueFile(File, "ssid", ssid->c_str()))
     {
-      #ifdef J54J6_LOGGING_H
-          logger logging;
-          logging.SFLog(className, "saveCredentials", "Can't change Json Valie ssid! - function return false", 2);
+      #ifdef J54J6_SysLogger
+          
+          logging.logIt("saveCredentials", "Can't change Json Valie ssid! - function return false", 2);
       #endif
     }
     if(!FM->changeJsonValueFile(File, "psk", psk->c_str()))
     {
-      #ifdef J54J6_LOGGING_H
-          logger logging;
-          logging.SFLog(className, "saveCredentials", "Can't change Json Valie psk! - function return false", 2);
+      #ifdef J54J6_SysLogger
+          
+          logging.logIt("saveCredentials", "Can't change Json Valie psk! - function return false", 2);
       #endif
     }
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "saveCredentials", "Credentials successfully saved");
+    #ifdef J54J6_SysLogger
+        
+        logging.logIt("saveCredentials", "Credentials successfully saved");
     #endif
     return true;
   }
@@ -843,11 +863,11 @@ bool Network::saveCredentials(const String* ssid, const String* psk, const char*
 */
 void Network::run()
 {
+    classControl.run();
     if(millis() < (lastCall + checkDelay))
     {
         return;
     }
-    internalControl();
     autoResetLock();
     dnsServer.processNextRequest();
     MDNS.update();
@@ -867,9 +887,10 @@ void Network::run()
                 startSetupMode();
                 break;
             case 1:
-                internalBegin();;
+                internalBegin();
                 break;
             case 2:
+                updateHostname();
                 break;
             case 3:
                 break;
@@ -895,9 +916,9 @@ bool Network::startWebserver(int port)
 {
     if(!this->webServerActive)
     {
-        #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "startWebserver", "Start Webserver");
+        #ifdef J54J6_SysLogger
+        
+        logging.logIt("startWebserver", "Start Webserver");
         #endif
         webServerActive = true;
         webserver.begin(port);
@@ -905,14 +926,12 @@ bool Network::startWebserver(int port)
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "startWebserver", "Webserver already active - report", 1);
+        #ifdef J54J6_SysLogger
+        
+        logging.logIt("startWebserver", "Webserver already active - report", 1);
         #endif
 
-        this->error.error = false;
-        this->error.message = "Webserver already active!";
-        this->error.priority = 2;
+        classControl.newReport("Webserver already active!", 823, 2);
         return false;
     }    
 }
@@ -921,9 +940,9 @@ bool Network::stopWebserver()
 {
     if(this->webServerActive)
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "stopWebserver", "Stop Webserver");
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("stopWebserver", "Stop Webserver");
         #endif
         webServerActive = false;
         webserver.stop();
@@ -931,9 +950,9 @@ bool Network::stopWebserver()
     }
     else
     {
-        #ifdef J54J6_LOGGING_H
-            logger logging;
-            logging.SFLog(className, "stopWebserver", "Webserver already disabled", 1);
+        #ifdef J54J6_SysLogger
+            
+            logging.logIt("stopWebserver", "Webserver already disabled", 1);
         #endif
         return false;
     }
@@ -942,20 +961,20 @@ bool Network::stopWebserver()
 
 void Network::addService(const char *url, webService function)
 {
-    #ifdef J54J6_LOGGING_H
-        logger logging;
+    #ifdef J54J6_SysLogger
+        
         String message = "Add Service: ";
         message += url;
-        logging.SFLog(className, "addService", message.c_str());
+        logging.logIt("addService", message.c_str());
     #endif
     webserver.on(url, function);
 }
 
 void Network::addNotFoundService(webService function)
 {
-    #ifdef J54J6_LOGGING_H
-        logger logging;
-        logging.SFLog(className, "addNotFoundService", "Add NotFound Site!");
+    #ifdef J54J6_SysLogger
+        
+        logging.logIt("addNotFoundService", "Add NotFound Site!");
     #endif
     webserver.onNotFound(function);
 }

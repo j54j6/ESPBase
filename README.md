@@ -24,10 +24,7 @@ postponed work:
     
 Current work:
 
-    -> Finish WiFi Setup and DNS/MDNS Handling - finished
-    -> Add MQTT Handling - WIP (90% finished)
-    -> Wrap current global sketch content into single Class - WIP
-
+    -> Nothing... -> Coming soon^^
 
 bucket list:
 
@@ -85,7 +82,7 @@ what's working:
         Captive Portal (register and saving to LittleFS (using Filemanager))
         MQTT
         Webserver + custom service add
-        ServiceSearch (NetworkIdent by j54j6) - later as JServiceManager
+        ServiceSearch (NetworkIdent by j54j6) - later as JServiceManager with SSDP, UPnP and all common discovery protocols
         udp Communication
         Network: captive Portal for easy SignUp
         Network: MDNS Support

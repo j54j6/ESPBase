@@ -1,189 +1,162 @@
 #include <Arduino.h>
-#include "filemanager.h"
-#include "logging.h"
-#include "network.h"
-#include "led.h"
-#include "button.h"
-#include "serviceHandler.h"
-#include "../lib/network/webSrc/setupPage.h"
-#include "wifiManager.h"
-#include "mqttHandler.h"
+#include "wrapper.h"
 
-LED wifiLed(D1);
-LED errorLed(D7);
-LED workLed(D2);
-Button mainButton(D6, 3);
-WiFiManager wifiManager(&wifiLed);
-Filemanager FM;
-Network test(&FM, &wifiManager);
-ErrorHandler mainHandler(wifiManager.getINode(), &errorLed, &workLed);
-ServiceHandler networkIdent(&FM, &wifiManager);
-udpManager udpManage(&wifiManager, 63547);
-MQTTHandler mqtthandler(&FM, &wifiManager, &networkIdent);
+espOS mainOS;
+
+MQTTHandler *mqtthandler;
+WiFiManager *wifiManager;
+Filemanager *FM;
+OTA_Manager *otaManager;
+Network* network;
 
 
-void handleTest()
+
+void function()
 {
-   ESP8266WebServer* webserver = test.getWebserver();
-
-   webserver->send(200, "text/plain", "Das ist eine Testnachricht");
-   
-}
-
-
-void errorHandle()
-{
-  mainHandler.checkForError();  
-}
-
-void getPerformance()
-{
-  int outputDelay = 30000;
-  static ulong lastCall = millis();
-  ulong wifiPerformace = wifiManager.getCallPerSecond();
-  ulong networkPerformance = test.getCallPerSecond();
-
-  if(millis() >= (lastCall + outputDelay))
-  {
-    #ifdef J54J6_LOGGING_H
-      logger logging;
-      String message = "\nWiFi-Manager: ";
-      message += wifiPerformace;
-      message += "x/s \n";
-      message += "WiFi-State: ";
-      message += wifiManager.getWiFiState();
-      message += "\nNetwork: ";
-      message += networkPerformance;
-      message += "x/s";
-      logging.SFLog("Main", "getPerformance", message.c_str(), 0);
-    #endif
-    lastCall = millis();
-  }
-}
-
-void getMqtt(char* topic, byte* payload, unsigned int length)
-{
-  Serial.println("------------------");
-  Serial.println("Message received!");
-  Serial.print("Topic: ");
-  Serial.println(topic);
-  Serial.print("payload: ");
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println("");
-  Serial.print("length: ");
-  Serial.println(length);
-  
-}
-
-
-
-void setup() {
-  Serial.begin(921600);
-  //Disable WifiAutoConnect and onboard WifiConfig
-  WiFi.persistent(false);
-  WiFi.setAutoConnect(false);
-  WiFi.stopSmartConfig();
-
-  //default enable workLed
-  workLed.ledOn();
-
-  //define className shown in ErrorHandler
-  wifiManager.setClassName("wifiManager");
-  test.setClassName("network");
-
-  //add modules to dedicated ErrorHandler
-  mainHandler.addNewNode(test.getINode(), "network");
-  mainHandler.addNewNode(networkIdent.getINode(), "NetworkIdent");
-  mainHandler.addNewNode(mqtthandler.getINode(), "mqtt");
-  
-  //preMount Filesystem
-  FM.mount();
-
-  //get Filestructure - only for dev
-  FM.getSerialFileStructure();
-
-  //start Network
-  test.begin();
-
-  //add webservice to webserver@Network
-  //test.addService("/new", handleTest);
-  //test.startWebserver(80);
-
-  //start Listening on UDP-NetworkIdentPort
-  networkIdent.beginListen();
-
-  networkIdent.addService("NetworkIdent", "63547");
-  networkIdent.addService(true, false, "mqttConfigServer", "1883", IPAddress(192,168,178,27));
-  networkIdent.addService(false, false, "mqtt", "1883", IPAddress(192,168,178,27));
-  //MQTT
-  IPAddress mqserv = IPAddress(192,168,178,27);
-  bool mqt = mqtthandler.setServer(mqserv, 1883);
-  //mqtthandler.setCallback(getMqtt);
-}
-
-void loop() {
-  //Button
-
-  //LED's
-  wifiLed.run();
-  errorLed.run();
-  workLed.run();
-
-  //Network
-  test.run();
-
-  //wifiManager
-  wifiManager.run();
-
-  //dedicated ErrorHandler
-  errorHandle();
-
-  //performanceControl
-  getPerformance();
-
-  //NetworkIdent
-  networkIdent.loop();
-  static int step = 0;
-  static int lastCall = 0;
-
-
-  mqtthandler.run();
-
-  if(mqtthandler.getCallback()->payload != "")
+    static int step = 0;
+    static int lastCall = 0;
+    static bool readActive = false;
+  if(mqtthandler->getCallback()->payload != "")
   {
     Serial.println("-------------MQTT Message-------------");
     Serial.print("Topic: ");
-    Serial.println(mqtthandler.getCallback()->topic);
+    Serial.println(mqtthandler->getCallback()->topic);
     Serial.print("Message: ");
-    Serial.println(mqtthandler.getCallback()->payload);
+    Serial.println(mqtthandler->getCallback()->payload);
 
-    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "reset")
-    {
-      errorLed.ledOn();
-    }
-    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "off")
-    {
-      errorLed.ledOff();
-    }
-    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "restart")
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "restart")
     {
       ESP.restart();
     }
-    if(strcmp(mqtthandler.getCallback()->topic, "home/control") == 0 && mqtthandler.getCallback()->payload == "shutdown")
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "shutdown")
     {
       ESP.deepSleep(5000);
     }
-    mqtthandler.getCallback()->reset();
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "sayWhat")
+    {
+      mqtthandler->publish("/home/public", "heyho^^");
+    }
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "format")
+    {
+      FM->format();
+    }
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "getMac")
+    {
+      mqtthandler->publish("/home/public", wifiManager->getDeviceMac().c_str());
+    }
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "delay")
+    {
+      delay(2000);
+    }
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "hostname")
+    {
+      wifiManager->setWiFiHostname("2C-F4-32-79-F3-D3");
+    }
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "readFile" || readActive == true)
+    {
+      if(readActive)
+      {
+        String filename = mqtthandler->getCallback()->payload;
+        filename.replace(" ", "");
+        if(!FM->fExist(filename.c_str()))
+        {
+          Serial.println("Filename '" + filename + String("' doesn't exist!"));
+        }
+        else
+        {
+          Serial.println(FM->readFile(filename.c_str()));
+        }
+        readActive = false;
+        Serial.println("Read Mode disabled!");
+        
+      }
+      else
+      {
+        readActive = true;
+        Serial.println("Read Mode enabled!");
+      }
+      
+    }
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "update")
+    {
+      //otaManager.test();
+    }
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "newFeature")
+    {
+      Serial.println("New is installed!");
+    }
+
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "updateCheck")
+    {
+      otaManager->checkUpdatesAutoCred();
+    }
+    
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "read")
+    {
+      Serial.println(FM->readFile("config/mainConfig.json"));
+    }
+
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "port")
+    {
+      Serial.println(String("Port modified: ") + String(FM->readJsonFileValue("config/mainConfig.json", "port")).toInt());
+      Serial.println(String("Port: ") + FM->readJsonFileValue("config/mainConfig.json", "port"));
+    }
+
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "write")
+    {
+        FM->appendJsonKey("config/mainConfig.json", "id", "20200425222132534785498");
+        FM->appendJsonKey("config/mainConfig.json", "product", "wiFi-thermometer");
+        FM->appendJsonKey("config/mainConfig.json", "updateServer", "192.168.178.27");
+        FM->appendJsonKey("config/mainConfig.json", "uri", "/");
+        FM->appendJsonKey("config/mainConfig.json", "servertoken", "espWiFiThermometerV1");
+        FM->appendJsonKey("config/mainConfig.json", "serverpass", "rtgzi32u45z4u5hbnfdnfbdsi");
+        FM->appendJsonKey("config/mainConfig.json", "port", "80");
+        FM->appendJsonKey("config/mainConfig.json", "updateSearch", "true");
+        FM->appendJsonKey("config/mainConfig.json", "autoUpdate", "true");
+        FM->appendJsonKey("config/mainConfig.json", "onUpdate", "false");
+        FM->appendJsonKey("config/mainConfig.json", "usedChip", "ESP8266");
+        FM->appendJsonKey("config/mainConfig.json", "lastUpdate", "20200425");
+        FM->appendJsonKey("config/mainConfig.json", "lastUpdateSearch", "0");
+        FM->appendJsonKey("config/mainConfig.json", "locked", "false");
+        FM->appendJsonKey("config/mainConfig.json", "producedIn", "2020");
+        FM->appendJsonKey("config/mainConfig.json", "softwareVersion", "0.0.1");
+        FM->appendJsonKey("config/mainConfig.json", "softwareVersionAvail", "");
+
+
+    }
+
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "remove")
+    {
+      FM->fDelete("config/mainConfig.json");
+    }
+
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "changeServer")
+    {
+      otaManager->setUpdateServer("192.168.178.27", 80, "/");
+    }
+
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "setCheckIntervall")
+    {
+      otaManager->setCheckIntervall(24);
+    }
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "setCheckIntervall2")
+    {
+      otaManager->setCheckIntervall(2);
+    }
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "init")
+    {
+      otaManager->init();
+    }
+
+    mqtthandler->getCallback()->reset();
   }
 
 
-  if(test.getDeviceIsConfigured())
+  if(network->getDeviceIsConfigured())
   {
-    if(wifiManager.isConnected())
+    if(wifiManager->isConnected())
     {
-      if(step > 1 & !mqtthandler.isConnected())
+      if(step > 1 & !mqtthandler->isConnected())
       {
         Serial.println("MQTT Broker - Connection Lost - reconnect!");
         step = 0;
@@ -191,33 +164,36 @@ void loop() {
 
       switch(step) {
         case 0:
+        
           Serial.println("Connect with MQTT");
-          if(mqtthandler.connect())
+          
+          if(mqtthandler->connect())
           {
             Serial.println("Successfully loaded Connect Config!");
             step++;
             break;
           }
+          /*
           else
           {
             Serial.println("Error connectng with MQTT Broker!");
           }
+          */
           break;
         
         case 1:
-          if(mqtthandler.isConnected())
+          if(mqtthandler->isConnected())
           {
             Serial.println("Connected with Broker!");
             step++;
             lastCall = millis();
-            mqtthandler.subscribe("home/test");
-            mqtthandler.subscribe("home/control");
+            mqtthandler->subscribe("home/test");
+            mqtthandler->subscribe("home/control");
           }
           break;
 
         case 2:
-
-          if(mqtthandler.publish("home/test", "ESP works!"))
+          if(mqtthandler->publish("home/test", "ESP works!"))
           {
             Serial.println("Message successfully published!");
             step++;
@@ -231,4 +207,23 @@ void loop() {
       }
     }
   }
+}
+
+
+void setup()
+{ 
+  mainOS.begin();
+  mqtthandler = mainOS.getMqttHandler();
+  FM = mainOS.getFilemanagerObj();
+  FM->getSerialFileStructure();
+  wifiManager = mainOS.getWiFimanagerObj();
+  otaManager = mainOS.getOtaManagerObject();
+  network = mainOS.getNetworkManagerObj();
+  otaManager->setCheckIntervall(24);
+}
+
+void loop()
+{
+  mainOS.run();
+  function(); 
 }

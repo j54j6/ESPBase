@@ -2,7 +2,6 @@
 #define Lib_Led_h
 
 #include <Arduino.h>
-#include "logging.h"
 
 #define LED_CALL_DELAY 50 // Led Update Time (time until changes will visible
 
@@ -17,6 +16,7 @@ class LED {
         int alreadyBlinked = 0;
         unsigned short int intervall = 0;
         const char* ledName = "not set";
+        bool locked = false; //if locked - until unlock nothing can changed
 
         bool change; //only run 
 
@@ -24,7 +24,7 @@ class LED {
         unsigned long nextToggle = 0;
 
     public:
-        //LEd Handler Constructor struct
+        //Led Handler Constructor struct
         struct ledConfig {
             int led_Pin;
             bool state;
@@ -44,6 +44,7 @@ class LED {
         void setLedBlink(unsigned short intevall = 0);
         void setLedBlink(bool blink);
         void setLedBlinkAmount(int amount);
+        void setLocked(bool newVal);
         bool getLedState();
         bool getLedblink();
         bool getBlinkInfinit();
@@ -51,5 +52,6 @@ class LED {
         void disable();
         void enable();
         bool getLedEnabled();
+        bool getLocked();        
 };
 #endif

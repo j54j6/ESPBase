@@ -135,6 +135,10 @@ void LED::getVars()
 
  void LED::ledOn(bool enableComplete)
  {
+    if(locked)
+    {
+        return;
+    }
     if(!enableComplete)
     {
      this->state = true;
@@ -153,6 +157,10 @@ void LED::getVars()
  }
  void LED::ledOff(bool disableComplete)
  {
+    if(locked)
+    {
+        return;
+    }
     if(!disableComplete)
     {
      this->state = false;
@@ -172,6 +180,10 @@ void LED::getVars()
 
  void LED::blink(unsigned short newIntervall, bool blinkInfinit, int amount)
  {
+     if(locked)
+    {
+        return;
+    }
      this->blinkAmount = amount + amount;
      this->blinkInfinit = blinkInfinit;
      this->change = true;
@@ -180,6 +192,10 @@ void LED::getVars()
 
  void LED::toggleLed(bool changeNew)
  {
+     if(locked)
+    {
+        return;
+    }
      /*
      this->change = changeNew;
      if(digitalRead(led_Pin) == HIGH)
@@ -213,6 +229,10 @@ void LED::getVars()
 
  void LED::setLedState(bool state)
  {
+    if(locked)
+    {
+        return;
+    }
      this->state = state;
      this->change = true;
  }
@@ -223,6 +243,10 @@ void LED::getVars()
          this->blinking = true;
      }
      this->intervall = intervall;
+ }
+ void LED::setLocked(bool newVal)
+ {
+     this->locked = newVal;
  }
  void LED::setLedBlink(bool blink)
  {
@@ -251,3 +275,9 @@ void LED::getVars()
  {
      return blinkInfinit;
  }
+
+ bool LED::getLocked()
+ {
+     return locked;
+ }
+
