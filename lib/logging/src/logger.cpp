@@ -1,15 +1,46 @@
 #include "logger.h"
-
+short SysLogger::serialLogLevel;
+short SysLogger::fileLogLevel;
+short SysLogger::mqttLogLevel;
+bool SysLogger::serialLogging;
+bool SysLogger::fileLogging;
+bool SysLogger::mqttLogging;
 //Constructor
 SysLogger::SysLogger(const char* className)
 {
     this->moduleClassName = className;
+    this->serialLogLevel = 1;
+    this->fileLogLevel = 5;
+    this->mqttLogLevel = 2;
+    this->serialLogging = true;
+    this->fileLogging = false;
+    this->mqttLogging = true;
 }
 
 SysLogger::SysLogger(Filemanager* FM, const char* className)
 {
-    this->FM = FM;
     this->moduleClassName = className;
+    this->serialLogLevel = 1;
+    this->fileLogLevel = 5;
+    this->mqttLogLevel = 2;
+    this->serialLogging = true;
+    this->fileLogging = false;
+    this->mqttLogging = true;
+    this->FM = FM;
+}
+
+ SysLogger::SysLogger(Filemanager* FM, const char* className, MQTTHandler* mqtt, WiFiManager* wifi)
+ {
+    this->moduleClassName = className;
+    this->serialLogLevel = 1;
+    this->fileLogLevel = 5;
+    this->mqttLogLevel = 2;
+    this->serialLogging = true;
+    this->fileLogging = false;
+    this->mqttLogging = true;
+    this->FM = FM;
+    this->wifi = wifi;
+    this->mqtt = mqtt;
 }
 //protected
 String SysLogger::getLogLevel(short value)
@@ -108,7 +139,8 @@ void SysLogger::logIt(String function, String message, char priority)
     if((priority >= serialLogLevel && serialLogLevel != 0) || serialLogLevel == 7)
     {
 
-        #ifdef logSerial
+        if(serialLogging)
+        {
             #ifdef serialBaudrate
                     if(!Serial)
                     {
@@ -131,12 +163,13 @@ void SysLogger::logIt(String function, String message, char priority)
                 #endif //serialFormatMessage
             }
 
-        #endif //logSerial
+        }
     }
 
     if((priority >= fileLogLevel && fileLogLevel != 0) || fileLogLevel == 7)
     {
-        #ifdef logInFile
+        if(fileLogging)
+        {
             #ifdef logFilePath
                 #ifdef singleLogFile
                     if(!FM->fExist(logFilePath))
@@ -165,7 +198,43 @@ void SysLogger::logIt(String function, String message, char priority)
                 #endif
                 #endif //singleLogFile
             #endif //logInFilePath
-        #endif //logInFile
+        }
     }
 }
 
+
+void SysLogger::setLogLevel(short newLevel, short logType)
+{
+    switch(logType)
+    {
+        case 1:
+            this->serialLogLevel = newLevel;
+            break;
+        case 2:
+            this->fileLogLevel = newLevel;
+            break;
+        case 3:
+            this->mqttLogLevel = newLevel;
+            break;
+        default:
+            break;
+    }
+}
+
+void SysLogger::setLogging(bool  logging, short logType)
+{
+    switch(logType)
+    {
+        case 1:
+            this->serialLogging = logging;
+            break;
+        case 2:
+            this->fileLogging = logging;
+            break;
+        case 3:
+            this->mqttLogging = logging;
+            break;
+        default:
+            break;
+    }
+}

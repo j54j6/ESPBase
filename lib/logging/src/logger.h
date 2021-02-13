@@ -3,6 +3,14 @@
 
 #include <Arduino.h>
 #include "filemanager.h"
+//#include "externLogger.h"
+#include "mqttHandler.h"
+#include "wifiManager.h"
+#include "moduleState.h"
+
+
+class MQTTHandler;
+class WiFiManager;
 
 /*
     Logging class by j54j6
@@ -37,9 +45,6 @@
         - 7 -> all
 */
 
-#define serialLogLevel 7
-#define fileLogLevel 5
-
 /*
     Serial Logging
         uncomment if you want to use serial Logging
@@ -67,10 +72,15 @@
 #define functionnameSpace 20
 #define priorityValueSpace 6
 
+
+
 class SysLogger {
     private:
         String moduleClassName;
-        Filemanager* FM;
+        Filemanager* FM = NULL;
+        MQTTHandler* mqtt = NULL;
+        WiFiManager* wifi = NULL;
+        
     protected:
         //return PriorityValue as "humanReadable" text
         String getLogLevel(short value);
@@ -79,12 +89,18 @@ class SysLogger {
 
         String getFormattedMessage(String functionName, String message, short priority);
     public:
+    static short serialLogLevel;
+        static short fileLogLevel;
+        static short mqttLogLevel;
+        static bool serialLogging;
+        static bool fileLogging;
+        static bool mqttLogging;
         #ifndef logInFile
             SysLogger(const char* className);
             SysLogger(Filemanager* FM, const char* className);
         #else
-            SysLogger(Filemanager* FM, const char* className);
         #endif
+        SysLogger(Filemanager* FM, const char* className, MQTTHandler* mqtt, WiFiManager* wifi);
         SysLogger() {};
         ~SysLogger() {};
 
@@ -108,6 +124,29 @@ class SysLogger {
         void logIt(String function, String message, char priority = 3);
         //void logIt(String message, char priority);
         //void logIt(const char* message, char priority);
+
+        /*
+            LogLevel:
+                logLevel meanings:
+                - 0 -> noLogging
+                - 1 -> trace
+                - 2 -> debug
+                - 3 -> info
+                - 4 -> warn
+                - 5 -> error 
+                - 6 -> fatal
+
+                - 7 -> all
+            
+            logType:
+                - 1 -> Serial Logging
+                - 2 -> FileLogging
+                - 3 -> MQTT Logging
+                - 4 -> UDP Logging
+                - 5 -> HTTP Logging
+        */
+        void setLogLevel(short newLevel, short logType);
+        void setLogging(bool logging, short logType);
 
 };
 
