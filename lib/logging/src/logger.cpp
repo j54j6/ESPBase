@@ -200,6 +200,16 @@ void SysLogger::logIt(String function, String message, char priority)
             #endif //logInFilePath
         }
     }
+
+
+//######################################################THIS IS NEW
+    if((priority >= mqttLogLevel && mqttLogLevel != 0) || mqttLogLevel == 7)
+    {
+        if(mqttLogging)
+        {
+            this->mqtt->publish(mqttPublishTopic.c_str(), getFormattedMessage(function, message, priority).c_str());
+        }
+    }
 }
 
 

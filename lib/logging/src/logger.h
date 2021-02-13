@@ -4,13 +4,9 @@
 #include <Arduino.h>
 #include "filemanager.h"
 //#include "externLogger.h"
-#include "mqttHandler.h"
 #include "wifiManager.h"
-#include "moduleState.h"
+#include "mqttHandler.h"
 
-
-class MQTTHandler;
-class WiFiManager;
 
 /*
     Logging class by j54j6
@@ -80,6 +76,7 @@ class SysLogger {
         Filemanager* FM = NULL;
         MQTTHandler* mqtt = NULL;
         WiFiManager* wifi = NULL;
+        String mqttPublishTopic = "/control/log";
         
     protected:
         //return PriorityValue as "humanReadable" text
