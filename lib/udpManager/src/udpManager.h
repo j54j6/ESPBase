@@ -46,6 +46,12 @@ struct udpPacketResolve {
     }
 };
 
+class WiFiUDP;
+class WiFiManager;
+class udpPacketResolve;
+class SysLogger;
+class ClassModuleSlave;
+
 class udpManager {
     private:
         const char* className = "udpManager";

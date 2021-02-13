@@ -774,7 +774,6 @@ void MQTTHandler::stopClass()
     {
         this->classDisabled = true;
         this->run();
-        Serial.println("locked!");
         return;
     }
 }

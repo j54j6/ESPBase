@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "wrapper.h"
+#include "dht11Temp.h"
 
 espOS mainOS;
 
@@ -7,8 +8,9 @@ MQTTHandler *mqtthandler;
 WiFiManager *wifiManager;
 Filemanager *FM;
 OTA_Manager *otaManager;
-Network* network;
-
+Network *network;
+voltageDetector *voltage;
+dht11Temp dht11(D5);
 
 
 void function()
@@ -18,12 +20,6 @@ void function()
     static bool readActive = false;
   if(mqtthandler->getCallback()->payload != "")
   {
-    Serial.println("-------------MQTT Message-------------");
-    Serial.print("Topic: ");
-    Serial.println(mqtthandler->getCallback()->topic);
-    Serial.print("Message: ");
-    Serial.println(mqtthandler->getCallback()->payload);
-
     if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "restart")
     {
       ESP.restart();
@@ -34,7 +30,7 @@ void function()
     }
     if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "sayWhat")
     {
-      mqtthandler->publish("/home/public", "heyho^^");
+      Serial.println("Message published: " + String(mqtthandler->publish("/home/public", "heyho^^")));
     }
     if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "format")
     {
@@ -79,7 +75,7 @@ void function()
     }
     if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "update")
     {
-      //otaManager.test();
+      otaManager->getUpdatesAutoCred();
     }
     if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "newFeature")
     {
@@ -147,6 +143,10 @@ void function()
     {
       otaManager->init();
     }
+    if(strcmp(mqtthandler->getCallback()->topic, "home/control") == 0 && mqtthandler->getCallback()->payload == "disableLed")
+    {
+      mainOS.disableLeds();
+    }
 
     mqtthandler->getCallback()->reset();
   }
@@ -209,9 +209,16 @@ void function()
   }
 }
 
+void handleVoltage()
+{
+  Serial.print("Voltage: ");
+  Serial.println(voltage->getActualVoltage());
+  Serial.print("Percent: ");
+  Serial.println(voltage->getPercent());
+}
 
 void setup()
-{ 
+{  
   mainOS.begin();
   mqtthandler = mainOS.getMqttHandler();
   FM = mainOS.getFilemanagerObj();
@@ -220,10 +227,26 @@ void setup()
   otaManager = mainOS.getOtaManagerObject();
   network = mainOS.getNetworkManagerObj();
   otaManager->setCheckIntervall(24);
+  voltage = mainOS.getVoltageDetectorObj();
+  dht11.setUseComputedTemp(false);
 }
 
 void loop()
 {
   mainOS.run();
-  function(); 
+  function();
+  dht11.run();
+  static long lastCall = 0;
+  if(millis() > lastCall)
+  {
+    handleVoltage();
+    lastCall = millis() + 5000;
+  
+  
+  Serial.print("Temp: ");
+  Serial.println(dht11.getTemp());
+  Serial.print("Humid: ");
+  Serial.println(dht11.getHumidity());
+
+  }
 }

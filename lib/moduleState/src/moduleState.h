@@ -14,6 +14,8 @@
     Object contains all Data of one Report 
     ClassReportTemplate is part of ordered List with Pointer
 */
+class SysLogger;
+class Filemanager;
 class ClassReportTemplate {
     friend class ClassReportModuleHandler;
     friend class ClassModuleMaster;

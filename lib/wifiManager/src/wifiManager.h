@@ -9,6 +9,8 @@
 #include "filemanager.h"
 #include "moduleState.h"
 
+class SysLogger;
+
 #define WiFiCheckDelay 50
 #define FPM_SLEEP_MAX_TIME 0xFFFFFFF
 

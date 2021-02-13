@@ -108,16 +108,19 @@ bool OTA_Manager::checkForUpdates(String host, uint16_t port, String uri, String
     if(code <= 0)
     {
         logging.logIt("checkForUdates", String("Error while checking for updates! - Code: ") + String(code) + String("Error: ") + String(http.errorToString(code).c_str()), 4);
+        this->nextUpdateCheck = _Ntp->getEpochTime() + 3600;
         return false;
     }
     else if(!http.hasHeader("x-requestedType") || !http.hasHeader("x-requestResponse"))
     {
         logging.logIt("checkForUdates", String("Error while checking for updates! - HTTP Response is invalid! - HTTP Code: " + String(code)), 4);
+        this->nextUpdateCheck = _Ntp->getEpochTime() + 3600;
         return false;
     }
     else if(http.header("x-requestedType") != String("updateCheck"))
     {
         logging.logIt("checkForUdates", String("Error while checking for updates! - HTTP Response has an unexcepted value"), 4);
+        this->nextUpdateCheck = _Ntp->getEpochTime() + 3600;
         return false;
     }
 
@@ -376,7 +379,6 @@ void OTA_Manager::run()
             if(!res)
             {
                 logging.logIt("run->checkForUpdates", "Check for Updates return false!");
-                init();
             }
         }
     }

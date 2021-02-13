@@ -97,7 +97,7 @@ class OTA_Manager
             port, _FM->readJsonFileValue(configFile, "uri"),
             _FM->readJsonFileValue(configFile, "servertoken"), _FM->readJsonFileValue(configFile, "serverpass"));
         }
-        bool getUpdatedAutoCred()
+        bool getUpdatesAutoCred()
         {
             int port = String(_FM->readJsonFileValue("config/mainConfig.json", "port")).toInt();
             return getUpdates(_FM->readJsonFileValue(configFile, "updateServer"),

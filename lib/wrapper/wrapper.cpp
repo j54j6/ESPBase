@@ -30,9 +30,19 @@ OTA_Manager* espOS::getOtaManagerObject()
     return this->_OTA;
 }
 
+voltageDetector* espOS::getVoltageDetectorObj()
+{
+    return this->_voltageDetector;
+}
+
 void espOS::addModuleToWatchdog(ClassModuleSlave* newModule)
 {
     this->_Watcher->addModuleSlave(newModule);
+}
+
+void espOS::disableLeds()
+{
+    _WorkLed->disable();
 }
 
 void espOS::begin()
@@ -59,4 +69,5 @@ void espOS::run() {
     this->_serviceHandler->loop();
     this->_Watcher->run();
     this->_mqttHandler->run();
+    this->_voltageDetector->run();
 }

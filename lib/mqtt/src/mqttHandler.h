@@ -10,6 +10,10 @@
 #include "serviceHandler.h"
 #include "moduleState.h"
 
+class WiFiManager;
+class ServiceHandler;
+class ClassModuleSlave;
+class SysLogger;
 /*
     MQTT Config Blueprint
 
@@ -61,7 +65,6 @@ struct lastMqttCallback {
         }
     }
 };
-
 class MQTTHandler {
     private:
         Filemanager* FM;

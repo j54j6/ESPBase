@@ -155,7 +155,10 @@ struct networkSearchCacheValueHolder {
         "custom_Attr" : "<<Stuff>>" //custom Attributes can be appeded
     }
 */
-
+class WiFiManager;
+class udpManager;
+class SysLogger;
+class ClassModuleSlave;
 class ServiceHandler
 {
     private:
