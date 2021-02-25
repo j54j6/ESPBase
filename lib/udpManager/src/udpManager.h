@@ -1,3 +1,4 @@
+#pragma once
 #ifndef J54J6_udpManager
 #define J54J6_udpManager
 
@@ -17,6 +18,7 @@ struct udpPacketResolve {
 
     void resetPack()
     {
+        Serial.println("Reset called!");
         this->paketSize = 0;
         this->remoteIP = IPAddress(0,0,0,0);
         this->udpContent = "NULL";

@@ -49,13 +49,16 @@ void espOS::begin()
 {
     Serial.begin(921600);
     _FM->mount();
+    _initLogger->setMqttClient(_mqttHandler->getPubSubClient());
     _serviceHandler->beginListen();
     _Network->begin();
     _mqttHandler->init();
+    _mqttConfigurator->begin();
     _Watcher->addModuleSlave(_Wifi->getClassModuleSlave());
     _Watcher->addModuleSlave(_Network->getClassModuleSlave());
     _Watcher->addModuleSlave(_mqttHandler->getClassModuleSlave());
     _Watcher->addModuleSlave(_serviceHandler->getClassModuleSlave());
+    _Watcher->addModuleSlave(_mqttConfigurator->getClassModuleSlave());
 }
 
 void espOS::run() {
@@ -70,4 +73,6 @@ void espOS::run() {
     this->_Watcher->run();
     this->_mqttHandler->run();
     this->_voltageDetector->run();
+    this->_dht11->run();
+    this->_mqttConfigurator->run();
 }

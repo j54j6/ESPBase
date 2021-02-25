@@ -1,0 +1,115 @@
+<link rel="stylesheet" href="./css/spectre.min.css">
+<link rel="stylesheet" href="./css/spectre-exp.min.css">
+<link rel="stylesheet" href="./css/spectre-icons.min.css">
+
+<html>
+    <head>
+        <style>
+            .px-5em {
+                padding-left: 5em;
+            }
+            .px-3em {
+                padding-left: 3em;
+            }
+
+            .pb-2 {
+                padding-bottom: 1em;
+            }
+            .py-2 {
+                padding-right: 2em;
+            }
+            .hide-overflow {
+                overflow: hidden;
+            }
+        </style>
+    </head>
+    <body style="font-family: Roboto, sans-serif, Arial; background-color: #121212; color: white">
+        <div class="off-canvas">
+            <!-- off-screen toggle button -->
+            <a class="off-canvas-toggle btn btn-primary btn-action" href="#sidebar-id">
+              <div class="container">
+                <i class="icon icon-menu"></i>
+              </div>
+            </a>
+          
+            <div id="sidebar-id" class="off-canvas-sidebar col-5 hide-overflow" style="background-color: #1F1B24">
+              <!-- off-screen sidebar -->
+              <a class="off-canvas-toggle float-right p-relative py-2" href="#close" >
+                <i style="color:white; border-style: none;" class="icon icon-2x icon-arrow-left"></i>
+              </a>
+                <div class="navbar col-12">
+                    <div class="container">
+                        <div class="columns">
+                            <div class="column col-12 text-center">
+                                <img style="height: 250px" src="images/logo.PNG" alt="Logo">
+                            </div>
+                            <div class="column col-12">
+                                <div class="divider"></div>
+                            </div>
+                            <div class="column col-10">
+                                <div class="accordion">
+                                    <input type="checkbox" id="accordion-1" name="accordion-checkbox" hidden>
+                                    <label class="accordion-header" for="accordion-1">
+                                      <i class="icon icon-arrow-right px-3em pb-2"></i>
+                                        <span class="h2"><b>System</b></span>
+                                    </label>
+                                    <div class="accordion-body">
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="#"><span class="h4">Info</span></a> 
+                                        </div>
+                                        <div class="col-8 px-5em pb-2">
+                                            <a href="#"><span class="h4">Logs</span></a> 
+                                        </div>
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="#"><span class="h4">Status</span></a> 
+                                        </div>
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="#"><span class="h4">Control</span></a> 
+                                        </div>
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="#"><span class="h4">WiFi Settings</span></a> 
+                                        </div>
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="#"><span class="h4">Update Settings</span></a> 
+                                        </div>
+                                    </div>
+                                  </div>
+                            </div>
+                            <div class="column col-10">
+                                <div class="accordion">
+                                    <input type="checkbox" id="accordion-2" name="accordion-checkbox" hidden>
+                                    <label class="accordion-header" for="accordion-2">
+                                      <i class="icon icon-arrow-right px-3em pb-2"></i>
+                                        <span class="h2"><b>Modules</b></span>
+                                    </label>
+                                    <div class="accordion-body">
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="#"><span class="h4">Registered modules</span></a> 
+                                        </div>
+                                        <div class="col-8 px-5em pb-2">
+                                            <a href="#"><span class="h4">template</span></a> 
+                                        </div>
+                                    </div>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          
+            <a class="off-canvas-overlay " href="#close"></a>
+                
+            <div class="off-canvas-content">
+                <div class="container col-12">
+                    <header class="header text-center">
+                        <img width="150px" src="./images/logo.PNG" alt="Logo">
+                        <div style="border-color: gray" class="divider"></div>
+                    </header>
+                    <content style="padding-top: 4em">
+                        
+                    </content>
+                </div>
+            </div>
+          </div>
+    </body>
+</html>

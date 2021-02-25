@@ -1,7 +1,6 @@
 #pragma once
 #include <Arduino.h>
 
-#include "logger.h"
 #include "button.h"
 #include "filemanager.h"
 #include "led.h"
@@ -14,19 +13,13 @@
 #include "udpManager.h"
 #include "wifiManager.h"
 #include "voltageDetect.h"
-//#include "externLogger.h"
+#include "logger.h"
+#include "dht11Temp.h"
+#include "./modules/mqttConfigurator/mqttConfig.h"
 
-class WiFiManager;
-class Network;
-class Filemanager;
-class ClassModuleSlave;
-class udpManager;
-class SysLogger;
 class espOS {
     private:
-        LED* _WorkLed;
-        LED* _WifiLed;
-        LED* _errorLed;
+        
         Filemanager* _FM;
         WiFiManager* _Wifi;
         Network* _Network;
@@ -36,9 +29,16 @@ class espOS {
         ClassModuleMaster* _Watcher;
         MQTTHandler* _mqttHandler;
         voltageDetector* _voltageDetector;
-        //ExternLogger* _externLogger;
+        SysLogger* _initLogger;
+        dht11Temp* _dht11;
+        ESPOS_Module_MQTTConfig* _mqttConfigurator;
+
+        const char* cssDir = "config/os/web/";
 
     public:
+    LED* _WorkLed;
+        LED* _WifiLed;
+        LED* _errorLed;
         espOS(int workLedPin = -1, int errorLedPin = -1, int wifiLedPin = -1)
         {
             _WorkLed = new LED(workLedPin); //D2
@@ -53,8 +53,10 @@ class espOS {
             _mqttHandler =  new MQTTHandler(_FM, _Wifi, _serviceHandler);
             _OTA = new OTA_Manager(_FM, _Network, _Ntp, _Wifi, _WorkLed);
             _voltageDetector = new voltageDetector(A0);
-            //_externLogger = new ExternLogger(_FM, _Wifi, _mqttHandler);
-        }
+            _initLogger = new SysLogger();
+            _dht11 = new dht11Temp(_mqttHandler, D5);
+            _mqttConfigurator = new ESPOS_Module_MQTTConfig(_mqttHandler, _FM, _Wifi);
+        }   
 
         Filemanager* getFilemanagerObj();
         WiFiManager* getWiFimanagerObj();
@@ -64,6 +66,10 @@ class espOS {
         MQTTHandler* getMqttHandler();
         OTA_Manager* getOtaManagerObject();
         voltageDetector* getVoltageDetectorObj();
+        ESPOS_Module_MQTTConfig* getModuleMQTTConfig()
+        {
+            return this->_mqttConfigurator;
+        }
         void addModuleToWatchdog(ClassModuleSlave* newModule);
 
 

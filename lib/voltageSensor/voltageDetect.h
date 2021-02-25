@@ -1,3 +1,4 @@
+#pragma once
 #ifndef voltageDetect
 #define voltageDetect
 

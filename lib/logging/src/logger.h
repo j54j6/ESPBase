@@ -1,12 +1,10 @@
+#pragma once
 #ifndef J54J6_SysLogger
 #define J54J6_SysLogger
-
 #include <Arduino.h>
 #include "filemanager.h"
-//#include "externLogger.h"
-#include "wifiManager.h"
-#include "mqttHandler.h"
-
+#include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 /*
     Logging class by j54j6
@@ -58,9 +56,12 @@
 
 */
 //#define logInFile //Set Comment quotes here and the code compiles without any problems
-#define logFilePath "/log/syslog.log"
+
 //#define singleLogFile false // if true (default) all log messages are saved in one File otherwise in the given directoy a file is created for each class
 #define fileFormatMessage
+
+#define pushMqttAsJSON
+#define prioMQTTPublishing
 
 
 //define TextSpaces for Formatted Messages
@@ -74,10 +75,10 @@ class SysLogger {
     private:
         String moduleClassName;
         Filemanager* FM = NULL;
-        MQTTHandler* mqtt = NULL;
-        WiFiManager* wifi = NULL;
-        String mqttPublishTopic = "/control/log";
-        
+        static PubSubClient* mqttClient;
+
+        String mqttPublishTopic;
+        String macAddress;
     protected:
         //return PriorityValue as "humanReadable" text
         String getLogLevel(short value);
@@ -85,8 +86,10 @@ class SysLogger {
         //format inputs to a simple readable format
 
         String getFormattedMessage(String functionName, String message, short priority);
+
+        void initMQTT();
     public:
-    static short serialLogLevel;
+        static short serialLogLevel;
         static short fileLogLevel;
         static short mqttLogLevel;
         static bool serialLogging;
@@ -94,10 +97,11 @@ class SysLogger {
         static bool mqttLogging;
         #ifndef logInFile
             SysLogger(const char* className);
-            SysLogger(Filemanager* FM, const char* className);
+            //SysLogger(Filemanager* FM, const char* className);
         #else
         #endif
-        SysLogger(Filemanager* FM, const char* className, MQTTHandler* mqtt, WiFiManager* wifi);
+        //SysLogger(Filemanager* FM, const char* className, MQTTHandler* mqtt, WiFiManager* wifi);
+        SysLogger(Filemanager* FM, const char* className);
         SysLogger() {};
         ~SysLogger() {};
 
@@ -144,11 +148,7 @@ class SysLogger {
         */
         void setLogLevel(short newLevel, short logType);
         void setLogging(bool logging, short logType);
-
+        void setMqttClient(PubSubClient* mqttClient);
+        String messageToJSON(String function, String message, char prio);
 };
-
-
-/*
-    end of configuration
-*/
-#endif //J54J6_SysLogger
+#endif

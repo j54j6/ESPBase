@@ -1,3 +1,4 @@
+#pragma once
 #ifndef J54J6_SIMPLEWIFIMANAGER_H
 #define J54J6_SIMPLEWIFIMANAGER_H
 
@@ -8,8 +9,6 @@
 #include "led.h"
 #include "filemanager.h"
 #include "moduleState.h"
-
-class SysLogger;
 
 #define WiFiCheckDelay 50
 #define FPM_SLEEP_MAX_TIME 0xFFFFFFF

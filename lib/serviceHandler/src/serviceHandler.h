@@ -1,3 +1,4 @@
+#pragma once
 #ifndef J54J6_SERVICEHANDLER_H
 #define J54J6_SERVICEHANDLER_H
 
@@ -57,7 +58,187 @@ struct networkSearchCacheValueHolder {
 };
 
 
+struct lockedForServiceSearchData {
+    lockedForServiceSearchData* _nextNode;
+    lockedForServiceSearchData* _prevNode;
+    String serviceName;
+    ulong blockedUntil;
+    short failedSearchTries = 0;
+};
 
+struct lockedForServiceSearch {
+    private:
+        lockedForServiceSearchData* _headNode = NULL;
+        lockedForServiceSearchData* _tailNode = NULL;
+        
+        int blockTimeInSec = 900; //15 Minutes
+
+    public:
+        void setBlockTimeInSec(int newVal)
+        {
+            blockTimeInSec = newVal;
+        }
+        lockedForServiceSearchData* addNewNode(String serviceName)
+        {
+            lockedForServiceSearchData* _newNode = new lockedForServiceSearchData();
+            _newNode->serviceName = serviceName;
+            ulong blockTime = blockTimeInSec;
+            blockTime += millis();
+            _newNode->blockedUntil = blockTime;
+
+            if(this->_headNode == NULL) 
+            {
+                this->_headNode = _newNode;
+                this->_tailNode = _newNode;
+            }
+            else
+            {
+                _tailNode->_nextNode = _newNode;
+                _newNode->_prevNode = _tailNode;
+                _tailNode = _newNode;
+            }
+            return _newNode;
+        }
+
+        void removeNode(String serviceName)
+        {
+            if(_headNode == NULL)
+            {
+                return;
+            }
+
+            lockedForServiceSearchData* _actualNode = _headNode;
+            while(true)
+            {
+                if(_actualNode->serviceName == serviceName)
+                {
+                    break;
+                }
+                if(_actualNode->_nextNode == NULL)
+                {
+                    return;
+                }
+                else
+                {
+                    _actualNode = _actualNode->_nextNode;
+                }
+            }
+
+            if(_actualNode->serviceName == serviceName)
+            {
+                if(_actualNode == _headNode)
+                {
+                    if(_actualNode->_nextNode == NULL)
+                    {
+                        _headNode = NULL;
+                        _actualNode = NULL;
+                        return;
+                    }
+                    else
+                    {
+                        _headNode = _actualNode->_nextNode;
+                        _headNode->_prevNode = NULL;
+                    }
+                }
+                else
+                {
+                    if(_actualNode->_prevNode != NULL)
+                    {
+                        if(_actualNode->_nextNode != NULL)
+                        {
+                            _actualNode->_prevNode->_nextNode = _actualNode->_nextNode;
+                            _actualNode->_nextNode->_prevNode = _actualNode->_prevNode;
+                            return;
+                        }
+                        else
+                        {
+                            _actualNode->_prevNode->_nextNode = NULL;
+                            _tailNode = _actualNode->_prevNode;
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        bool searchNode(String searchedServiceName)
+        {
+            if(_headNode == NULL)
+            {
+                return false;
+            }
+            lockedForServiceSearchData* _actualNode = _headNode;
+            while(_actualNode != NULL) {
+                if(_actualNode->serviceName == searchedServiceName)
+                {
+                    return true;
+                }
+
+                if(_actualNode->_nextNode == NULL)
+                {
+                    return false;
+                }
+                else
+                {
+                    _actualNode = _actualNode->_nextNode;
+                }
+            }
+            return false;
+        }
+
+        lockedForServiceSearchData* getNode(String searchedServiceName)
+        {
+            if(_headNode == NULL)
+            {
+                return NULL;
+            }
+            lockedForServiceSearchData* _actualNode = _headNode;
+            while(_actualNode != NULL) {
+                if(_actualNode->serviceName == searchedServiceName)
+                {
+                    return _actualNode;
+                }
+
+                if(_actualNode->_nextNode == NULL)
+                {
+                    return NULL;
+                }
+                else
+                {
+                    _actualNode = _actualNode->_nextNode;
+                }
+            }
+            return NULL;
+        }
+
+        void run()
+        {
+            lockedForServiceSearchData* _actualNode = NULL;
+
+            if(_headNode == NULL)
+            {
+                return;
+            }
+
+            _actualNode = _headNode;
+
+            while(_actualNode != NULL) {
+                ulong unlock = _actualNode->blockedUntil*1000;
+                if(millis() >= unlock)
+                {
+                    removeNode(_actualNode->serviceName);
+                }
+                if(_actualNode->_nextNode == NULL)
+                {
+                    return;
+                }
+                else
+                {
+                    _actualNode = _actualNode->_nextNode;
+                }
+            }
+        }
+};
 
 /*
     ServiceHandler Class
@@ -155,10 +336,7 @@ struct networkSearchCacheValueHolder {
         "custom_Attr" : "<<Stuff>>" //custom Attributes can be appeded
     }
 */
-class WiFiManager;
-class udpManager;
-class SysLogger;
-class ClassModuleSlave;
+
 class ServiceHandler
 {
     private:
@@ -177,6 +355,8 @@ class ServiceHandler
                 used for audoAdd function to init autoAdd or use the inherited loopFunction to resolve and use received answers
         */
         bool autoAddRunning = false;
+        ulong autoAddTimeout = 0;
+
         
         //File paths
         const char* offeredServicesPath = "/config/networkIdent/services.json"; //saved in one File as JSON -  {serviceName : port , serviceName : port , ...}
@@ -198,6 +378,10 @@ class ServiceHandler
         SysLogger logging;
         ClassModuleSlave* classControl;
 
+        //if a new Service was added add it to this list so if a function try to call this function multiple times must wait before it can send a new request for this service
+        lockedForServiceSearch addDelay;
+        short maxServiceSearchTries = 3;
+        short blockTime = 300;
     protected:
         //internal helper functions
 
@@ -224,6 +408,24 @@ class ServiceHandler
         ulong getLastGeneratedId();
         StaticJsonDocument<425> getLastData();
 
+        bool verifySelfOfferedService(const char* serviceName);
+        bool verifyExternalOfferedService(const char* serviceName, bool fallback);
+
+        bool initAutoAdd(const char* serviceName);
+        /*
+            return:
+                -2 : autoAdd is not running
+                -1 : service is locked and can't be added at the time!
+                0  : nothing received
+                1 : successfully added service
+                2 : Error while adding the new config
+                3 : Can't add Service ID's not matching - wait until timeout for correct packet
+                4 : Received correct packet but data are incomplete!
+        */
+        short runAutoAdd();
+        void checkForAutoAddTimeout();
+        void lockServiceName(const char* serviceName);
+
 
     public:
         //Constructo / Destructor
@@ -246,7 +448,7 @@ class ServiceHandler
                 DEV-INF:
                     Auto assign MAC Address need to be added! - V1.2
         */
-        bool addService(bool selfOffered = true, bool fallback = false, const char* serviceName = "n.S", const char* port = "-1", IPAddress ip = IPAddress(0,0,0,0));
+        bool addService(bool selfOffered = true, bool fallback = false, const char* serviceName = "n.S", const char* port = "-1", const char* ip = "0.0.0.0", const char* mac = "n.S");
 
         /*
             addServiceAttribute
@@ -263,6 +465,7 @@ class ServiceHandler
                 1 = device found and added (success)
                 2 = device found but service can't be added
                 3 = Services already defined (Main and Backup CFG (Error)
+                4 = Service is locked - can't be added at the Time
                 10 = AutoAdd is running but nothing received
         */
         short autoAddService(const char* serviceName = "n.S");
@@ -280,6 +483,10 @@ class ServiceHandler
                         only the mainCFG of external Serivce will be deleted
         */
         bool delService(const char* serviceName, bool selfOffered = false, bool fallback = false);
+
+
+        //Verify Service - Check for all important Parameters in File and Check for Content
+        bool verifyService(const char* serviceName, bool selfOffered = false, bool fallback = false);
 
 
         //get Stuff
@@ -357,6 +564,19 @@ class ServiceHandler
             Search for Service
         */
        void searchForService(const char* serviceName, bool generateId = true, IPAddress ip = IPAddress(255,255,255,255), int port = 63547);
+
+        //earlier in loop() - check for answers or requests
+        /*
+            Return:
+                -1 - Nothing received
+                0 = Failed while Adding new Service
+                1 = Success Adding new Service
+                2 = Success Sending Answer
+                3 = Error sending Answer
+                4 = Error Parsing JSON
+                5 = Wrong UDP packet syntax
+        */
+        int checkForAction();
 
         //loop
         void loop();

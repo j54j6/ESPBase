@@ -11,7 +11,8 @@ class ExternLogger {
         WiFiManager* wifi;
         MQTTHandler* mqtt;
 
-        String mqttTopic = "/control/log";
+        String mqttTopic;
+        String macAddress;
 
     public:
         ExternLogger(Filemanager* FM, WiFiManager* wifi, MQTTHandler* mqtt);

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef J54J6_OTA
 #define J54J6_OTA
 
@@ -62,6 +63,7 @@ class OTA_Manager
         bool automaticUpdateSearch = true;
         String softwareVersionInstalled = "0";
         String softwareVersionAvailiable = "0";
+        bool lastFailed = false;
 
         /*
             functionType:
@@ -116,6 +118,8 @@ class OTA_Manager
         bool getSearchForUpdatesAutomatic();
         long getCheckIntervall();
         long getLastUpdateCheck();
+        bool getIsLastUpdateCheckFailed();
+        bool getIsUpdateAvailiable();
         void run();
 
 };

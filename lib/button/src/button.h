@@ -1,3 +1,4 @@
+#pragma once
 #ifndef Lib_Button_h
 #define Lib_Button_h
 

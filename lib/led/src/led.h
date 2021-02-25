@@ -1,3 +1,4 @@
+#pragma once
 #ifndef Lib_Led_h
 #define Lib_Led_h
 

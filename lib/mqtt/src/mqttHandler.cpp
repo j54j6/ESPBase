@@ -3,15 +3,37 @@
 //extra Stuff
 bool MQTTHandler::configCheck()
 {
+    bool needReInit = false;
     if(FM->fExist(configFile))
     {
-        return true;
         #ifdef J54J6_SysLogger
             
-            logging.logIt("configCheck", "configFile already exist - SKIP!");
+            logging.logIt("configCheck", "configFile already exist - check for Parameter!");
         #endif
+
+        if(!FM->checkForKeyInJSONFile(configFile, "updateServer") || 
+        !FM->checkForKeyInJSONFile(configFile, "uri") ||
+        !FM->checkForKeyInJSONFile(configFile, "servertoken") ||
+        !FM->checkForKeyInJSONFile(configFile, "serverpass") ||
+        !FM->checkForKeyInJSONFile(configFile, "port") ||
+        !FM->checkForKeyInJSONFile(configFile, "updateSearch") ||
+        !FM->checkForKeyInJSONFile(configFile, "autoUpdate") ||
+        !FM->checkForKeyInJSONFile(configFile, "softwareVersion") ||
+        !FM->checkForKeyInJSONFile(configFile, "checkDelay"))
+        {
+            needReInit = true;
+            #ifdef J54J6_SysLogger
+                logging.logIt("configCheck", "Config File exist but file is not valid - one or more keys are missing");
+            #endif
+        }
+        else
+        {
+            return true;
+        }
+        
     }
-    else
+
+    if(!FM->fExist(configFile) || needReInit)
     {
         #ifdef J54J6_SysLogger
             
@@ -42,8 +64,222 @@ bool MQTTHandler::configCheck()
         #endif
         return true;
     }
+    return false;
 }
 
+void MQTTHandler::lockConnect(String usedIP, bool isError)
+{
+    lastUsedIP = usedIP;
+    if(isError) //Can't connect to Broker
+    {
+        logging.logIt("lockConnect", "locked Connect cause of Error!", 1);
+        if(connectTries >= tryToConnectXTimes)
+        {
+            connectLocked = true;
+            unlockAt = millis() + timeoutAfterSearchError;
+            lockReasonIsError = true;
+        }
+        else
+        {
+            connectTries++;
+        }
+    }
+    else //ServiceAdd Delay enabled
+    {
+        logging.logIt("lockConnect", "locked Connect cause of ServiceAdd Delay!", 1);
+        connectLocked = true;
+        unlockAt = millis() + serviceSearchTimeout;
+    }
+}
+
+void MQTTHandler::checklockConnectTimer()
+{
+    if(unlockAt != 0)
+    {
+        if(unlockAt <= millis())
+        {
+            resetConnectLock();
+        }
+    }
+}
+
+void MQTTHandler::resetConnectLock()
+{
+    unlockAt = 0;
+    connectLocked = false;
+    if(lockReasonIsError && connectTries >= tryToConnectXTimes)
+    {
+        connectTries = 0;
+    }
+    else if(!lockReasonIsError)
+    {
+        connectOrError = true;
+    }
+}
+
+short MQTTHandler::connectSelfOffered()
+{
+    logging.logIt("connectSelfOffered", "Try to connect to self Offered Broker", 3);
+    int port = -1;
+    port = services->getServicePort("mqtt", false, true);
+    if(port == -1 || port < 1 || port > 65535)
+    {
+        logging.logIt("connectSelfOffered", "Can't connect to self offered Broker - config not useable!", 3);
+        return 2; //no useable 
+    }
+    else
+    {
+        this->mqttHandlerClient = this->mqttHandlerClient.setServer("127.0.0.1", port);
+        if(this->mqttHandlerClient.connect(wifiManager->getDeviceMac().c_str()))
+        {
+            logging.logIt("connectSelfOffered", "Successfully connected to self offered Broker!", 1);
+            return true;
+        }
+
+        logging.logIt("connectSelfOffered", "Can't connect to self offered Broker!", 1);
+        return false;
+    }
+    logging.logIt("connectSelfOffered", "Unexcepted behaviour!", 4);
+    return -1;
+}
+
+short MQTTHandler::connectToExternalBroker(bool isFallback)
+{
+    short serviceConnectMode = services->checkForService("mqtt");
+
+    if((serviceConnectMode == 0 || serviceConnectMode == 1) || (isFallback && (serviceConnectMode == 2 || serviceConnectMode == 4)))
+    {
+        logging.logIt("connectToExternalBroker", "No useable Service found", 2);
+        return 2; //There is no correct Service found (if isFallback) -> there is no fallback
+    }
+
+    if(!isFallback && (serviceConnectMode == 2 || serviceConnectMode == 3 || serviceConnectMode == 4 || serviceConnectMode == 5)) //connect to mainCFG
+    {
+        logging.logIt("connectToExternalBroker", "Use external Main Config", 2);
+        IPAddress sIP = services->getServiceIP("mqtt");
+        int port = services->getServicePort("mqtt", false, false);
+        this->mqttHandlerClient = this->mqttHandlerClient.setServer(sIP, port);
+        return this->mqttHandlerClient.connect(wifiManager->getDeviceMac().c_str());  
+    }
+    else if(isFallback && (serviceConnectMode == 3 || serviceConnectMode == 5))
+    {
+        logging.logIt("connectToExternalBroker", "Use external Fallback Config", 2);
+        IPAddress sIP = services->getServiceIP("mqtt", true);
+        int port = services->getServicePort("mqtt", true, false);
+        this->mqttHandlerClient = this->mqttHandlerClient.setServer(sIP, port);
+        return this->mqttHandlerClient.connect(wifiManager->getDeviceMac().c_str()); 
+    }
+    else
+    {
+        logging.logIt("connectToExternalBroker", "No useable Service(2) found", 2);
+        return 2;
+    }
+    
+}
+
+short MQTTHandler::connectToMQTTBroker()
+{
+    logging.logIt("connectToMQTTBroker", "Try to connect to Conf Broker", 2);
+    logging.logIt("connectToMQTTBroker", "checkForMQTT Service!", 1);
+    short connectMode = services->checkForService("mqtt");
+
+    switch(connectMode)
+    {
+        case 1: //only self offered - search if failing - ip = localhost
+            if(connectSelfOffered() == 1)
+            {
+                logging.logIt("connectToMQTTBroker", "Successfully connected to internal MQTT broker", 2);
+                return 1;
+            }
+            else
+            {
+                logging.logIt("connectToMQTTBroker", "Can't connect to internal Broker - no other conf - start autoAdd", 2);
+                services->autoAddService("mqtt");
+                lockConnect("localhost"); //start auto add and lock connect to prevent new init
+                return 4;
+            }
+            break;
+
+        case 2: //only 1 external Config found - no Internal -> search if failing
+            if(connectToExternalBroker() == 1)
+            {
+                logging.logIt("connectToMQTTBroker", "Successfully connected to Main External MQTT broker", 2);
+                return 1;
+            }
+            else
+            {
+                logging.logIt("connectToMQTTBroker", "Can't connect to Main CFG Broker - no other conf - start autoAdd", 2);
+                services->autoAddService("mqtt");
+                lockConnect("mainConfig"); //start auto add and lock connect to prevent new init
+                return 4;
+            }
+            break;
+
+        case 3: // 2 external found - check both - if error search in newtwork and remove backup
+            if(connectToExternalBroker() == 1)
+            {
+                logging.logIt("connectToMQTTBroker", "Successfully connected to Main External MQTT broker", 2);
+                return 1;
+            }
+            else if(connectToExternalBroker(true) == 1)
+            {
+                logging.logIt("connectToMQTTBroker", "Successfully connected to backup External MQTT broker", 2);
+                return 1;
+            }
+            else
+            {
+                logging.logIt("connectToMQTTBroker", "Can't connect to Main/Backup CFG Broker - no other conf - start autoAdd", 2);
+                services->autoAddService("mqtt");
+                lockConnect("FallbackConfig"); //start auto add and lock connect to prevent new init
+                return 4;
+            }
+            break;
+        case 4: //1 external and self offered found - try selfoffered first then external -> if fail -> search
+            if(connectSelfOffered() == 1)
+            {
+                logging.logIt("connectToMQTTBroker", "Successfully connected to internal MQTT broker", 2);
+                return 1;
+            }
+            else if(connectToExternalBroker() == 1)
+            {
+                logging.logIt("connectToMQTTBroker", "Successfully connected to Main External MQTT broker", 2);
+                return 1;
+            }
+            else
+            {
+                logging.logIt("connectToMQTTBroker", "Can't connect to Internal or Main CFG Broker - no other conf - start autoAdd", 2);
+                services->autoAddService("mqtt");
+                lockConnect("FallbackConfig"); //start auto add and lock connect to prevent new init
+                return 4;
+            }
+            break;
+        case 5: // 2 external and self offered found - try selfofferd first then both external -> if fail remove backup and search
+            if(connectSelfOffered() == 1)
+            {
+                logging.logIt("connectToMQTTBroker", "Successfully connected to internal MQTT broker", 2);
+                return 1;
+            }
+            if(connectToExternalBroker() == 1)
+            {
+                logging.logIt("connectToMQTTBroker", "Successfully connected to Main External MQTT broker", 2);
+                return 1;
+            }
+            else if(connectToExternalBroker(true) == 1)
+            {
+                logging.logIt("connectToMQTTBroker", "Successfully connected to backup External MQTT broker", 2);
+                return 1;
+            }
+            else
+            {
+                logging.logIt("connectToMQTTBroker", "Can't connect to Internal or Main/Backup CFG Broker - no other conf - start autoAdd", 2);
+                services->autoAddService("mqtt");
+                lockConnect("FallbackConfig"); //start auto add and lock connect to prevent new init
+                return 4;
+            }
+            break;
+    };
+    return false;
+}
 
 //Constructor
 
@@ -83,7 +319,7 @@ bool MQTTHandler::setServer(IPAddress ip, uint16 port, bool save, bool asFallbac
             return false;
         }
     }
-    else if ((save & asFallback) && services->checkForService(services->getExternalServiceFilename("mqtt", true).c_str()) == 0 || services->checkForService(services->getExternalServiceFilename("mqtt", true).c_str()) == 2)
+    else if (((save & asFallback) && services->checkForService(services->getExternalServiceFilename("mqtt", true).c_str()) == 0) || services->checkForService(services->getExternalServiceFilename("mqtt", true).c_str()) == 2)
     {
         bool ipChanged = services->changeConfigValue(services->getExternalServiceFilename("mqtt").c_str(), "ip", ip.toString().c_str(), true);
         bool portChanged = services->changeConfigValue(services->getExternalServiceFilename("mqtt").c_str(), "ip", ip.toString().c_str(), true);
@@ -352,249 +588,45 @@ bool MQTTHandler::getCleanSession()
 
 bool MQTTHandler::connect(bool onlyUseExternal, bool searchService)
 {
-    //if service will already searched then Skip other calls
-    if(this->serviceAddDelayActive)
+    logging.logIt("connect(auto)", "Init auto Connect", 2);
+
+    //If connect was already called "serviceAddDelayActive" is enabled to prevent multiple requests - return until the timer is ended
+    if(connectLocked) //the connectFunction is locked because of errors or serviceAdd is Active (second Value)
     {
         return false;
     }
-    //end service will already searched in Network
 
-    //start connecting to MQTT Broker
-    logging.logIt("connect - AUTO", "Try to connect to MQTT Broker - read Config", 0);
+    //check for defined Service
+    logging.logIt("connect(auto)", "Check for defined mqtt Service", 1);
+    short serviceDefined = services->checkForService("mqtt");
 
-
-    //Check for defined MQTT Broker Service - Extrnal and internal
-    if(services->checkForService("mqtt", false) == 0 || searchService)
+    if(serviceDefined != 0) //connect to mqtt Service defined
     {
-        /*
-            No Service defined on the device - try to search in Network for Devices with "NetworkIdent" - by j54j6
-        */
-        if(!searchService)
+        logging.logIt("connect(auto)", "Service found! - try to connect - call conecctToMQTTBroker()", 1);
+        short res = connectToMQTTBroker();
+        if(res == 1)
         {
-            logging.logIt("connect - AUTO", "No MQTT Service defined - try to find Service in Network by Network", 1);
-        }
-        else
-        {
-            logging.logIt("connect - AUTO", "MQTT Search Service was poked by Connect - remove Backup CFG - Auto - start Searching for Service", 1);
-            if(services->checkForService("mqtt", false) == 3 || services->checkForService("mqtt", false) == 5)
-            {
-                if(services->delService("mqtt", false, true))
-                {
-                    logging.logIt("connect - AUTO", "Successfully removed Backup CFG");
-                }
-                else
-                {
-                    logging.logIt("connect - AUTO", "Error while removing Backup CFG!", 2);
-                } 
-            }
-        }
-        
-        /*
-        if(mqttHandlerClient.connect(String(wifiManager->getDeviceMac()).c_str())) //check if any other connection is saved in Object e.g via setServer()
-        {
-            logging.logIt("connect - AUTO", "Successfully connected to in Object defined MQTT Server - return true", 0);
+            logging.logIt("connect(auto)", "Successfully connected to MQTT", 2);
             return true;
         }
         else
         {
-            logging.logIt("connect - AUTO", "Can't connect to MQTT Broker - Maybe no Address set?", 0);
+            logging.logIt("connect(auto)", "Can't connect to MQTT Broker", 1);
             return false;
         }
-        */
-       this->serviceAddDelayActive = true; //set function in "InSearch" Mode to prevent multipe search requests in single-System
-       this->serviceAddDelayTimeout = millis() + 5000; // Set Search Timeout - After Timeout Search Request will canceled
-       short deviceFound = 100; //init value for "deviceFound" - 100 is a random number and has no special meaning
-
-       while(deviceFound != 1 && serviceAddDelayActive) //while no device is found 
-       {
-           deviceFound = services->autoAddService("mqtt"); //NetworkIdent -> searchDevice in Network with defined "mqtt" device
-           if(millis() > serviceAddDelayTimeout) //if the timeour is reached stop searching
-           {
-               logging.logIt("connectAuto - Search", "Timeout reached - no Device Found");
-               serviceAddDelayActive = false;
-               break;
-           }
-           if(deviceFound == 3) 
-           {
-               logging.logIt("connectAuto - Search", "Service already defined! - SKIP");
-               serviceAddDelayActive = false;
-               break;
-           }
-           services->loop();
-       }
-        
-        if(serviceAddDelayActive == false && deviceFound != 100)
-        {
-            String message;
-            message = "Network Search timeout reached - No Device Found\nLast State:";
-            message += deviceFound;
-            logging.logIt("connect - SearchServiceEnd", message.c_str());
-            deviceFound = 100;
-            return false;
-        }       
-        else
-        {
-            return true;
-        }
-        
     }
-    else //MQTT Service defined
+    else if(serviceDefined == 0 && connectOrError) //if connectOrError is active - autoAddDelayTimer is over - if there is no Service it is failed!s
     {
-       bool connectSuccess = false;
-       const char* username = NULL;
-       const char* passwd = NULL;
-       const char* willTopic = 0;
-       const char* willMessage = 0;
-       uint8_t willQos = -1;
-       bool willRetain = false;
-       bool cleanSession = false;
-       
-       //Set WifiCLient as MQTTClient
-       this->mqttHandlerClient.setClient(wifiManager->getRefWiFiClient());
-
-       //Set all Parameters from Config File (defined above) by Config File
-       if(FM->fExist(configFile))
-       {
-           logging.logIt("connect C1", "MQTT Config exist - read needed parameter");   
-                            
-           const char* valUsername = FM->readJsonFileValue(configFile, "user");
-
-           if(!strcmp(valUsername, "") == 0 || !valUsername)
-           {
-               username = valUsername;
-           }
-
-            const char* valPassword = FM->readJsonFileValue(configFile, "pass");
-
-           if(!strcmp(valPassword, "") == 0 || !valPassword)
-           {
-               username = valPassword;
-           }
-           willTopic = this->getWillTopic().c_str();
-           willQos = this->getWillQos();
-           willMessage = this->getWillMessage().c_str();
-           willRetain = this->getWillRetain();
-           cleanSession = this->getCleanSession();
-       }
-        uint sPort = 0;
-       for(int serviceTry = 0; serviceTry <= 3; serviceTry++)
-       {
-           if(connectSuccess)
-           {
-               return true;
-           }
-           switch(serviceTry)
-           {
-                case 1: //Try to connect to main CFG Stuff or internal
-                    logging.logIt("connect C1", "Jump In - Servicetry Case 1", -1);        
-                    switch(services->checkForService("mqtt", onlyUseExternal))
-                    {
-                        case 0:
-                            logging.logIt("connect C1", "Can't find any defined Service - Try to find MQTT Broker in Network");   
-                            break; //End Case 0
-
-                        case 1:
-                            sPort = this->services->getServicePort("mqtt", false, true);
-
-                            if(sPort < 1 || sPort > 65535 || !sPort)
-                            {
-                                sPort = 1883; //default port
-                            }
-                            this->mqttHandlerClient.setServer("127.0.0.1", sPort);
-                            if(this->mqttHandlerClient.connect(WiFi.macAddress().c_str(), username, passwd, willTopic, willQos, willRetain, willMessage, cleanSession))
-                            {
-                                logging.logIt("connect C1", "Successfully connected to MQTT Broker (localhost)");
-                                connectSuccess = true;
-                            }
-                            else
-                            {
-                                logging.logIt("connect C1", "Can't connect to MQTT Broker! - only self Offered found and not connectable!");
-                                connectSuccess = false;
-                            }
-                            break; //End Case 1 - only self offered Service found
-
-                        default: //try to connect to Main CFG if defined
-                            logging.logIt("connect C2", "Try to connect to Main CFG broker");
-                            this->mqttHandlerClient = this->mqttHandlerClient.setServer(IPAddress(services->getServiceIP("mqtt")), int(services->getServicePort("mqtt")));
-                            if(this->mqttHandlerClient.connect(WiFi.macAddress().c_str(), username, passwd, willTopic, willQos, willRetain, willMessage, cleanSession))
-                            {
-                                logging.logIt("connect C1", "Successfully connected to MQTT Broker (Main CFG)");
-                                connectSuccess = true;
-                            }
-                            else
-                            {
-                                logging.logIt("connect C1", "Can't connect to MQTT Broker! - Main CFG not connectable!");
-                                connectSuccess = false;
-                            }
-                            break; //End Case2 - Connect to Main CFG
-                    };
-                break; //End Case 1 - try to connect to Main Services
-
-                case 2: //Try to connect to Fallback Services
-                    logging.logIt("connect S2", "Jump In - Service try Case 2", -1);    
-                    switch(services->checkForService("mqtt", onlyUseExternal))
-                    {
-                        case 0:
-                        case 2:
-                            logging.logIt("connect S2", "Can't find any defined Service / Fallback Service - Skip S2 - Try to find MQTT Broker in Network");   
-                            break; //End Case 0/2
-
-                        case 1: //Second try to connect to MQTT Service with default port 1883 tcp
-                            this->mqttHandlerClient.setServer("127.0.0.1", 1883);
-                            if(this->mqttHandlerClient.connect(WiFi.macAddress().c_str(), username, passwd, willTopic, willQos, willRetain, willMessage, cleanSession))
-                            {
-                                logging.logIt("connect S2", "Successfully connected to MQTT Broker (localhost)");
-                                connectSuccess = true;
-                            }
-                            else
-                            {
-                                logging.logIt("connect S2", "Can't connect to MQTT Broker! - only self Offered found and not connectable!");
-                                connectSuccess = false;
-                            }
-                            break; //End Case 1 - only self offered Service found
-
-                        case 3: //try to connect to Backup CFG if defined
-                        case 5: 
-                            logging.logIt("Connect S2-C3/5", "Try to connect to Backup CFG broker");
-                            this->mqttHandlerClient.setServer(this->services->getServiceIP("mqtt", true), this->services->getServicePort("mqtt", true));
-
-                            if(this->mqttHandlerClient.connect(WiFi.macAddress().c_str(), username, passwd, willTopic, willQos, willRetain, willMessage, cleanSession))
-                            {
-                                logging.logIt("Connect S2-C3/5", "Successfully connected to MQTT Broker (Backup CFG)");
-                                connectSuccess = true;
-                            }
-                            else
-                            {
-                                logging.logIt("Connect S2-C3/5", "Can't connect to MQTT Broker! - Backup CFG not connectable!");
-                                connectSuccess = false;
-                            }
-                            break; //End Case3/5
-                    };
-                    break; //End Case2 - Connect to Backup CFG
-
-                case 3: //Try to Search another device in Network
-                    logging.logIt("connect C3", "Jump In - Servicetry Case 3", -1);   
-                    for(int tries = 0; tries <= 2; tries++)
-                    {
-                        if(this->connect(true, true))
-                        {
-                            if(tries <= 1)
-                            {
-                                connectSuccess = connect();
-                            }
-                            else
-                            {
-                                connectSuccess = false;
-                                break;
-                            }
-                        }              
-                    }
-                break; //End Case 3 - Search for new Service in Network
-            }//End switch ServiceTry
-        } //End For loop
-        logging.logIt("connect - Main", "Can't connect to broker - connect Failed!", 1);
+        logging.logIt("connect(auto)", "After ServiceAdd can't find MQTT Service!");
+        connectTries++;
+    }
+    else
+    {
+        services->autoAddService("mqtt");
         return false;
-    } //End Else - try to connect to defined service
+    }
+
+return false;
 } //End connect()
 
 bool MQTTHandler::connect(const char* id)
@@ -726,18 +758,8 @@ void MQTTHandler::init()
 
 void MQTTHandler::run()
 {
-
-    if(serviceAddDelayActive)
-    {
-        if(serviceAddDelayTimeout <= millis())
-        {
-            serviceAddDelayTimeout = 0;
-            serviceAddDelayActive = false;
-            logging.logIt("run - ServiceAdd", "ServiceAddDelayTimeout reached - try to connect to mqtt Service");
-            this->connect();
-        }
-    }
-    
+    lastCallback.reset();
+    checklockConnectTimer();
     if(this->wifiManager->isConnected() && this->isConnected())
     {
         if(!mqttHandlerClient.loop())

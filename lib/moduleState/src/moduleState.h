@@ -1,3 +1,4 @@
+#pragma once
 #ifndef J54J6_MODULESTATE_H
 #define J54J6_MODULESTATE_H
 
@@ -14,8 +15,6 @@
     Object contains all Data of one Report 
     ClassReportTemplate is part of ordered List with Pointer
 */
-class SysLogger;
-class Filemanager;
 class ClassReportTemplate {
     friend class ClassReportModuleHandler;
     friend class ClassModuleMaster;
@@ -593,7 +592,7 @@ class ClassModuleMaster {
                 }
                 
             }
-            if(_actualSlavePointer->_repeatChecker->getCallPerSecond() >= _actualSlavePointer->_repeatChecker->getEstCallPerSecond())
+            if(_actualSlavePointer->_repeatChecker->getCallPerSecond() >= ulong(_actualSlavePointer->_repeatChecker->getEstCallPerSecond()))
             {
                 if(_actualSlavePointer->_repeatChecker->getWarnIsReported())
                 {

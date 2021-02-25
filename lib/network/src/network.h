@@ -1,3 +1,4 @@
+#pragma once
 #ifndef J54J6_NETWORK_H
 #define J54J6_NETWORK_H
 

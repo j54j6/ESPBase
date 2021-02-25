@@ -1,14 +1,14 @@
 {
-    "ssid" : "",
-    "psk" : "",
-    "wiFiConfigured": "false",
-    "state" : "notConfigured",
-    "wifiMode" : "client",
+    "ssid": "NO_SSID_FOUND",
+    "psk": "JustinRitter01052000!99104266!",
+    "wiFiConfigured": "true",
+    "state": "notConfigured",
+    "wifiMode": "client",
     "wifiState": "true",
     "wifiAutoTime": "3600",
     "wifiStationDefSSID": "test",
     "wifiStationDefPSK": "test",
-    "hostType" : "hidden",
+    "hostType": "hidden",
     "channel": "",
-    "bssid" : ""
-}
+    "bssid": ""
+  }
