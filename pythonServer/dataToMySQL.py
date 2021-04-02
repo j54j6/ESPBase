@@ -11,6 +11,7 @@ mydb = mysql.connector.connect(
 
 mycursor = mydb.cursor()
 def on_message(client, userdata, message):
+  try:
     message = str(message.payload.decode("utf-8"))
     jsonParsed = json.loads(message)
     if(jsonParsed["mac"] == "2C:F4:32:51:21:83"):
@@ -21,10 +22,12 @@ def on_message(client, userdata, message):
       print(mycursor.rowcount, "record inserted.")
     else:
       print("Wrong MAC!")
+  except:
+    print("Can't parse JSON - SKIP!")
 
 client =mqtt.Client('mainServer')
 client.connect("192.168.178.27", port=1883, keepalive=60, bind_address="")
-client.subscribe("/data/report/temperature/terasse")
+client.subscribe("espos/usedata/2C:F4:32:51:21:83/module/dht11Temp/temperature")
 client.on_message=on_message        #attach function to callback
 
 while (True):

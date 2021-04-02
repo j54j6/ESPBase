@@ -127,8 +127,7 @@ String SysLogger::getFormattedMessage(String functionName, String message, short
 void SysLogger::initMQTT()
 {
     this->macAddress = WiFi.macAddress();
-    this->mqttPublishTopic = "espOS/log/" + macAddress;
-    Serial.println("Log Topic: " + mqttPublishTopic);
+    this->mqttPublishTopic = "espOS/devices/" + macAddress + "/log";
 }
 //public
 /*

@@ -9,3 +9,4 @@ Main Topics:
     espOS/usedata/*                            - user space to publish all data you want in subtopic - e.g ./sensor/livingroom/temp
 
 Please use these topic for own mpdules too - if not it is possible to get in channels of other mqtt devices not powered by espOS 
+

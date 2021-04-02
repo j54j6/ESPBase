@@ -42,6 +42,24 @@
             -> x-versionAvailiable (version of database)
 */
 
+
+/*
+    Default Values for config
+
+*/
+#define defaultUpdateServer "192.168.178.27"
+#define defaultUpdateUrl "/"
+#define defaultUpdateToken "espWiFiThermometerV1"
+#define defaultUpdatePass "rtgzi32u45z4u5hbnfdnfbdsi"
+#define defaultUpdatePort "80"
+#define defaultUpdateUpdateSearch "true"
+#define defaultAutoUpdate "true"
+#define defaultUpdateSoftwareVeresion "0.0.1"
+#define defaultUpdateCheckDelay "86400"
+
+
+
+
 class OTA_Manager
 {
     private:
@@ -64,6 +82,7 @@ class OTA_Manager
         String softwareVersionInstalled = "0";
         String softwareVersionAvailiable = "0";
         bool lastFailed = false;
+        bool initCorrect = false;
 
         /*
             functionType:
@@ -75,12 +94,14 @@ class OTA_Manager
         //debug function
         void showHeader(HTTPClient* http)
         {
+            /*
             Serial.println("###########header START#################");
             for(int i = 0; i < http->headers(); i++)
             {
                 Serial.println(http->headerName(i) + String(" : ") + http->header(i));
             }
             Serial.println("##############END HEADER###############");
+            */
         }
     protected:
         bool checkForFiles();

@@ -687,11 +687,11 @@ void MQTTHandler::disconnect()
     Publishing
 */
 
-bool MQTTHandler::publish(const char* topic, const char* payload)
+bool MQTTHandler::publish(const char* topic, const char* payload, bool retained)
 {
     logging.logIt("publish", "Publish Message");
 
-    return mqttHandlerClient.publish(topic, payload);
+    return mqttHandlerClient.publish(topic, payload, retained);
 }
 
 /*
@@ -758,7 +758,7 @@ void MQTTHandler::init()
 
 void MQTTHandler::run()
 {
-    lastCallback.reset();
+    lastCallback.reset("MQTT Handler");
     checklockConnectTimer();
     if(this->wifiManager->isConnected() && this->isConnected())
     {

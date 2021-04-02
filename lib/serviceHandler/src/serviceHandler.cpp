@@ -375,7 +375,7 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
         /*
             External Services path
         */
-        if(ip != "0.0.0.0" && String(serviceName) != "n.S" && String(port) != "-1")
+        if(strcmp(ip, "0.0.0.0") != 0 && String(serviceName) != "n.S" && String(port) != "-1")
         {
             //create File
             if(!FM->fExist(getExternalServiceFilename(serviceName, fallback).c_str()));

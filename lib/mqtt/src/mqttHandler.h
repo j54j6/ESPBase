@@ -40,12 +40,17 @@
 
 struct lastMqttCallback {
     
-    const char* topic = "";
+    String topic = "";
     String payload = "";
     const char* outputModuleName = "";
 
-    void reset()
+    void reset(const char* moduleName)
     {
+        if(payload != "")
+        {
+            //Serial.print("Reset by ");
+            //Serial.println(moduleName);
+        }
         topic = "";
         payload = "";
         outputModuleName = "";
@@ -57,14 +62,16 @@ struct lastMqttCallback {
         {
             return payload;
         }
+        return "";
     }
 
-    const char* getTopic(const char* moduleName = "")
+    String getTopic(const char* moduleName = "")
     {
         if((outputModuleName && !outputModuleName[0]) || strcmp(outputModuleName, moduleName))
         {
             return topic;
         }
+        return "";
     }
 };
 
@@ -233,7 +240,7 @@ class MQTTHandler {
         /*
         Publishing
     */
-   bool publish(const char* topic, const char* payload);
+   bool publish(const char* topic, const char* payload, bool retained = false);
     /*
     bool publish(const char* topic, const char* payload, boolean retained);
     bool publish(const char* topic, const uint8_t * payload, unsigned int plength);

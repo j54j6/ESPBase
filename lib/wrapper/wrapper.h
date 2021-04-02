@@ -14,7 +14,6 @@
 #include "wifiManager.h"
 #include "voltageDetect.h"
 #include "logger.h"
-#include "dht11Temp.h"
 #include "./modules/mqttConfigurator/mqttConfig.h"
 
 class espOS {
@@ -30,7 +29,6 @@ class espOS {
         MQTTHandler* _mqttHandler;
         voltageDetector* _voltageDetector;
         SysLogger* _initLogger;
-        dht11Temp* _dht11;
         ESPOS_Module_MQTTConfig* _mqttConfigurator;
 
         const char* cssDir = "config/os/web/";
@@ -53,8 +51,7 @@ class espOS {
             _mqttHandler =  new MQTTHandler(_FM, _Wifi, _serviceHandler);
             _OTA = new OTA_Manager(_FM, _Network, _Ntp, _Wifi, _WorkLed);
             _voltageDetector = new voltageDetector(A0);
-            _initLogger = new SysLogger();
-            _dht11 = new dht11Temp(_mqttHandler, D5);
+            _initLogger = new SysLogger("espOS");
             _mqttConfigurator = new ESPOS_Module_MQTTConfig(_mqttHandler, _FM, _Wifi);
         }   
 
@@ -75,6 +72,27 @@ class espOS {
 
         //control Class
         void disableLeds();
+        void enableLeds();
+
+
+        /*
+            Website Stuff
+        */
+        void handleMainStateSite();
+
+        //GraphicStuff
+        void sendWebsiteLogo();
+        void sendSpecIcons();
+
+
+        //CSS Stuff
+        void sendspecexpcss();
+        void sendSpecCss();
+        /*
+            Special WrapperClass Stuff
+
+        */
+       void mqttOSCommands();
 
         void begin();
         void run();

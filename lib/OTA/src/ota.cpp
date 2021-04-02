@@ -20,7 +20,81 @@ bool OTA_Manager::checkForFiles()
     }
     else
     {
-        logging.logIt("checkForFiles", "Config File already exist -SKIP");
+        bool cupdateServer = _FM->checkForKeyInJSONFile(configFile, "updateServer");
+        bool cupdateuri = _FM->checkForKeyInJSONFile(configFile, "uri");
+        bool cservertoken = _FM->checkForKeyInJSONFile(configFile, "servertoken");
+        bool cserverpass = _FM->checkForKeyInJSONFile(configFile, "serverpass");
+        bool cport = _FM->checkForKeyInJSONFile(configFile, "port");
+        bool cupdateSearch = _FM->checkForKeyInJSONFile(configFile, "updateSearch");
+        bool cautoUpdate = _FM->checkForKeyInJSONFile(configFile, "autoUpdate");
+        bool cSoftwareversion = _FM->checkForKeyInJSONFile(configFile, "softwareVersion");
+        bool cCheckDelay =  _FM->checkForKeyInJSONFile(configFile, "checkDelay");
+
+        static bool changed = false;
+        if(!cupdateServer)
+        {
+            _FM->appendJsonKey(configFile, "updateServer", defaultUpdateServer);
+            changed = true;
+        }
+        if(!cupdateuri)
+        {
+            _FM->appendJsonKey(configFile, "uri", defaultUpdateUrl);
+            changed = true;
+        }
+        if(!cservertoken)
+        {
+            _FM->appendJsonKey(configFile, "servertoken", defaultUpdateToken);
+            changed = true;
+        }
+        if(!cserverpass)
+        {
+            _FM->appendJsonKey(configFile, "serverpass", defaultUpdatePass);
+            changed = true;
+        }
+        if(!cport)
+        {
+            _FM->appendJsonKey(configFile, "port", defaultUpdatePort);
+            changed = true;
+        }
+        if(!cupdateSearch)
+        {
+            _FM->appendJsonKey(configFile, "updateSearch", defaultUpdateUpdateSearch);
+            changed = true;
+        }
+        if(!cautoUpdate)
+        {
+            _FM->appendJsonKey(configFile, "autoUpdate", defaultAutoUpdate);
+            changed = true;
+        }
+        if(!cSoftwareversion)
+        {
+            _FM->appendJsonKey(configFile, "softwareVersion", defaultUpdateSoftwareVeresion);
+            changed = true;
+        }
+        if(!cCheckDelay)
+        {
+            _FM->appendJsonKey(configFile, "checkDelay", defaultUpdateCheckDelay);
+            changed = true;
+        }
+
+        if(changed)
+        {
+            logging.logIt("checkForFiles", "Config File was not complete! - check again!");
+            bool res = checkForFiles();
+
+            if(res)
+            {
+                logging.logIt("checkForFiles", "Config File complete! - return true", 2);
+                changed = false;
+                return true;
+            }
+            else
+            {
+                logging.logIt("checkForFiles", "Config File can't be completed! - FAILED", 4);
+                return false;
+            }
+        }
+        logging.logIt("checkForFiles", "Config File complete -SKIP");
         return true;
     }
     return false;
@@ -28,6 +102,11 @@ bool OTA_Manager::checkForFiles()
 
 bool OTA_Manager::init()
 {
+    if(!this->_Wifi->isConnected())
+    {
+        return false;
+    }
+    _Ntp->updateTime();
     checkForFiles();
     this->automaticUpdateSearch = _FM->returnAsBool(_FM->readJsonFileValue(configFile, "updateSearch"));
     this->checkIntervall = String(_FM->readJsonFileValue(configFile, "checkDelay")).toFloat();
@@ -388,8 +467,18 @@ void OTA_Manager::run()
     _Network->run();
     _Wifi->run();
 
+    //check if init is Possible
+    if(!initCorrect)
+    {
+        if(this->init())
+        {
+            this->initCorrect = true;
+        }
+        return;
+    }
+
     //check for updateCheck
-    if(automaticUpdateSearch)
+    if(automaticUpdateSearch && initCorrect)
     {
         if(_Ntp->getEpochTime() > nextUpdateCheck)
         {
