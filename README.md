@@ -39,19 +39,14 @@ bucket list:
     Network: Dynamic LED Support
     Network: PROGMEM Registration Website
     Network: Dynamic WiFi Handling and auto disable to save energy
-    Network: MQTT Support (Broker and Client)
     Network: Custom per User OTA with SSL and Key verification
     Network: ESP NOW communication
-    General: Encapsulating ESPBase from hook up functionality
     General: Power saving
     General: smart Deep Sleep
-    General: Modular Website Interface to set up Device and hok up functionality
-    General: Get this project working ^^
+    General: Modular Website Interface to set up Device and hok up functionality ~50% finished
     General: Assistant compatibility
     General: Mod store for this system (e.g for LED control or thermometer)
     Button: detect push sequences (eg. long - short -long - short)
-    General: Create a wrapper class for hook up functionality
-    General: Add modular Config Website for devices - every module (class) can add own website-part (module) to be configured
 
 what's working:
 
@@ -76,6 +71,7 @@ what's working:
         setup time for long and short click and max delay
 
     Network:
+        MQTT Support (Broker and Client)
         wifi control (connect/disconnect/disable)
         config creation
         AP start
