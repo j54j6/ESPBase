@@ -96,7 +96,7 @@
     }
     else
     {
-        digitalWrite(led_Pin, LOW);
+        digitalWrite(led_Pin, LOW);  
     }
 }
 
@@ -135,7 +135,7 @@ void LED::getVars()
 
  void LED::ledOn(bool enableComplete)
  {
-    if(locked)
+    if(locked || !ledEnabled)
     {
         return;
     }

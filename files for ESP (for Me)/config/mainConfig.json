@@ -1,15 +1,20 @@
 {
     "id" : "20200425222132534785498",
     "product" : "wiFi-thermometer",
-    "updateServer" : "https://update.justinritter.de/",
+    "updateServer" : "https://update.justinritter.de",
+    "uri" : "/index.php",
     "servertoken" : "espWiFiThermometerV1",
     "serverpass" : "rtgzi32u45z4u5hbnfdnfbdsi",
     "port" : "8796",
     "updateSearch" : "true",
     "autoUpdate" : "true",
+    "onUpdate" : "false",
     "usedChip" : "ESP8266",
     "lastUpdate" : "20200425",
+    "lastUpdateSearch" : "",
     "locked" : "false",
     "producedIn" : "2020",
     "ledState": "true",
+    "softwareVersion" : "0.0.1",
+    "softwareVersionAvail" : ""
   }

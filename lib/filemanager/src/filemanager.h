@@ -1,5 +1,4 @@
-#ifndef J54J6_FILEMANAGER_H
-    #define J54J6_FILEMANAGER_H
+#pragma once
     #include <Arduino.h>
     #include <ArduinoJson.h>
     #include <SPI.h>
@@ -111,4 +110,3 @@
             bool appendJsonKey(const char* filename, const char* newKey, const char* newVal);
             bool delJsonKeyFromFile(const char* filename, const char* key);
     };
-#endif

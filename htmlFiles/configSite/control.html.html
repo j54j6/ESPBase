@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <link rel="stylesheet" href="spec.css">
+        <link rel="stylesheet" href="spec-exp.css">
+        <link rel="stylesheet" href="spec-icons.css">
+
+        <meta charset="utf-8">
+        <title>Nodework Portal</title>
+        <style>
+            body {
+                overflow: hidden;
+            }
+            .px-5em {
+                padding-left: 5em;
+            }
+            .px-3em {
+                padding-left: 3em;
+            }
+
+            .pb-2 {
+                padding-bottom: 2em;
+            }
+
+            .pb-3 {
+                padding-bottom: 3em;
+            }
+
+            .py-2 {
+                padding-right: 2em;
+            }
+            .hide-overflow {
+                overflow: hidden;
+            }
+
+            .active-category {
+                color: #ffb3b3;
+            }
+
+            .active-subGroup {
+                color: #ff8080;
+                font-weight: bold;
+            }
+
+            .textOkay {
+                color: greenyellow;
+            }
+
+            .textError {
+              color: orangered;
+            }
+
+            .textWarn {
+                color: yellow;
+            }
+
+            .bg-dark {
+                background-color: #303742 !important;
+            }
+
+            .bg-clicked {
+                background-color: #2a2f36;
+            }
+        </style>
+
+        <script>
+            function clickAnimStart(id)
+            {
+                console.log("Given ID: " + id);
+                document.getElementById(id).classList.remove("bg-dark");
+                document.getElementById(id).classList.add("bg-clicked");
+                console.log("called!");
+            }
+
+            function clickAnimStop(id)
+            {
+                console.log("Given ID: " + id);
+                document.getElementById(id).classList.remove("bg-clicked");
+                document.getElementById(id).classList.add("bg-dark");
+                
+                console.log("called!");
+            }
+            
+            function setMqttStatus()
+            {
+                console.log("setMQTTGet called");
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open( "GET", "getMQTTStatus", true ); // false for synchronous request
+                xmlHttp.send( null );
+                document.getElementById("mqttStatus").innerHTML =  xmlHttp.responseText;
+            }
+            
+            function setUpdateStatus()
+            {
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open( "GET", "", true ); // false for synchronous request
+                xmlHttp.send( null );
+                document.getElementById("updateStatus").innerHTML =  xmlHttp.responseText;
+            }
+        </script>
+    </head>
+    <body style="font-family: Roboto, sans-serif, Arial; background-color: #121212; color: white">
+        <div class="off-canvas">
+            <!-- off-screen toggle button -->
+            <a class="off-canvas-toggle btn btn-primary btn-action" href="#sidebar-id">
+              <div class="container">
+                <i class="icon icon-menu"></i>
+              </div>
+            </a>
+          
+            <div id="sidebar-id" class="off-canvas-sidebar col-5 hide-overflow" style="background-color: #1F1B24">
+              <!-- off-screen sidebar -->
+              <a class="off-canvas-toggle float-right p-relative py-2" href="#close" >
+                <i style="color:white; border-style: none;" class="icon icon-2x icon-arrow-left"></i>
+              </a>
+                <div class="navbar col-12">
+                    <div class="container">
+                        <div class="columns">
+                            <div class="column col-12 text-center">
+                                <img style="height: 250px" src="logo" alt="Logo">
+                            </div>
+                            <div class="column col-12">
+                                <div class="divider"></div>
+                            </div>
+                            <div class="column col-10">
+                                <div class="accordion">
+                                    <input type="checkbox" id="accordion-1" name="accordion-checkbox" hidden>
+                                    <label class="accordion-header" for="accordion-1">
+                                      <i class="icon icon-arrow-right px-3em pb-2"></i>
+                                        <span class="h2 active-category"><b>System</b></span>
+                                    </label>
+                                    <div class="accordion-body">
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="#"><span class="h4">Info</span></a> 
+                                        </div>
+                                        <div class="col-8 px-5em pb-2">
+                                            <a href="#"><span class="h4">Logs</span></a> 
+                                        </div>
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="#"><span class="h4 active-subGroup" >Status</span></a> 
+                                        </div>
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="#"><span class="h4">Control</span></a> 
+                                        </div>
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="#"><span class="h4">WiFi Settings</span></a> 
+                                        </div>
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="#"><span class="h4">Update Settings</span></a> 
+                                        </div>
+                                    </div>
+                                  </div>
+                            </div>
+                            <div class="column col-10">
+                                <div class="accordion">
+                                    <input type="checkbox" id="accordion-2" name="accordion-checkbox" hidden>
+                                    <label class="accordion-header" for="accordion-2">
+                                      <i class="icon icon-arrow-right px-3em pb-2"></i>
+                                        <span class="h2"><b>Modules</b></span>
+                                    </label>
+                                    <div class="accordion-body">
+                                        <div class="col-12 px-5em pb-4">
+                                            <a href="#"><span class="h4">Registered modules</span></a> 
+                                        </div>
+                                        <div class="col-8 px-5em pb-4">
+                                            <a href="#"><span class="h4">template</span></a> 
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          
+            <a class="off-canvas-overlay " href="#close"></a>
+                
+            <div class="off-canvas-content ">
+                <div class="container col-12">
+                    <header class="header text-center">
+                        <img width="150px" src="logo" alt="Logo">
+                        <div style="border-color: gray" class="divider"></div>
+                    </header>
+                    <content style="padding-top: 4em">
+                        <div class="container text-center pb-2">
+                            <div class="text-center"></div>
+                            <span class="h4 text-center col-8">Device-Control</span>
+                        </div>
+                        
+                        <div class="container s-rounded" style="background-color: #1c1c1c">
+                            <div class="text-center"><span class="h1">System</span></div>
+                            <div class="columns pb-3 s-rounded">
+                                <div class="column col-mx-auto card col-3 bg-dark" style="border-color: darkgray;">
+                                    <div class="card-header text-center">
+                                        <span class="h3" style="color:black">Power</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                      <span class="h5 active-category">Active</span>
+                                    </div>
+                                </div>
+
+
+                                <div id="MQTTCard" class="column col-mx-auto card col-3 bg-dark" style="border-color: darkgray;">
+                                    <span href="#" onmousedown="clickAnimStart('MQTTCard')" onmouseup="clickAnimStop('MQTTCard')" onclick="setMqttStatus()">
+                                        <div class="card-header text-center">
+                                            <span class="h3" style="color:black">MQTT</span>
+                                        </div>
+                                        <div class="card-body text-center">
+                                          <span id="mqttStatus" class="h5 %MQTTStatusClass%">%MQTTStatus%</span>
+                                        </div>
+                                    </span>
+                                </div>   
+                            
+    
+                                <div id="updaterCard" class="column col-mx-auto card col-3 bg-dark" style="border-color:darkgray;">
+                                    <span href="#" onmousedown="clickAnimStart('updaterCard')" onmouseup="clickAnimStop('updaterCard')" onclick="setUpdateStatus()">
+                                        <div class="card-header text-center">
+                                            <span class="h3" style="color:black">Updater</span>
+                                        </div>
+                                        <div class="card-body text-center">
+                                          <span id="updateStatus" class="h5 %UpdaterStatusClass%">%updaterStatus%</span>
+                                        </div>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="py-2"></div>
+                        <div class="container s-rounded" style="background-color: #1c1c1c">
+                            <div class="text-center"><span class="h1">System</span></div>
+                            <div class="columns pb-3 s-rounded">
+                                <div class="column col-mx-auto card col-3 bg-dark" style="border-color: darkgray;">
+                                    <div class="card-header text-center">
+                                        <span class="h3" style="color:black">Battery</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <div class="columns">
+                                            <div class="column col-12">
+                                                <span class="h5 textOkay">%BatteryUseageVolt% V</span>
+                                            </div>
+                                            <div class="column col-12">
+                                                <span class="h5 textOkay">%BatteryUseagePercent% %</span>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+
+
+                                <div class="column  col-mx-auto card col-3 bg-dark" style="border-color: darkgray;">
+                                    <div class="card-header text-center">
+                                        <span class="h3" style="color:black">Ram</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <div class="columns">
+                                            <div class="column col-12">
+                                                <span class="h5 textOkay">%RamUseageKB% Kb</span>
+                                            </div>
+                                            <div class="column col-12">
+                                                <span class="h5 textOkay">%RamUseagePercent% %</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>   
+                            
+    
+                                <div class="column  col-mx-auto card col-3 bg-dark" style="border-color: darkgray;">
+                                    <div class="card-header text-center">
+                                        <span class="h3" style="color:black">Flash</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <div class="columns">
+                                            <div class="column col-12">
+                                                <span class="h5 textOkay">%flashUseageMB% Kb</span>
+                                            </div>
+                                            <div class="column col-12">
+                                                <span class="h5 textOkay">%flashUseagePercent% %</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </content>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

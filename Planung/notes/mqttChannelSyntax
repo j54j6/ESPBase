@@ -1,0 +1,12 @@
+Main Topics:
+    espOS/*                                    - all about espOS 
+    espOS/modules/*                            - espOS Modules e.g OTA or ServiceHandler or MQTTConfig
+    espOS/devices/* <<MAC>>/*                  - channel for specific devices
+    espOS/devices/* <<(group)-name>>/*         - channel for specific devices (e.g unique names) or groups (e.g wifiShare - configChannel to deploy new wifiCredentials/whatever)
+    espOS/log/<<MAC>>                          - global Log for device with <<MAC>>
+    espOS/log/<<MAC>>/module/*                 - log for specific module at <<mac>> - not used by default - implemented later
+    espOS/log/<<MAC>>/prio/*                   - device log for one specific Priority e.g only Trace, Debug, INFO, WARN, ERROR - not used by default - implemented later
+    espOS/usedata/*                            - user space to publish all data you want in subtopic - e.g ./sensor/livingroom/temp
+
+Please use these topic for own mpdules too - if not it is possible to get in channels of other mqtt devices not powered by espOS 
+

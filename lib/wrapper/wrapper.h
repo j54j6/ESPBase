@@ -1,9 +1,9 @@
+#pragma once
 #include <Arduino.h>
 
 #include "button.h"
 #include "filemanager.h"
 #include "led.h"
-#include "logger.h"
 #include "moduleState.h"
 #include "mqttHandler.h"
 #include "network.h"
@@ -12,12 +12,13 @@
 #include "serviceHandler.h"
 #include "udpManager.h"
 #include "wifiManager.h"
+#include "voltageDetect.h"
+#include "logger.h"
+#include "./modules/mqttConfigurator/mqttConfig.h"
 
 class espOS {
     private:
-        LED* _WorkLed;
-        LED* _WifiLed;
-        LED* _errorLed;
+        
         Filemanager* _FM;
         WiFiManager* _Wifi;
         Network* _Network;
@@ -26,13 +27,21 @@ class espOS {
         ServiceHandler* _serviceHandler;
         ClassModuleMaster* _Watcher;
         MQTTHandler* _mqttHandler;
+        voltageDetector* _voltageDetector;
+        SysLogger* _initLogger;
+        ESPOS_Module_MQTTConfig* _mqttConfigurator;
+
+        const char* cssDir = "config/os/web/";
 
     public:
-        espOS()
+    LED* _WorkLed;
+        LED* _WifiLed;
+        LED* _errorLed;
+        espOS(int workLedPin = -1, int errorLedPin = -1, int wifiLedPin = -1)
         {
-            _WorkLed = new LED(D2);
-            _WifiLed = new LED(D1);
-            _errorLed = new LED(D7);
+            _WorkLed = new LED(workLedPin); //D2
+            _WifiLed = new LED(wifiLedPin); //D1
+            _errorLed = new LED(errorLedPin); //D7
             _FM = new Filemanager(true);
             _Wifi = new WiFiManager(_WifiLed, _FM);
             _Network = new Network(_FM, _Wifi);
@@ -41,7 +50,10 @@ class espOS {
             _Watcher = new ClassModuleMaster(_errorLed, _WorkLed);
             _mqttHandler =  new MQTTHandler(_FM, _Wifi, _serviceHandler);
             _OTA = new OTA_Manager(_FM, _Network, _Ntp, _Wifi, _WorkLed);
-        }
+            _voltageDetector = new voltageDetector(A0);
+            _initLogger = new SysLogger("espOS");
+            _mqttConfigurator = new ESPOS_Module_MQTTConfig(_mqttHandler, _FM, _Wifi);
+        }   
 
         Filemanager* getFilemanagerObj();
         WiFiManager* getWiFimanagerObj();
@@ -50,8 +62,37 @@ class espOS {
         ServiceHandler* getServiceHandlerObj();
         MQTTHandler* getMqttHandler();
         OTA_Manager* getOtaManagerObject();
+        voltageDetector* getVoltageDetectorObj();
+        ESPOS_Module_MQTTConfig* getModuleMQTTConfig()
+        {
+            return this->_mqttConfigurator;
+        }
         void addModuleToWatchdog(ClassModuleSlave* newModule);
 
+
+        //control Class
+        void disableLeds();
+        void enableLeds();
+
+
+        /*
+            Website Stuff
+        */
+        void handleMainStateSite();
+
+        //GraphicStuff
+        void sendWebsiteLogo();
+        void sendSpecIcons();
+
+
+        //CSS Stuff
+        void sendspecexpcss();
+        void sendSpecCss();
+        /*
+            Special WrapperClass Stuff
+
+        */
+       void mqttOSCommands();
 
         void begin();
         void run();

@@ -30,22 +30,299 @@ OTA_Manager* espOS::getOtaManagerObject()
     return this->_OTA;
 }
 
+voltageDetector* espOS::getVoltageDetectorObj()
+{
+    return this->_voltageDetector;
+}
+
 void espOS::addModuleToWatchdog(ClassModuleSlave* newModule)
 {
     this->_Watcher->addModuleSlave(newModule);
 }
 
+void espOS::disableLeds()
+{
+    _WorkLed->disable();
+}
+
+
+//Website Stuff
+void espOS::handleMainStateSite()
+{
+    ESP8266WebServer* webserver = _Network->getWebserver();
+    webserver->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    webserver->sendHeader("Pragma", "no-cache");
+    webserver->sendHeader("Expires", "-1");
+    webserver->setContentLength(CONTENT_LENGTH_UNKNOWN);
+    // HTML Content
+    //webserver->send(200, "image/png", FM->readFile("config/os/web/logo.PNG"));
+    String websitePrepared = _FM->readFile("config/os/web/status.html");
+
+    String connected;
+    if(_Wifi->isConnected() == 1)
+    {
+      websitePrepared.replace("%WiFiStatusClass%", "textOkay");
+      connected = "Connected";
+    }
+    else{
+      websitePrepared.replace("%WiFiStatusClass%", "textError");
+      connected = "Not Connected!";
+    }
+    websitePrepared.replace("%WiFiStatus%", connected);
+
+    if(_mqttHandler->isConnected())
+    {
+      websitePrepared.replace("%MQTTStatusClass%", "textOkay");
+      websitePrepared.replace("%MQTTStatus%", "Connected");
+    }
+    else
+    {
+      websitePrepared.replace("%MQTTStatusClass%", "textError");
+      websitePrepared.replace("%MQTTStatus%", "Not Connected");
+    }
+    
+    if(_OTA->getIsLastUpdateCheckFailed())
+    {
+      websitePrepared.replace("%UpdaterStatusClass%", "textError");
+      websitePrepared.replace("%updaterStatus%", "FAILED!");
+    }
+    else
+    {
+      if(_OTA->getIsUpdateAvailiable())
+      {
+          websitePrepared.replace("%UpdaterStatusClass%", "textWarn");
+          websitePrepared.replace("%updaterStatus%", "Update available");
+      }
+      else
+      { 
+        websitePrepared.replace("%UpdaterStatusClass%", "textOkay");
+        websitePrepared.replace("%updaterStatus%", "Okay");
+      }
+      
+    }
+
+    uint32_t RamUsage = (81920 - ESP.getFreeHeap())/1000;
+    float RamInPercent = 81920 - ESP.getFreeHeap();
+    RamInPercent = RamInPercent/81920;
+    RamInPercent = RamInPercent * 100;
+    websitePrepared.replace("%BatteryUseageVolt%", String(_voltageDetector->getActualVoltage()));
+    websitePrepared.replace("%BatteryUseagePercent%", String(_voltageDetector->getPercent()));
+    websitePrepared.replace("%RamUseageKB%", String(RamUsage));
+    websitePrepared.replace("%RamUseagePercent%", String(RamInPercent));
+    
+    uint storage = ESP.getFlashChipRealSize();
+    uint freeSpace = storage - ESP.getFreeSketchSpace();
+    freeSpace = freeSpace / 1000;
+    _initLogger->logIt("handleMainStateSite", "Free Space: " + String(freeSpace));
+    _initLogger->logIt("handleMainStateSite", "ESP total: " + String(storage));
+    float FreeSpacePercent = freeSpace * 1000;
+    FreeSpacePercent = FreeSpacePercent / storage;
+    FreeSpacePercent = FreeSpacePercent * 100;
+    
+    websitePrepared.replace("%flashUseageMB%", String(freeSpace));
+    websitePrepared.replace("%flashUseagePercent%", String(FreeSpacePercent));
+
+    webserver->send(200, "text/html", websitePrepared);
+}
+
+
+/*
+    Website Graphic Stuff
+
+*/
+
+void espOS::sendWebsiteLogo()
+{
+  //Serial.println("send Logo called!");
+  ESP8266WebServer* webserver = _Network->getWebserver();
+  File logo = _FM->fdOpen("config/os/web/logo.PNG", "r");
+  if (webserver->streamFile(logo, "image/png") != logo.size()) 
+  {
+    _initLogger->logIt("sendWebsiteLogo", "Error while Streaming CSS File!", 4);
+  }
+  logo.close();
+}
+
+void espOS::sendSpecIcons()
+{
+  //Serial.println("send Spec Icons called!");
+  ESP8266WebServer* webserver = _Network->getWebserver();
+  File specIcons = _FM->fdOpen("config/os/web/spec-icons.css", "r");
+  if (webserver->streamFile(specIcons, "text/css") != specIcons.size()) 
+  {
+    _initLogger->logIt("sendSpecIcons", "Error while Streaming CSS File!", 4);
+  }
+  specIcons.close();
+}
+
+//Website CSS Stuff
+void espOS::sendspecexpcss()
+{
+  //Serial.println("spec exp called!");
+  ESP8266WebServer* webserver = _Network->getWebserver();
+
+  File specExp = _FM->fdOpen("config/os/web/spec-exp.css", "r");
+  if (webserver->streamFile(specExp, "text/css") != specExp.size()) 
+  {
+    _initLogger->logIt("sendspecexpcss", "Error while Streaming CSS File!", 4);
+  }
+ 
+  specExp.close();
+
+  //webserver->send(200, "text/css", FM->readFile("config/os/web/spec-exp.css"));
+}
+
+void espOS::sendSpecCss()
+{   
+  //Serial.println("spec csscalled!");
+  ESP8266WebServer* webserver = _Network->getWebserver();
+
+  File specFile = _FM->fdOpen("config/os/web/spec.css", "r");
+  if (webserver->streamFile(specFile, "text/css") != specFile.size()) 
+  {
+    _initLogger->logIt("sendSpecCss", "Error while Streaming CSS File!", 4);
+  }
+ 
+  specFile.close();
+  //webserver->send(200, "text/css", FM->readFile("config/os/web/spec.css"));
+}
+
+void espOS::mqttOSCommands()
+{
+    static int step = 0;
+    //static int lastCall = 0;
+  if(_mqttHandler->getCallback()->payload != "")
+  {
+    if(_mqttHandler->getCallback()->topic == "home/control" && _mqttHandler->getCallback()->payload == "restart")
+    {
+      ESP.restart();
+    }
+    if(_mqttHandler->getCallback()->topic == "home/control" && _mqttHandler->getCallback()->payload == "shutdown")
+    {
+      ESP.deepSleep(5000000);
+    }
+    if(_mqttHandler->getCallback()->topic == "home/control" && _mqttHandler->getCallback()->payload == "formatDevice")
+    {
+      _FM->format();
+    }
+    if(_mqttHandler->getCallback()->topic == "home/control" && _mqttHandler->getCallback()->payload == "getMac")
+    {
+      _mqttHandler->publish("/home/public", _Wifi->getDeviceMac().c_str());
+    }
+    if(_mqttHandler->getCallback()->topic == "home/control" && _mqttHandler->getCallback()->payload == "update")
+    {
+      _OTA->getUpdatesAutoCred();
+    }
+    if(_mqttHandler->getCallback()->topic == "home/control" && _mqttHandler->getCallback()->payload == "updateCheck")
+    {
+      _OTA->checkUpdatesAutoCred();
+    }
+    if(_mqttHandler->getCallback()->topic == "home/control" && _mqttHandler->getCallback()->payload == "disableLed")
+    {
+      _WorkLed->disable();
+    }
+    if(_mqttHandler->getCallback()->topic == "home/control" && _mqttHandler->getCallback()->payload == "enableLed")
+    {
+      _WorkLed->enable();
+    }
+    if(_mqttHandler->getCallback()->topic == "home/control" && _mqttHandler->getCallback()->payload == "disableAutoUpdate")
+    {
+      _FM->changeJsonValueFile("config/mainConfig.json", "autoUpdate", "false");
+    }
+    if(_mqttHandler->getCallback()->topic == "home/control" && _mqttHandler->getCallback()->payload == "enableAutoUpdate")
+    {
+      _FM->changeJsonValueFile("config/mainConfig.json", "autoUpdate", "true");
+    }
+    if(_mqttHandler->getCallback()->topic == "home/control" && _mqttHandler->getCallback()->payload == "enableConfMode")
+    {
+      _initLogger->logIt("mqttOSCommands", "MQTT ConfMode enabled");
+      _mqttConfigurator->setConfMode(true);
+    }
+  }
+
+
+  if(_Network->getDeviceIsConfigured())
+  {
+    if(_Wifi->isConnected())
+    {
+      if(step > 1 && !_mqttHandler->isConnected())
+      {
+        _initLogger->logIt("mqttOSCommands", "MQTT Broker - Connection Lost - reconnect!", 4);
+        step = 0;
+      }
+
+      switch(step) {
+        case 0:
+          
+          if(_mqttHandler->connect())
+          {
+            //Serial.println("Successfully loaded Connect Config!");
+            step++;
+            break;
+          }
+          /*
+          else
+          {
+            Serial.println("Error connectng with MQTT Broker!");
+          }
+          */
+          break;
+        
+        case 1:
+          if(_mqttHandler->isConnected())
+          {
+            _initLogger->logIt("mqttOSCommands", "Connected with Broker!");
+            step++;
+            //lastCall = millis();
+            _mqttHandler->subscribe("home/test");
+            _mqttHandler->subscribe("home/control");
+          }
+          break;
+
+        case 2:
+          if(_mqttHandler->publish("home/test", "ESP works!"))
+          {
+            _initLogger->logIt("mqttOSCommands", "Startmessage successfully published!");
+            step++;
+          }
+          else
+          {
+            _initLogger->logIt("mqttOSCommands", "Error while publishing MQTT Start Message", 4);
+          }
+          break;
+      }
+    }
+  }
+}
+
+
+
 void espOS::begin()
 {
     Serial.begin(921600);
     _FM->mount();
+    _initLogger->setMqttClient(_mqttHandler->getPubSubClient());
+    _FM->getSerialFileStructure();
     _serviceHandler->beginListen();
     _Network->begin();
     _mqttHandler->init();
+    _mqttConfigurator->begin();
     _Watcher->addModuleSlave(_Wifi->getClassModuleSlave());
     _Watcher->addModuleSlave(_Network->getClassModuleSlave());
     _Watcher->addModuleSlave(_mqttHandler->getClassModuleSlave());
     _Watcher->addModuleSlave(_serviceHandler->getClassModuleSlave());
+    _Watcher->addModuleSlave(_mqttConfigurator->getClassModuleSlave());
+
+
+    //Add State Main Website
+    _Network->stopWebserver();
+    _Network->addService("/", std::bind(&espOS::handleMainStateSite, this));
+    _Network->addService("/spec-exp.css", std::bind(&espOS::sendspecexpcss, this));
+    _Network->addService("/spec.css", std::bind(&espOS::sendSpecCss, this));
+    _Network->addService("/spec-icons.css", std::bind(&espOS::sendSpecIcons, this));
+    _Network->addService("/logo.PNG", std::bind(&espOS::sendWebsiteLogo, this));
+    _Network->addService("/logo", std::bind(&espOS::sendWebsiteLogo, this));
+    _Network->startWebserver(80);
 }
 
 void espOS::run() {
@@ -59,4 +336,7 @@ void espOS::run() {
     this->_serviceHandler->loop();
     this->_Watcher->run();
     this->_mqttHandler->run();
+    this->_voltageDetector->run();
+    this->_mqttConfigurator->run();
+    mqttOSCommands();
 }

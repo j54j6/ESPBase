@@ -1,3 +1,4 @@
+#pragma once
 #ifndef J54J6_MODULESTATE_H
 #define J54J6_MODULESTATE_H
 
@@ -591,7 +592,7 @@ class ClassModuleMaster {
                 }
                 
             }
-            if(_actualSlavePointer->_repeatChecker->getCallPerSecond() >= _actualSlavePointer->_repeatChecker->getEstCallPerSecond())
+            if(_actualSlavePointer->_repeatChecker->getCallPerSecond() >= ulong(_actualSlavePointer->_repeatChecker->getEstCallPerSecond()))
             {
                 if(_actualSlavePointer->_repeatChecker->getWarnIsReported())
                 {

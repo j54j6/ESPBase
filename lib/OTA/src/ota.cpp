@@ -16,16 +16,98 @@ bool OTA_Manager::checkForFiles()
     {
         logging.logIt("checkForFiles", "createConfigFile", 2);
         _FM->createFile(configFile);
-        _FM->appendJsonKey(configFile, "updateServer", "update.nodework.de");
+        return _FM->appendJsonKey(configFile, "updateServer", "update.nodework.de");
     }
     else
     {
-        logging.logIt("checkForFiles", "Config File already exist -SKIP");
+        bool cupdateServer = _FM->checkForKeyInJSONFile(configFile, "updateServer");
+        bool cupdateuri = _FM->checkForKeyInJSONFile(configFile, "uri");
+        bool cservertoken = _FM->checkForKeyInJSONFile(configFile, "servertoken");
+        bool cserverpass = _FM->checkForKeyInJSONFile(configFile, "serverpass");
+        bool cport = _FM->checkForKeyInJSONFile(configFile, "port");
+        bool cupdateSearch = _FM->checkForKeyInJSONFile(configFile, "updateSearch");
+        bool cautoUpdate = _FM->checkForKeyInJSONFile(configFile, "autoUpdate");
+        bool cSoftwareversion = _FM->checkForKeyInJSONFile(configFile, "softwareVersion");
+        bool cCheckDelay =  _FM->checkForKeyInJSONFile(configFile, "checkDelay");
+
+        static bool changed = false;
+        if(!cupdateServer)
+        {
+            _FM->appendJsonKey(configFile, "updateServer", defaultUpdateServer);
+            changed = true;
+        }
+        if(!cupdateuri)
+        {
+            _FM->appendJsonKey(configFile, "uri", defaultUpdateUrl);
+            changed = true;
+        }
+        if(!cservertoken)
+        {
+            _FM->appendJsonKey(configFile, "servertoken", defaultUpdateToken);
+            changed = true;
+        }
+        if(!cserverpass)
+        {
+            _FM->appendJsonKey(configFile, "serverpass", defaultUpdatePass);
+            changed = true;
+        }
+        if(!cport)
+        {
+            _FM->appendJsonKey(configFile, "port", defaultUpdatePort);
+            changed = true;
+        }
+        if(!cupdateSearch)
+        {
+            _FM->appendJsonKey(configFile, "updateSearch", defaultUpdateUpdateSearch);
+            changed = true;
+        }
+        if(!cautoUpdate)
+        {
+            _FM->appendJsonKey(configFile, "autoUpdate", defaultAutoUpdate);
+            changed = true;
+        }
+        if(!cSoftwareversion)
+        {
+            _FM->appendJsonKey(configFile, "softwareVersion", defaultUpdateSoftwareVeresion);
+            changed = true;
+        }
+        if(!cCheckDelay)
+        {
+            _FM->appendJsonKey(configFile, "checkDelay", defaultUpdateCheckDelay);
+            changed = true;
+        }
+
+        if(changed)
+        {
+            logging.logIt("checkForFiles", "Config File was not complete! - check again!");
+            bool res = checkForFiles();
+
+            if(res)
+            {
+                logging.logIt("checkForFiles", "Config File complete! - return true", 2);
+                changed = false;
+                return true;
+            }
+            else
+            {
+                logging.logIt("checkForFiles", "Config File can't be completed! - FAILED", 4);
+                return false;
+            }
+        }
+        logging.logIt("checkForFiles", "Config File complete -SKIP");
+        return true;
     }
+    return false;
 }
 
 bool OTA_Manager::init()
 {
+    if(!this->_Wifi->isConnected())
+    {
+        return false;
+    }
+    _Ntp->updateTime();
+    checkForFiles();
     this->automaticUpdateSearch = _FM->returnAsBool(_FM->readJsonFileValue(configFile, "updateSearch"));
     this->checkIntervall = String(_FM->readJsonFileValue(configFile, "checkDelay")).toFloat();
     this->lastUpdateCheck = String(_FM->readJsonFileValue(configFile, "lastUpdateSearch")).toFloat();
@@ -73,6 +155,7 @@ bool OTA_Manager::addHeader(HTTPClient* client, int functionType)
             client->addHeader(F("x-requestType"), String("undefined")); //add header to trigger update check
             break;
     }
+    return true;
 }
 
 
@@ -101,27 +184,30 @@ bool OTA_Manager::checkForUpdates(String host, uint16_t port, String uri, String
     http.setAuthorization(username.c_str(), password.c_str()); //read server credentials from Flash
 
     int code = http.GET(); 
-    int len = http.getSize();
+    //int len = http.getSize();
 
     showHeader(&http);
 
     if(code <= 0)
     {
         logging.logIt("checkForUdates", String("Error while checking for updates! - Code: ") + String(code) + String("Error: ") + String(http.errorToString(code).c_str()), 4);
+        this->nextUpdateCheck = _Ntp->getEpochTime() + 3600;
         return false;
     }
     else if(!http.hasHeader("x-requestedType") || !http.hasHeader("x-requestResponse"))
     {
         logging.logIt("checkForUdates", String("Error while checking for updates! - HTTP Response is invalid! - HTTP Code: " + String(code)), 4);
+        this->nextUpdateCheck = _Ntp->getEpochTime() + 3600;
         return false;
     }
     else if(http.header("x-requestedType") != String("updateCheck"))
     {
         logging.logIt("checkForUdates", String("Error while checking for updates! - HTTP Response has an unexcepted value"), 4);
+        this->nextUpdateCheck = _Ntp->getEpochTime() + 3600;
         return false;
     }
 
-    if(http.header("x-requestedType") = String("updateCheck"))
+    if(http.header("x-requestedType") == String("updateCheck"))
     {
         if(code != 200)
         {
@@ -151,7 +237,7 @@ bool OTA_Manager::checkForUpdates(String host, uint16_t port, String uri, String
             }
             else if(http.header("x-requestResponse") == String("newVersionAvail")) //device can be updated but is not forced to - device/user settings decide if device get's the update
             {
-                logging.logIt("checkForUpdates", "Updates found. Current Version: " + String(_FM->readJsonFileValue(configFile, "softwareVersion")) + String(" New Version: ") + String(http.header("x-newVersion")));
+                logging.logIt("checkForUpdates", "Updates found. Current Version: " + String(_FM->readJsonFileValue(configFile, "softwareVersion")) + String(" New Version: ") + String(http.header("x-versionAvailiable")));
                 if(_FM->returnAsBool(_FM->readJsonFileValue(configFile, "autoUpdate")) && !onlyCheck) //device get auto Updates
                 {
                     return getUpdates(host, port, uri, username, password);
@@ -162,7 +248,12 @@ bool OTA_Manager::checkForUpdates(String host, uint16_t port, String uri, String
                     _FM->changeJsonValueFile(configFile, "lastUpdateSearch", String(_Ntp->getEpochTime()).c_str());
                     return true;
                 }
-            }   
+            }
+            else if(http.header("x-requestResponse") == String("noUpdates"))
+            {
+                logging.logIt("checkForUpdates", "No Updates");
+                return true;
+            }
         }
     }
     return false;
@@ -240,12 +331,14 @@ bool OTA_Manager::getUpdates(String host, uint16_t port, String uri, String user
         _FM->changeJsonValueFile(configFile, "softwareVersion", String(http.header("x-versionAvailiable")).c_str());
         //later implemented state set update done - later with (rebootOn Update config)
         ESP.restart();
+        return true;
     }
     else 
     {
         logging.logIt("getUpdate", "Update failed! - Installation failed!", 5);
         return false;
     }
+    return false;
 }
 
 /**
@@ -356,16 +449,36 @@ long OTA_Manager::getLastUpdateCheck()
     return lastCheck;
 }
 
+bool OTA_Manager::getIsLastUpdateCheckFailed()
+{
+    return lastFailed;
+}
+
+bool OTA_Manager::getIsUpdateAvailiable()
+{
+    return updatesAvailiable;
+}
+
 void OTA_Manager::run()
 {
-    static int reInit = 0;
+    static ulong reInit = 0;
 
     _Ntp->run();
     _Network->run();
     _Wifi->run();
 
+    //check if init is Possible
+    if(!initCorrect)
+    {
+        if(this->init())
+        {
+            this->initCorrect = true;
+        }
+        return;
+    }
+
     //check for updateCheck
-    if(automaticUpdateSearch)
+    if(automaticUpdateSearch && initCorrect)
     {
         if(_Ntp->getEpochTime() > nextUpdateCheck)
         {
@@ -376,7 +489,14 @@ void OTA_Manager::run()
             if(!res)
             {
                 logging.logIt("run->checkForUpdates", "Check for Updates return false!");
-                init();
+                lastFailed = true;
+            }
+            else
+            {
+                if(lastFailed)
+                {
+                    lastFailed = false;
+                } 
             }
         }
     }

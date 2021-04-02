@@ -1,3 +1,4 @@
+#pragma once
 #ifndef J54J6_OTA
 #define J54J6_OTA
 
@@ -41,6 +42,24 @@
             -> x-versionAvailiable (version of database)
 */
 
+
+/*
+    Default Values for config
+
+*/
+#define defaultUpdateServer "192.168.178.27"
+#define defaultUpdateUrl "/"
+#define defaultUpdateToken "espWiFiThermometerV1"
+#define defaultUpdatePass "rtgzi32u45z4u5hbnfdnfbdsi"
+#define defaultUpdatePort "80"
+#define defaultUpdateUpdateSearch "true"
+#define defaultAutoUpdate "true"
+#define defaultUpdateSoftwareVeresion "0.0.1"
+#define defaultUpdateCheckDelay "86400"
+
+
+
+
 class OTA_Manager
 {
     private:
@@ -62,6 +81,8 @@ class OTA_Manager
         bool automaticUpdateSearch = true;
         String softwareVersionInstalled = "0";
         String softwareVersionAvailiable = "0";
+        bool lastFailed = false;
+        bool initCorrect = false;
 
         /*
             functionType:
@@ -73,12 +94,14 @@ class OTA_Manager
         //debug function
         void showHeader(HTTPClient* http)
         {
+            /*
             Serial.println("###########header START#################");
             for(int i = 0; i < http->headers(); i++)
             {
                 Serial.println(http->headerName(i) + String(" : ") + http->header(i));
             }
             Serial.println("##############END HEADER###############");
+            */
         }
     protected:
         bool checkForFiles();
@@ -97,7 +120,7 @@ class OTA_Manager
             port, _FM->readJsonFileValue(configFile, "uri"),
             _FM->readJsonFileValue(configFile, "servertoken"), _FM->readJsonFileValue(configFile, "serverpass"));
         }
-        bool getUpdatedAutoCred()
+        bool getUpdatesAutoCred()
         {
             int port = String(_FM->readJsonFileValue("config/mainConfig.json", "port")).toInt();
             return getUpdates(_FM->readJsonFileValue(configFile, "updateServer"),
@@ -116,6 +139,8 @@ class OTA_Manager
         bool getSearchForUpdatesAutomatic();
         long getCheckIntervall();
         long getLastUpdateCheck();
+        bool getIsLastUpdateCheckFailed();
+        bool getIsUpdateAvailiable();
         void run();
 
 };

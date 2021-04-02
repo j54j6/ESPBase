@@ -1,3 +1,4 @@
+#pragma once
 #ifndef Lib_Led_h
 #define Lib_Led_h
 
@@ -17,7 +18,6 @@ class LED {
         unsigned short int intervall = 0;
         const char* ledName = "not set";
         bool locked = false; //if locked - until unlock nothing can changed
-
         bool change; //only run 
 
         unsigned long nextCall;

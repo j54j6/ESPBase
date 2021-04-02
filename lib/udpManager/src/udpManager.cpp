@@ -77,16 +77,7 @@ void udpManager::sendUdpMessage(const char* workload, IPAddress ip, int port)
         
 
             #ifdef J54J6_SysLogger
-                
-                String message = "------------------------------\n";
-                message += "IP: ";
-                message += ip.toString();
-                message += "\nPort: ";
-                message += port;
-                message += "\nWorkload: ";
-                message += workload;
-                message += "\n------------------------------\n";
-                logging.logIt("sendUdpMessage", message.c_str(), -1);
+                logging.logIt("sendUdpMessage", "Workload: " + String(workload), 1);
             #endif
 
             /*
@@ -126,7 +117,6 @@ void udpManager::run()
     {
         return;
     }
-    lastContent.resetPack();
     if(wifiManager->getWiFiState() == WL_CONNECTED && udpListenerStarted == true)
     {
         int packetSize = udpHandler.parsePacket();
@@ -136,6 +126,7 @@ void udpManager::run()
             {
                 return;
             }
+            lastContent.resetPack();
             lastContent.paketSize = packetSize;
             lastContent.remoteIP = udpHandler.remoteIP();
             lastContent.remotePort = udpHandler.remotePort();
@@ -153,18 +144,7 @@ void udpManager::run()
         if(lastContent.udpContent != "NULL")
         {
             #ifdef J54J6_SysLogger
-                
-                String message = "\n.............\n";
-                message += "Address: \n";
-                message += lastContent.remoteIP.toString().c_str();
-                message += "\nPort: ";
-                message += lastContent.remotePort;
-                message += "\nPacket Size: ";
-                message += lastContent.paketSize;
-                message += "\nContent: ";
-                message += lastContent.udpContent;
-                message += ".............";
-                logging.logIt("udpReceive - loop", message.c_str(), -1);
+                logging.logIt("udpReceive - loop", lastContent.udpContent, 1);
             #endif
         }
     }

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef MQTTHANDLER
 #define MQTTHANDLER
 
@@ -9,8 +10,13 @@
 #include "filemanager.h"
 #include "serviceHandler.h"
 #include "moduleState.h"
+#include "logger.h"
+
 
 /*
+    Config Default Values
+
+
     MQTT Config Blueprint
 
     {
@@ -34,12 +40,17 @@
 
 struct lastMqttCallback {
     
-    const char* topic = "";
+    String topic = "";
     String payload = "";
     const char* outputModuleName = "";
 
-    void reset()
+    void reset(const char* moduleName)
     {
+        if(payload != "")
+        {
+            //Serial.print("Reset by ");
+            //Serial.println(moduleName);
+        }
         topic = "";
         payload = "";
         outputModuleName = "";
@@ -51,14 +62,16 @@ struct lastMqttCallback {
         {
             return payload;
         }
+        return "";
     }
 
-    const char* getTopic(const char* moduleName = "")
+    String getTopic(const char* moduleName = "")
     {
         if((outputModuleName && !outputModuleName[0]) || strcmp(outputModuleName, moduleName))
         {
             return topic;
         }
+        return "";
     }
 };
 
@@ -73,8 +86,16 @@ class MQTTHandler {
 
         lastMqttCallback lastCallback;
 
-        const char* configFallback[1][2] = {
-            {"", ""}
+        const char* configFallback[10][2] = {
+            {"updateServer", "update.nodework.de"},
+            {"uri", "/update"},
+            {"servertoken", "unidentified"},
+            {"serverpass", "unidentified!kgh49zuh89!3u903/U90kPOI9=U/89zIH"},
+            {"port", "80"},
+            {"updateSearch", "true"},
+            {"autoUpdate", "true"},
+            {"softwareVersion", "0.0.1"},
+            {"checkDelay", "86400"}
         };
         int configFileLength = 0;
 
@@ -86,13 +107,46 @@ class MQTTHandler {
         bool MQTTActive = false;
         bool classDisabled = false;
 
-        bool serviceAddDelayActive = false;
-        ulong serviceAddDelayTimeout = 0;
+        bool removeConfigIfBrokerCantReached = false;
+
+        //Connect - Auto vars
+        bool connectLocked = false; //true if autoConnect can't connect to defined service and try to find service in Network or if the function is locked because of multiple errors during connecting
+        bool lockReasonIsError = false;
+        int serviceSearchTimeout = 2000; //Timeout after the class check if serviceAdd was successful
+
+        ulong timeoutAfterSearchError = 300000; //this time the class will wait if mqtt Broker can't be reached for  "tryToConnectXTimes"
+        short tryToConnectXTimes = 4; //How often the class should try to connect ot MQTT Broker until the class will wait for "timeoutAfterSearchError" until next connect
+        short connectTries = 0; //connect counter - will set to 0 if the timer goues up
+        ulong unlockAt = 0; //contains the Locktime the connect() can't be used
+        bool connectOrError = false; //firstTime connect called after serviceadd this wil true - if can't connect error increment by one else all parameters are resetted
+        String lastUsedIP = "0"; //used to identifiy if a new config is availiable / decide which config is needed
 
     protected:
         //extra Stuff
         bool configCheck();
+        void lockConnect(String usedIP, bool isError = false);
+        void checklockConnectTimer(); //added in loop
+        void resetConnectLock();
 
+        //connect to different serviceTypes
+        /*
+            return:
+                0 = failed
+                1 -> success
+                2 -> no useable config  
+        */
+        short connectSelfOffered();
+        short connectToExternalBroker(bool isFallback = false);
+
+        /*
+            Return:
+                1 -> Success
+                2 -> no useable Config found!
+                3 -> Can't connect to broker
+                4 -> start autoAdd
+        */
+        short connectToMQTTBroker();
+        
     public:        
         MQTTHandler(Filemanager* FM, WiFiManager* wifiManager, ServiceHandler* serviceHandler);
         MQTTHandler();
@@ -149,6 +203,10 @@ class MQTTHandler {
     {
         return &classControl;
     }
+    PubSubClient* getPubSubClient()
+    {
+        return &this->mqttHandlerClient;
+    }
 
     /*
         Connect
@@ -163,8 +221,6 @@ class MQTTHandler {
     /*
         connect() - helper
     */
-
-    bool connectToService(bool main = true); //normaly used to connect to MQTT Server - try main and Backup CFG
     bool searchForServiceInNetwork(); //if connectToService() fails - this function tries to find another network device offering MQTT - by using Networkident and 
     bool setUserAndPass();
     /*
@@ -184,7 +240,7 @@ class MQTTHandler {
         /*
         Publishing
     */
-   bool publish(const char* topic, const char* payload);
+   bool publish(const char* topic, const char* payload, bool retained = false);
     /*
     bool publish(const char* topic, const char* payload, boolean retained);
     bool publish(const char* topic, const uint8_t * payload, unsigned int plength);
@@ -234,6 +290,6 @@ class MQTTHandler {
     //control class
     void startClass();
     void stopClass();
-    void restartClass();    
+    void restartClass();  
 };
 #endif
