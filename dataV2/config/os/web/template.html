@@ -120,76 +120,19 @@
 
         <a class="off-canvas-overlay " href="#close"></a>
 
-
-        <div class="off-canvas">
+        <!--User Menu\/-->
+        <div class="off-canvas pb-3">
             <div class="container col-12">
                 <header class="header text-center">
-                    <a href="https://nodework.de"><img width="350px" src="logo.PNG" alt="Logo"></a>
+                    <a href="https://nodework.de"><img width="350px" src="logo.png" alt="Logo"></a>
                     <div style="border-color: gray" class="divider"></div>
                 </header>
                 <content style="padding-top: 4em;">
-                    <div class="container text-center pb-2">
-                        <div class="text-center"></div>
-                        <span class="h1 text-center col-8">WiFi-Settings</span>
-                    </div>
-
-                    <!-- ROW one-->
-                    <div class="container s-rounded cardBackground">
-                        <div class="text-center pb-2 mt-2"><span class="h2">Derzeitige Einstellungen</span></div>
-
-                        <div class="col-12 column">
-                            <div class="s-rounded column col-12 pb-3">
-                                <div class="card bg-dark subCardBackground col-mx-auto">
-                                    <div class="card-header text-center">
-                                        <span class="h4 cardCaption">SSID</span>
-                                    </div>
-                                    <div class="card-body text-center">
-                                        <span class="h5 %ssidClass%">%ssid%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pb-3"></div>
-                    <div class="container s-rounded cardBackground">
-                        <div class="text-center pb-2 mt-2"><span class="h2">Einstellungen ändern</span></div>
-
-                        <div class="col-12 column">
-                            <div class="s-rounded column col-12 pb-3">
-                                <div class="card bg-dark subCardBackground col-mx-auto form-group">
-                                    <form action="/saveWifi" method="POST">
-                                        <div class="card-header text-center">
-                                            <span class="h4 cardCaption form-label" for="input-ssid" style="padding-top: .5em;">SSID</span>
-                                        </div>
-                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
-                                        <div class="card-body text-center">
-                                            <div class="form-group">
-                                                <select class="formfeld form-select " style="background-color: #1c1c1c8c; padding-bottom: 0; margin-bottom: 0">
-                                                  <option>SSID auswählen</option>
-                                                </select>
-                                              </div>
-                                        </div>
-                                        <div class="card-header text-center">
-                                            <span class="h4 cardCaption form-label" for="input-passwd" style="padding-top: 1em;">PSK</span>
-                                        </div>
-                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
-                                        <div class="card-body text-center" style="margin-left: 7.5%; margin-right: 7.5%">
-                                            <input class="form-input formfeld" type="password" id="passwd" placeholder="New password" style="width: 100%">
-                                        </div>
-                                        <div class="pb-3"></div>
-                                        <div class="card-body text-center">
-                                            <button type="submit" class = "btn btn-lg btn-success formfeldbtn" style="height: 3em; font-size: 3em">Speichern</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    %Content%
                 </content>
             </div>
         </div>
     </div>
-    
 </body>
 
 </html>
