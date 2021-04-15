@@ -3,8 +3,6 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/frplrd0e9tny2gy7?svg=true)](https://ci.appveyor.com/project/j54j6/espbase)
 [![Coverage Status](https://coveralls.io/repos/github/j54j6/ESPBase/badge.svg?branch=master)](https://coveralls.io/github/j54j6/ESPBase?branch=master)
 
-This project is not finished yet
-
 
 IMPORTANT: To get this program working you need to pre flash the files saved in Data/* to your ESP with LittleFS Flasher != SPIFFS Flash !!!!
 
@@ -24,20 +22,18 @@ postponed work:
     
 Current work:
 
-    -> Nothing... -> Coming soon^^
+    -> Add Webinterface to ESPOS
 
 bucket list:
 
     device: Encrypt all config files on ESP LittleFS Storage to prevent physical readout
     simple updater to update the sketch without removing hookup sketch
-    mini "sketch store" for simple devices e.g mqtt thermometers/you tell me...
-    communitystore integration
+    mini "sketch store" for simple devices e.g mqtt thermometers/...
     launch blog website nodework.de
     Network: add SSDP
     Network: DNS Homeintegration
     Network: WPS Support
     Network: Dynamic LED Support
-    Network: PROGMEM Registration Website
     Network: Dynamic WiFi Handling and auto disable to save energy
     Network: MQTT Support (Broker and Client)
     Network: Custom per User OTA with SSL and Key verification
@@ -45,8 +41,7 @@ bucket list:
     General: Encapsulating ESPBase from hook up functionality
     General: Power saving
     General: smart Deep Sleep
-    General: Modular Website Interface to set up Device and hok up functionality
-    General: Get this project working ^^
+    General: Modular Website Interface to set up Device and hook up functionality
     General: Assistant compatibility
     General: Mod store for this system (e.g for LED control or thermometer)
     Button: detect push sequences (eg. long - short -long - short)
