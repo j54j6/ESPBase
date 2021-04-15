@@ -9,38 +9,12 @@
 
     <meta charset="utf-8">
     <title>Nodework Portal</title>
-    
+    <style>
+        
+    </style>
 
     <script>
-        function clickAnimStart(id) {
-            console.log("Given ID: " + id);
-            document.getElementById(id).classList.remove("bg-dark");
-            document.getElementById(id).classList.add("bg-clicked");
-            console.log("called!");
-        }
-
-        function clickAnimStop(id) {
-            console.log("Given ID: " + id);
-            document.getElementById(id).classList.remove("bg-clicked");
-            document.getElementById(id).classList.add("bg-dark");
-
-            console.log("called!");
-        }
-
-        function setMqttStatus() {
-            console.log("setMQTTGet called");
-            var xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", "getMQTTStatus", true); // false for synchronous request
-            xmlHttp.send(null);
-            document.getElementById("mqttStatus").innerHTML = xmlHttp.responseText;
-        }
-
-        function setUpdateStatus() {
-            var xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", "", true); // false for synchronous request
-            xmlHttp.send(null);
-            document.getElementById("updateStatus").innerHTML = xmlHttp.responseText;
-        }
+        
     </script>
 </head>
 
@@ -53,7 +27,7 @@
             </div>
         </a>
 
-        <div id="sidebar-id" class="off-canvas-sidebar col-md-5 hide-overflow" style="background-color: #121212">
+        <div id="sidebar-id" class="off-canvas-sidebar col-md-5 hide-overflow" style="background-color: #1F1B24">
             <!-- off-screen sidebar -->
             <a class="off-canvas-toggle float-right p-relative py-2" href="#close">
                 <i style="color:white; border-style: none;" class="icon icon-4x icon-arrow-left"></i>
@@ -76,13 +50,13 @@
                                     </label>
                                     <div class="accordion-body">
                                         <div class="col-12 px-5em pb-2">
-                                            <a href="info.html"><span class="menuSubCategory ">Info</span></a>
+                                            <a href="info.html"><span class="menuSubCategory active-subGroup">Info</span></a>
                                         </div>
                                         <div class="col-8 px-5em pb-2">
                                             <a href="log.html"><span class="menuSubCategory ">Logs</span></a>
                                         </div>
                                         <div class="col-12 px-5em pb-2">
-                                            <a href="status.html"><span class="menuSubCategory active-subGroup" >Status</span></a>
+                                            <a href="status.html"><span class="menuSubCategory" >Status</span></a>
                                         </div>
                                         <div class="col-12 px-5em pb-2">
                                             <a href="control.html"><span class="menuSubCategory">Control</span></a>
@@ -97,7 +71,7 @@
                             </div>
                         </div>
                         <div class="column col-10">
-                            <div class="accordion">
+                            <div class="accordion" >
                                 <input type="checkbox" id="accordion-2" name="accordion-checkbox" checked hidden>
                                 <label class="accordion-header" for="accordion-2">
                                       <i class="icon icon-2x icon-arrow-right px-2em pb-2"></i>
@@ -122,7 +96,7 @@
 
 
         <div class="off-canvas">
-            <div class="container col-12">
+            <div class="container col-11">
                 <header class="header text-center">
                     <a href="https://nodework.de"><img width="350px" src="logo.PNG" alt="Logo"></a>
                     <div style="border-color: gray" class="divider"></div>
@@ -130,51 +104,56 @@
                 <content style="padding-top: 4em;">
                     <div class="container text-center pb-2">
                         <div class="text-center"></div>
-                        <span class="h1 text-center col-8">Device-Status</span>
+                        <span class="h1 text-center col-8">Info</span>
                     </div>
 
                     <!-- ROW one-->
                     <div class="container s-rounded cardBackground">
-                        <div class="text-center pb-2 mt-2"><span class="h2">Network</span></div>
+                        <div class="text-center pb-2 mt-2"><span class="h2">Gerät</span></div>
 
                         <div class="col-12 column">
                             <div class="s-rounded column col-12">
                                 <div class="card bg-dark subCardBackground col-mx-auto">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">WiFi</span>
+                                        <span class="h4 cardCaption">Firmwareversion</span>
                                     </div>
                                     <div class="card-body text-center">
-                                        <span class="h5 %WiFiStatusClass%">%WiFiStatus%</span>
+                                        <span class="h5 %firmwareVersionClass%">%firmwareVersion%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="s-rounded column col-12">
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">Hostname</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %hostnameClass%">%hostname%</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="column s-rounded col-12">
                                 <div id="MQTTCard" class="card bg-dark subCardBackground col-mx-auto">
-                                    <span href="#" onmousedown="clickAnimStart('MQTTCard')" onmouseup="clickAnimStop('MQTTCard')" onclick="setMqttStatus()">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">MQTT</span>
+                                        <span class="h4 cardCaption">Registered Error</span>
                                 </div>
 
                                 <div class="card-body text-center">
-                                    <span id="mqttStatus" class="h5 %MQTTStatusClass%">%MQTTStatus%</span>
+                                    <span id="mqttStatus" class="h5 %errorCounterClass%">%errorCounter%</span>
                                 </div>
-                                </span>
                             </div>
                         </div>
 
-
-
-                        <div class="column s-rounded col-12">
+                        <div class="column s-rounded col-12 pb-2">
                             <div id="updaterCard" class="card bg-dark subCardBackground col-mx-auto">
-                                <span href="#" onmousedown="clickAnimStart('updaterCard')" onmouseup="clickAnimStop('updaterCard')" onclick="setUpdateStatus()">
                                 <div class="card-header text-center">
-                                    <span class="h4 cardCaption">Updater</span>
+                                    <span class="h4 cardCaption">Uptime</span>
                             </div>
                             <div class="card-body text-center">
-                                <span id="updateStatus" class="h5 %UpdaterStatusClass%">%updaterStatus%</span>
+                                <span id="updateStatus" class="h5 %uptimeClass%">%uptime%</span>
                             </div>
-                            </span>
                         </div>
                     </div>
             </div>
@@ -188,20 +167,17 @@
     <div class="py-2"></div>
 
     <!--Row 2-->
-    <div class="container s-rounded cardBackground">
-        <div class="text-center pb-2 mt-2"><span class="h2">System</span></div>
+    <div class="container s-rounded cardBackground col-11">
+        <div class="text-center pb-2 mt-2"><span class="h2">Netzwerk</span></div>
         <div class="columns pb-3 s-rounded">
             <div class="column col-mx-auto card col-12 bg-dark subCardBackground">
                 <div class="card-header text-center">
-                    <span class="h4 cardCaption">Battery</span>
+                    <span class="h4 cardCaption">WiFi-SSID</span>
                 </div>
                 <div class="card-body text-center">
                     <div class="columns">
                         <div class="column col-12">
-                            <span class="h5 textOkay">%BatteryUseageVolt% V</span>
-                        </div>
-                        <div class="column col-12">
-                            <span class="h5 textOkay">%BatteryUseagePercent% %</span>
+                            <span class="h5 ">%wifiSSID%</span>
                         </div>
                     </div>
 
@@ -211,32 +187,89 @@
 
             <div class="column  col-mx-auto card col-12 bg-dark subCardBackground">
                 <div class="card-header text-center">
-                    <span class="h4 cardCaption">Ram</span>
+                    <span class="h4 cardCaption">Verbindungsqualität</span>
                 </div>
                 <div class="card-body text-center">
                     <div class="columns">
                         <div class="column col-12">
-                            <span class="h5 textOkay">%RamUseageKB% Kb</span>
-                        </div>
-                        <div class="column col-12">
-                            <span class="h5 textOkay">%RamUseagePercent% %</span>
+                            <span class="h5 ">%qoS%</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-
             <div class="column  col-mx-auto card col-12 bg-dark subCardBackground">
                 <div class="card-header text-center">
-                    <span class="h4 cardCaption">Flash</span>
+                    <span class="h4 cardCaption">IP Adresse</span>
                 </div>
                 <div class="card-body text-center">
                     <div class="columns">
                         <div class="column col-12">
-                            <span class="h5 textOkay">%flashUseageMB% Kb</span>
+                            <span class="h5 ">%ipAdress%</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="column  col-mx-auto card col-12 bg-dark subCardBackground">
+                <div class="card-header text-center">
+                    <span class="h4 cardCaption">MAC Adresse</span>
+                </div>
+                <div class="card-body text-center">
+                    <div class="columns">
                         <div class="column col-12">
-                            <span class="h5 textOkay">%flashUseagePercent% %</span>
+                            <span class="h5 ">%macAddress%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column  col-mx-auto card col-12 bg-dark subCardBackground">
+                <div class="card-header text-center">
+                    <span class="h4 cardCaption">Subnetmask</span>
+                </div>
+                <div class="card-body text-center">
+                    <div class="columns">
+                        <div class="column col-12">
+                            <span class="h5 ">%subnetMask%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column  col-mx-auto card col-12 bg-dark subCardBackground">
+                <div class="card-header text-center">
+                    <span class="h4 cardCaption">Kanal</span>
+                </div>
+                <div class="card-body text-center">
+                    <div class="columns">
+                        <div class="column col-12">
+                            <span class="h5 ">%channel%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column  col-mx-auto card col-12 bg-dark subCardBackground">
+                <div class="card-header text-center">
+                    <span class="h4 cardCaption">DNS Server</span>
+                </div>
+                <div class="card-body text-center">
+                    <div class="columns">
+                        <div class="column col-12">
+                            <span class="h5 ">%dnsAdress%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column  col-mx-auto card col-12 bg-dark subCardBackground">
+                <div class="card-header text-center">
+                    <span class="h4 cardCaption">Verschlüssellung</span>
+                </div>
+                <div class="card-body text-center">
+                    <div class="columns">
+                        <div class="column col-12">
+                            <span class="h5 ">%encryptionType%</span>
                         </div>
                     </div>
                 </div>

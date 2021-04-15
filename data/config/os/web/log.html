@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <link rel="stylesheet" href="spec.css">
+    <link rel="stylesheet" href="spec-exp.css">
+    <link rel="stylesheet" href="spec-icons.css">
+    <link rel="stylesheet" href="own.css">
+
+    <meta charset="utf-8">
+    <title>Nodework Portal</title>
+    <style>
+        
+    </style>
+
+    <script>
+        
+    </script>
+</head>
+
+<body style="font-family: Roboto, sans-serif, Arial; background-color: #121212; color: white">
+    <div class="off-canvas">
+        <!-- off-screen toggle button -->
+        <a class="off-canvas-toggle menuButton" href="#sidebar-id">
+            <div class="container" style="text-align: center; vertical-align:middle;">
+                <i style="color: white" class="icon icon-3x icon-menu"></i>
+            </div>
+        </a>
+
+        <div id="sidebar-id" class="off-canvas-sidebar col-md-5 hide-overflow" style="background-color: #1F1B24">
+            <!-- off-screen sidebar -->
+            <a class="off-canvas-toggle float-right p-relative py-2" href="#close">
+                <i style="color:white; border-style: none;" class="icon icon-4x icon-arrow-left"></i>
+            </a>
+            <div class="navbar col-12">
+                <div class="container">
+                    <div class="columns">
+                        <div class="column col-12 text-center">
+                            <a href="https://nodework.de"><img class="logo-menu" src="logo.png" alt="Logo"></a>
+                        </div>
+                        <div class="column col-12">
+                            <div class="divider"></div>
+                        </div>
+                        <div class="column col-10">
+                            <div class="accordion">
+                                <input type="checkbox" id="accordion-1" name="accordion-checkbox" checked hidden>
+                                <label class="accordion-header" for="accordion-1">
+                                      <i class="icon icon-2x icon-arrow-right px-2em pb-2"></i>
+                                        <span class="menuTopCategory active-category"><b>System</b></span>
+                                    </label>
+                                <div class="accordion-body">
+                                    <div class="col-12 px-5em pb-2">
+                                        <a href="info.html"><span class="menuSubCategory">Info</span></a>
+                                    </div>
+                                    <div class="col-8 px-5em pb-2">
+                                        <a href="log.html"><span class="menuSubCategory active-subGroup">Logs</span></a>
+                                    </div>
+                                    <div class="col-12 px-5em pb-2">
+                                        <a href="status.html"><span class="menuSubCategory" >Status</span></a>
+                                    </div>
+                                    <div class="col-12 px-5em pb-2">
+                                        <a href="control.html"><span class="menuSubCategory">Control</span></a>
+                                    </div>
+                                    <div class="col-12 px-5em pb-2">
+                                        <a href="wifiSettings.html"><span class="menuSubCategory">WiFi Settings</span></a>
+                                    </div>
+                                    <div class="col-12 px-5em pb-2">
+                                        <a href="updateSettings.html"><span class="menuSubCategory">Update Settings</span></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column col-10">
+                            <div class="accordion">
+                                <input type="checkbox" id="accordion-2" name="accordion-checkbox" checked hidden>
+                                <label class="accordion-header" for="accordion-2">
+                                      <i class="icon icon-2x icon-arrow-right px-2em pb-2"></i>
+                                        <span class="menuTopCategory"><b>Modules</b></span>
+                                    </label>
+                                <div class="accordion-body" >
+                                    <div class="col-12 px-5em pb-4">
+                                        <a href="#"><span class="menuSubCategory">Registered modules</span></a>
+                                    </div>
+                                    <div class="col-8 px-5em pb-4">
+                                        <a href="#"><span class="menuSubCategory">template</span></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a class="off-canvas-overlay " href="#close"></a>
+
+
+        <div class="off-canvas">
+            <div class="container col-11">
+                <header class="header text-center">
+                    <a href="https://nodework.de"><img width="350px" src="logo.PNG" alt="Logo"></a>
+                    <div style="border-color: gray" class="divider"></div>
+                </header>
+                <content style="padding-top: 4em;">
+                    <div class="container text-center pb-2">
+                        <div class="text-center"></div>
+                        <span class="h1 text-center col-8">Logs</span>
+                    </div>
+
+                    <!-- ROW one-->
+                    <div class="container s-rounded cardBackground pb-2">
+                        <div class="text-center pb-2 mt-2"><span class="h2">History</span></div>
+
+                        <div class="col-12 column">
+                            <div class="s-rounded column col-12">
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">Firmwareversion</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %firmwareVersionClass%">%log%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </content>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -82,10 +82,10 @@
                                             <a href="log.html"><span class="menuSubCategory ">Logs</span></a>
                                         </div>
                                         <div class="col-12 px-5em pb-2">
-                                            <a href="status.html"><span class="menuSubCategory active-subGroup" >Status</span></a>
+                                            <a href="status.html"><span class="menuSubCategory" >Status</span></a>
                                         </div>
                                         <div class="col-12 px-5em pb-2">
-                                            <a href="control.html"><span class="menuSubCategory">Control</span></a>
+                                            <a href="control.html"><span class="menuSubCategory active-subGroup">Control</span></a>
                                         </div>
                                         <div class="col-12 px-5em pb-2">
                                             <a href="wifiSettings.html"><span class="menuSubCategory">WiFi Settings</span></a>
@@ -130,51 +130,33 @@
                 <content style="padding-top: 4em;">
                     <div class="container text-center pb-2">
                         <div class="text-center"></div>
-                        <span class="h1 text-center col-8">Device-Status</span>
+                        <span class="h1 text-center col-8">Device-Control</span>
                     </div>
 
                     <!-- ROW one-->
                     <div class="container s-rounded cardBackground">
-                        <div class="text-center pb-2 mt-2"><span class="h2">Network</span></div>
+                        <div class="text-center pb-2 mt-2"><span class="h2">LED Steuerung</span></div>
 
                         <div class="col-12 column">
                             <div class="s-rounded column col-12">
                                 <div class="card bg-dark subCardBackground col-mx-auto">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">WiFi</span>
+                                        <span class="h4 cardCaption">LED Status</span>
                                     </div>
                                     <div class="card-body text-center">
-                                        <span class="h5 %WiFiStatusClass%">%WiFiStatus%</span>
+                                        <span class="h5 %WiFiStatusClass%">%ledStatus%</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="column s-rounded col-12">
                                 <div id="MQTTCard" class="card bg-dark subCardBackground col-mx-auto">
-                                    <span href="#" onmousedown="clickAnimStart('MQTTCard')" onmouseup="clickAnimStop('MQTTCard')" onclick="setMqttStatus()">
+                                    <span href="#" onmousedown="clickAnimStart('ledCard')" onmouseup="clickAnimStop('ledCard')" onclick="setLedStatus()">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">MQTT</span>
-                                </div>
-
-                                <div class="card-body text-center">
-                                    <span id="mqttStatus" class="h5 %MQTTStatusClass%">%MQTTStatus%</span>
+                                        <span class="h4 cardCaption %ledStateColor%">LED %status%</span>
                                 </div>
                                 </span>
                             </div>
-                        </div>
-
-
-
-                        <div class="column s-rounded col-12">
-                            <div id="updaterCard" class="card bg-dark subCardBackground col-mx-auto">
-                                <span href="#" onmousedown="clickAnimStart('updaterCard')" onmouseup="clickAnimStop('updaterCard')" onclick="setUpdateStatus()">
-                                <div class="card-header text-center">
-                                    <span class="h4 cardCaption">Updater</span>
-                            </div>
-                            <div class="card-body text-center">
-                                <span id="updateStatus" class="h5 %UpdaterStatusClass%">%updaterStatus%</span>
-                            </div>
-                            </span>
                         </div>
                     </div>
             </div>
@@ -191,56 +173,18 @@
     <div class="container s-rounded cardBackground">
         <div class="text-center pb-2 mt-2"><span class="h2">System</span></div>
         <div class="columns pb-3 s-rounded">
-            <div class="column col-mx-auto card col-12 bg-dark subCardBackground">
-                <div class="card-header text-center">
-                    <span class="h4 cardCaption">Battery</span>
-                </div>
-                <div class="card-body text-center">
-                    <div class="columns">
-                        <div class="column col-12">
-                            <span class="h5 textOkay">%BatteryUseageVolt% V</span>
-                        </div>
-                        <div class="column col-12">
-                            <span class="h5 textOkay">%BatteryUseagePercent% %</span>
-                        </div>
-                    </div>
 
-                </div>
+            <div class="column col-mx-auto card col-12 bg-dark subCardBackground" style="padding: 0;"> 
+                <span href="/restart" class="btn btn-error subCardBackground" style="height: 100%; width: 100%; margin-bottom: 0;"><h1>Restart</h1></span>
             </div>
 
+        </div>
+        <div class="columns pb-3 s-rounded">
 
-            <div class="column  col-mx-auto card col-12 bg-dark subCardBackground">
-                <div class="card-header text-center">
-                    <span class="h4 cardCaption">Ram</span>
-                </div>
-                <div class="card-body text-center">
-                    <div class="columns">
-                        <div class="column col-12">
-                            <span class="h5 textOkay">%RamUseageKB% Kb</span>
-                        </div>
-                        <div class="column col-12">
-                            <span class="h5 textOkay">%RamUseagePercent% %</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="column col-mx-auto card col-12 bg-dark subCardBackground" style="padding: 0;"> 
+                <span href="/restart" class="btn bgRed subCardBackground" style="height: 100%; width: 100%; margin-bottom: 0;"><h1>Einstellungen löschen</h1></span>
             </div>
 
-
-            <div class="column  col-mx-auto card col-12 bg-dark subCardBackground">
-                <div class="card-header text-center">
-                    <span class="h4 cardCaption">Flash</span>
-                </div>
-                <div class="card-body text-center">
-                    <div class="columns">
-                        <div class="column col-12">
-                            <span class="h5 textOkay">%flashUseageMB% Kb</span>
-                        </div>
-                        <div class="column col-12">
-                            <span class="h5 textOkay">%flashUseagePercent% %</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
     </content>

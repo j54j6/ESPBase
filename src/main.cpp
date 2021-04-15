@@ -13,7 +13,6 @@ dht11Temp* _dht11;
 Filemanager* _FM;
 MQTTHandler* _mqttHandler;
 
-
 void setup()
 { 
   //get dependent Objects for dht11 Module
@@ -21,7 +20,7 @@ void setup()
   _mqttHandler = mainOS.getMqttHandler();
 
   //Init DHT11 Module
-  _dht11 = new dht11Temp(_FM, _mqttHandler, D5);
+  //_dht11 = new dht11Temp(_FM, _mqttHandler, D5);
 
   //start espOS
   mainOS.begin();
@@ -33,5 +32,5 @@ void loop()
   mainOS.run();
 
   //run DHT11 Module
-  _dht11->run();
+  //_dht11->run();
 }

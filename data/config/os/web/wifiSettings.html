@@ -82,13 +82,13 @@
                                             <a href="log.html"><span class="menuSubCategory ">Logs</span></a>
                                         </div>
                                         <div class="col-12 px-5em pb-2">
-                                            <a href="status.html"><span class="menuSubCategory active-subGroup" >Status</span></a>
+                                            <a href="status.html"><span class="menuSubCategory" >Status</span></a>
                                         </div>
                                         <div class="col-12 px-5em pb-2">
                                             <a href="control.html"><span class="menuSubCategory">Control</span></a>
                                         </div>
                                         <div class="col-12 px-5em pb-2">
-                                            <a href="wifiSettings.html"><span class="menuSubCategory">WiFi Settings</span></a>
+                                            <a href="wifiSettings.html"><span class="menuSubCategory active-subGroup">WiFi Settings</span></a>
                                         </div>
                                         <div class="col-12 px-5em pb-2">
                                             <a href="updateSettings.html"><span class="menuSubCategory">Update Settings</span></a>
@@ -130,122 +130,66 @@
                 <content style="padding-top: 4em;">
                     <div class="container text-center pb-2">
                         <div class="text-center"></div>
-                        <span class="h1 text-center col-8">Device-Status</span>
+                        <span class="h1 text-center col-8">WiFi-Settings</span>
                     </div>
 
                     <!-- ROW one-->
                     <div class="container s-rounded cardBackground">
-                        <div class="text-center pb-2 mt-2"><span class="h2">Network</span></div>
+                        <div class="text-center pb-2 mt-2"><span class="h2">Derzeitige Einstellungen</span></div>
 
                         <div class="col-12 column">
-                            <div class="s-rounded column col-12">
+                            <div class="s-rounded column col-12 pb-3">
                                 <div class="card bg-dark subCardBackground col-mx-auto">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">WiFi</span>
+                                        <span class="h4 cardCaption">SSID</span>
                                     </div>
                                     <div class="card-body text-center">
-                                        <span class="h5 %WiFiStatusClass%">%WiFiStatus%</span>
+                                        <span class="h5 %ssidClass%">%ssid%</span>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="column s-rounded col-12">
-                                <div id="MQTTCard" class="card bg-dark subCardBackground col-mx-auto">
-                                    <span href="#" onmousedown="clickAnimStart('MQTTCard')" onmouseup="clickAnimStop('MQTTCard')" onclick="setMqttStatus()">
-                                    <div class="card-header text-center">
-                                        <span class="h4 cardCaption">MQTT</span>
-                                </div>
-
-                                <div class="card-body text-center">
-                                    <span id="mqttStatus" class="h5 %MQTTStatusClass%">%MQTTStatus%</span>
-                                </div>
-                                </span>
-                            </div>
-                        </div>
-
-
-
-                        <div class="column s-rounded col-12">
-                            <div id="updaterCard" class="card bg-dark subCardBackground col-mx-auto">
-                                <span href="#" onmousedown="clickAnimStart('updaterCard')" onmouseup="clickAnimStop('updaterCard')" onclick="setUpdateStatus()">
-                                <div class="card-header text-center">
-                                    <span class="h4 cardCaption">Updater</span>
-                            </div>
-                            <div class="card-body text-center">
-                                <span id="updateStatus" class="h5 %UpdaterStatusClass%">%updaterStatus%</span>
-                            </div>
-                            </span>
                         </div>
                     </div>
+                    <div class="pb-3"></div>
+                    <div class="container s-rounded cardBackground">
+                        <div class="text-center pb-2 mt-2"><span class="h2">Einstellungen ändern</span></div>
+
+                        <div class="col-12 column">
+                            <div class="s-rounded column col-12 pb-3">
+                                <div class="card bg-dark subCardBackground col-mx-auto form-group">
+                                    <form action="/saveWifi" method="POST">
+                                        <div class="card-header text-center">
+                                            <span class="h4 cardCaption form-label" for="input-ssid" style="padding-top: .5em;">SSID</span>
+                                        </div>
+                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
+                                        <div class="card-body text-center">
+                                            <div class="form-group">
+                                                <select class="formfeld form-select " style="background-color: #1c1c1c8c; padding-bottom: 0; margin-bottom: 0">
+                                                  <option>SSID auswählen</option>
+                                                </select>
+                                              </div>
+                                        </div>
+                                        <div class="card-header text-center">
+                                            <span class="h4 cardCaption form-label" for="input-passwd" style="padding-top: 1em;">PSK</span>
+                                        </div>
+                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
+                                        <div class="card-body text-center" style="margin-left: 7.5%; margin-right: 7.5%">
+                                            <input class="form-input formfeld" type="password" id="passwd" placeholder="New password" style="width: 100%">
+                                        </div>
+                                        <div class="pb-3"></div>
+                                        <div class="card-body text-center">
+                                            <button type="submit" class = "btn btn-lg btn-success formfeldbtn" style="height: 3em; font-size: 3em">Speichern</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </content>
             </div>
         </div>
     </div>
-    </div>
-    </div>
-    </div>
-
-    <!--Spacer-->
-    <div class="py-2"></div>
-
-    <!--Row 2-->
-    <div class="container s-rounded cardBackground">
-        <div class="text-center pb-2 mt-2"><span class="h2">System</span></div>
-        <div class="columns pb-3 s-rounded">
-            <div class="column col-mx-auto card col-12 bg-dark subCardBackground">
-                <div class="card-header text-center">
-                    <span class="h4 cardCaption">Battery</span>
-                </div>
-                <div class="card-body text-center">
-                    <div class="columns">
-                        <div class="column col-12">
-                            <span class="h5 textOkay">%BatteryUseageVolt% V</span>
-                        </div>
-                        <div class="column col-12">
-                            <span class="h5 textOkay">%BatteryUseagePercent% %</span>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-
-            <div class="column  col-mx-auto card col-12 bg-dark subCardBackground">
-                <div class="card-header text-center">
-                    <span class="h4 cardCaption">Ram</span>
-                </div>
-                <div class="card-body text-center">
-                    <div class="columns">
-                        <div class="column col-12">
-                            <span class="h5 textOkay">%RamUseageKB% Kb</span>
-                        </div>
-                        <div class="column col-12">
-                            <span class="h5 textOkay">%RamUseagePercent% %</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="column  col-mx-auto card col-12 bg-dark subCardBackground">
-                <div class="card-header text-center">
-                    <span class="h4 cardCaption">Flash</span>
-                </div>
-                <div class="card-body text-center">
-                    <div class="columns">
-                        <div class="column col-12">
-                            <span class="h5 textOkay">%flashUseageMB% Kb</span>
-                        </div>
-                        <div class="column col-12">
-                            <span class="h5 textOkay">%flashUseagePercent% %</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    </content>
-    </div>
-    </div>
+    
 </body>
 
 </html>

@@ -14,7 +14,7 @@
     Outputtypes:
         - Serial log
         - File Log
-        - HTTP Stream (later)
+        - HTTP Stream (later implemented)
 */
 
 /*
@@ -79,6 +79,8 @@ class SysLogger {
 
         String mqttPublishTopic;
         String macAddress;
+
+        
     protected:
         //return PriorityValue as "humanReadable" text
         String getLogLevel(short value);

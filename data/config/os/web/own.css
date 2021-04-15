@@ -1,0 +1,147 @@
+.px-5em {
+    padding-left: 5em;
+}
+
+.px-3em {
+    padding-left: 3em;
+}
+
+.pb-2 {
+    padding-bottom: 2em;
+}
+
+.pb-3 {
+    padding-bottom: 3em;
+}
+
+.py-2 {
+    padding-right: 2em;
+}
+
+.hide-overflow {
+    overflow: hidden;
+}
+
+.active-category {
+    color: #ffb3b3 !important;
+}
+
+.active-subGroup {
+    color: #ff8080 !important;
+    font-weight: bold !important;
+}
+
+.textOkay {
+    color: greenyellow;
+}
+
+.textError {
+    color: orangered;
+}
+
+.textWarn {
+    color: yellow;
+}
+
+.bg-dark {
+    background-color: #303742 !important;
+}
+
+.bg-clicked {
+    background-color: #2a2f36;
+}
+
+.logo-menu {
+    height: 100%;
+}
+
+.menuTopCategory {
+    font-size: 4em;
+}
+
+.menuSubCategory {
+    font-size: 2.5em;
+    color: white;
+}
+
+.h1 {
+    font-size: 5em;
+}
+
+.h2 {
+    font-size: 4em;
+}
+
+.h3 {
+    font-size: 3.5em;
+}
+
+.h4 {
+    font-size: 3em;
+}
+
+.h5 {
+    font-size: 2.5em;
+}
+
+.cardCaption {
+    font-size: 3.3em;
+    color: rgba(255, 255, 255, 0.74);
+}
+
+.cardBackground {
+    background-color: #1c1c1c;
+    border-radius: 5em;
+    ;
+}
+
+.subCardBackground {
+    width: 90%;
+    border-radius: 2em;
+    margin-bottom: 1.6em;
+}
+
+.menuButton {
+    background-color: #5755d9;
+    margin: 1em;
+    padding: .6em;
+    color: white;
+    opacity: .5;
+    border-radius: 1.3em;
+    width: 5em;
+    height: 4.6em;
+}
+
+.bgRed {
+    background-color: #f34242;
+    color: white;
+    text-align: center;
+}
+
+.bgRed:hover{
+    background-color: #fc2929;
+    color: white;
+    text-align: center;
+}
+
+.formfeld {
+    margin-top: 0em;
+    background-color: #1c1c1c1c;
+    height: 3em;
+    font-size: 2em;
+    border-radius: 1em;
+    text-align: center;
+    color: white;
+    width: 85%;
+}
+
+.formfeldbtn {
+    margin-top: 0em;
+    background-color: #1c1c1c1c;
+    height: 5em;
+    font-size: 2em;
+    border-radius: 1em;
+    text-align: center;
+    color: white;
+    width: 60%;
+}
