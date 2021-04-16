@@ -149,6 +149,10 @@ void SysLogger::initMQTT()
 */
 void SysLogger::logIt(String function, String message, char priority)
 {
+    if(priority >= 5)
+    {
+        errorCounter++;
+    }
     if((priority >= serialLogLevel && serialLogLevel != 0) || serialLogLevel == 7)
     {
 

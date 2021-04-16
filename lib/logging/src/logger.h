@@ -79,6 +79,7 @@ class SysLogger {
 
         String mqttPublishTopic;
         String macAddress;
+        int errorCounter = 0;
 
         
     protected:
@@ -151,6 +152,7 @@ class SysLogger {
         void setLogLevel(short newLevel, short logType);
         void setLogging(bool logging, short logType);
         void setMqttClient(PubSubClient* mqttClient);
+        int getErrorCounter() { return this->errorCounter;};
         String messageToJSON(String function, String message, char prio);
 };
 #endif
