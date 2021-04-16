@@ -84,7 +84,7 @@ class Network
         Filemanager* FM;
         DNSServer dnsServer;
         ESP8266WebServer webserver;
-        PubSubClient mqttHandler;
+        //PubSubClient mqttHandler;
         SysLogger logging;
         ClassModuleSlave classControl = ClassModuleSlave("Network", 50);
         
