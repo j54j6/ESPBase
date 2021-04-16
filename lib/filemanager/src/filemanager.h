@@ -101,6 +101,7 @@
             bool writeJsonFile(const char* Filename, DynamicJsonDocument jsonFile, const char* writeMode = "w");
             bool changeJsonValueFile(const char* Filename, const char* key, const char* newValue);
             String readFile(const char* Filename);
+            String* readFilePointed(const char* Filename);
             const char* readJsonFileValue(const char* Filename, const char* pattern);
             DynamicJsonDocument readJsonFile(const char* Filename);
             float getFreeSpace(short mode);

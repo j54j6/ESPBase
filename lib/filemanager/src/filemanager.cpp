@@ -814,6 +814,26 @@ String Filemanager::readFile(const char* Filename)
     return output;
 }
 
+String* Filemanager::readFilePointed(const char* Filename)
+{
+    if(!checkForInit())
+    {
+        return {};
+    }
+    if(!LittleFS.exists(Filename))
+    {
+        return {};
+    }
+    File readFile = LittleFS.open(Filename, "r");
+    if(!readFile)
+    {
+        return {};
+    }
+    String output = readFile.readString();
+    readFile.close();
+    return &output;
+}
+
 const char* Filemanager::readJsonFileValue(const char* Filename, const char* pattern)
 { 
     if(!checkForInit())
