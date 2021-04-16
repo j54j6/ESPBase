@@ -79,6 +79,11 @@ class espOS {
             Website Stuff
         */
         void handleMainStateSite();
+        void handleInfoSite();
+        void handleLogSite();
+        void handleControlSite();
+        void handleWifiSite();
+        void handleUpdateSite();
 
         //GraphicStuff
         void sendWebsiteLogo();
@@ -88,11 +93,13 @@ class espOS {
         //CSS Stuff
         void sendspecexpcss();
         void sendSpecCss();
+        void sendownCSS();
         /*
             Special WrapperClass Stuff
 
         */
        void mqttOSCommands();
+       void showStorage();
 
         void begin();
         void run();
