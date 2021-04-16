@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <link rel="stylesheet" href="spec.css">
+    <link rel="stylesheet" href="spec-exp.css">
+    <link rel="stylesheet" href="spec-icons.css">
+    <link rel="stylesheet" href="own.css">
+
+    <meta charset="utf-8">
+    <title>Nodework Portal</title>
+    
+
+    <script>
+        function clickAnimStart(id) {
+            console.log("Given ID: " + id);
+            document.getElementById(id).classList.remove("bg-dark");
+            document.getElementById(id).classList.add("bg-clicked");
+            console.log("called!");
+        }
+
+        function clickAnimStop(id) {
+            console.log("Given ID: " + id);
+            document.getElementById(id).classList.remove("bg-clicked");
+            document.getElementById(id).classList.add("bg-dark");
+
+            console.log("called!");
+        }
+
+        function setMqttStatus() {
+            console.log("setMQTTGet called");
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", "getMQTTStatus", true); // false for synchronous request
+            xmlHttp.send(null);
+            document.getElementById("mqttStatus").innerHTML = xmlHttp.responseText;
+        }
+
+        function setUpdateStatus() {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", "", true); // false for synchronous request
+            xmlHttp.send(null);
+            document.getElementById("updateStatus").innerHTML = xmlHttp.responseText;
+        }
+    </script>
+</head>
+
+<body style="font-family: Roboto, sans-serif, Arial; background-color: #121212; color: white">
+    <div class="off-canvas">
+        <!-- off-screen toggle button -->
+        <a class="off-canvas-toggle menuButton" href="#sidebar-id">
+            <div class="container" style="text-align: center; vertical-align:middle;">
+                <i style="color: white" class="icon icon-3x icon-menu"></i>
+            </div>
+        </a>
+
+        <div id="sidebar-id" class="off-canvas-sidebar col-md-5 hide-overflow" style="background-color: #121212">
+            <!-- off-screen sidebar -->
+            <a class="off-canvas-toggle float-right p-relative py-2" href="#close">
+                <i style="color:white; border-style: none;" class="icon icon-4x icon-arrow-left"></i>
+            </a>
+            <div class="navbar col-12">
+                <div class="container">
+                    <div class="columns">
+                        <div class="column col-12 text-center">
+                            <a href="https://nodework.de"><img class="logo-menu" src="logo.png" alt="Logo"></a>
+                        </div>
+                        <div class="column col-12">
+                            <div class="divider"></div>
+                        </div>
+                        <div class="column col-10">
+                            <div class="accordion">
+                                <input type="checkbox" id="accordion-1" name="accordion-checkbox" checked hidden>
+                                <label class="accordion-header" for="accordion-1">
+                                      <i class="icon icon-2x icon-arrow-right px-2em pb-2"></i>
+                                        <span class="menuTopCategory active-category"><b>System</b></span>
+                                    </label>
+                                    <div class="accordion-body">
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="/info"><span class="menuSubCategory ">Info</span></a>
+                                        </div>
+                                        <div class="col-8 px-5em pb-2">
+                                            <a href="/log"><span class="menuSubCategory ">Logs</span></a>
+                                        </div>
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="/status"><span class="menuSubCategory" >Status</span></a>
+                                        </div>
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="/control"><span class="menuSubCategory active-subGroup">Control</span></a>
+                                        </div>
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="/wifisettings"><span class="menuSubCategory">WiFi Settings</span></a>
+                                        </div>
+                                        <div class="col-12 px-5em pb-2">
+                                            <a href="/updatesettings"><span class="menuSubCategory">Update Settings</span></a>
+                                        </div>
+                                    </div>
+                            </div>
+                        </div>
+                        <div class="column col-10">
+                            <div class="accordion">
+                                <input type="checkbox" id="accordion-2" name="accordion-checkbox" checked hidden>
+                                <label class="accordion-header" for="accordion-2">
+                                      <i class="icon icon-2x icon-arrow-right px-2em pb-2"></i>
+                                        <span class="menuTopCategory"><b>Modules</b></span>
+                                    </label>
+                                <div class="accordion-body">
+                                    <div class="col-12 px-5em pb-4">
+                                        <a href="#"><span class="menuSubCategory">Registered modules</span></a>
+                                    </div>
+                                    <div class="col-8 px-5em pb-4">
+                                        <a href="#"><span class="menuSubCategory">template</span></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a class="off-canvas-overlay " href="#close"></a>
+
+
+        <div class="off-canvas">
+            <div class="container col-12">
+                <header class="header text-center">
+                    <a href="https://nodework.de"><img width="350px" src="logo.png" alt="Logo"></a>
+                    <div style="border-color: gray" class="divider"></div>
+                </header>
+                <content style="padding-top: 4em;">
+                    <div class="container text-center pb-2">
+                        <div class="text-center"></div>
+                        <span class="h1 text-center col-8">Update-Settings</span>
+                    </div>
+
+                    <!-- ROW one-->
+                    <div class="container s-rounded cardBackground">
+                        <div class="text-center pb-2 mt-2"><span class="h2">Derzeitige Einstellungen</span></div>
+
+                        <div class="col-12 column">
+                            <div class="s-rounded column col-12 pb-3">
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">Update-Server</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %ssidClass%">%updateServerUrl%</span>
+                                    </div>
+                                </div>
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">Update-Server Port</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %ssidClass%">%updateServerPort%</span>
+                                    </div>
+                                </div>
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">Auto Update</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %ssidClass%">%autoUpdate%</span>
+                                    </div>
+                                </div>
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">Update-Server Token</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %updateServerTokenClass%">%updateServerToken%</span>
+                                    </div>
+                                </div>
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">Update-Server Password</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %updateServerPasswdClass%">%updateServerPasswd%</span>
+                                    </div>
+                                </div>
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">Check Intervall</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %updateServerPasswdClass%">%checkIntervall%</span>
+                                    </div>
+                                </div>
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">Update-Server Password</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %updateServerPasswdClass%">%updateServerPasswd%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pb-3"></div>
+                    <div class="container s-rounded cardBackground">
+                        <div class="text-center pb-2 mt-2"><span class="h2">Server ändern</span></div>
+
+                        <div class="col-12 column">
+                            <div class="s-rounded column col-12 pb-3">
+                                <div class="card bg-dark subCardBackground col-mx-auto form-group">
+                                    <form action="/saveServerCred" method="POST">
+                                        <div class="card-header text-center">
+                                            <span class="h4 cardCaption form-label" for="input-serverurl" style="padding-top: .5em;">Server Url</span>
+                                        </div>
+                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
+                                        <div class="card-body text-center">
+                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
+                                                <input class="form-input formfeld" type="text" id="serverUrl" placeholder="New Url" style="width: 100%">
+                                            </div>
+                                        </div>
+                                        <div style="padding-top: 3em"></div>
+                                        <div class="card-header text-center">
+                                            <span class="h4 cardCaption form-label" for="input-serverurl" style="padding-top: .5em;">Server Port</span>
+                                        </div>
+
+                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
+
+                                        <div class="card-body text-center">
+                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
+                                                <input class="form-input formfeld" type="text" id="serverPort" placeholder="New Port" style="width: 100%">
+                                            </div>
+                                        </div>
+                                        
+                                        <div style="padding-top: 3em"></div>
+                                        <div class="card-header text-center">
+                                            <span class="h4 cardCaption form-label" for="input-serverToken" style="padding-top: .5em;">Server Token</span>
+                                        </div>
+                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
+                                        <div class="card-body text-center">
+                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
+                                                <input class="form-input formfeld" type="text" id="serverToken" placeholder="New token" style="width: 100%">
+                                            </div>
+                                        </div>
+                                        
+                                        <div style="padding-top: 3em"></div>
+                                        <div class="card-header text-center">
+                                            <span class="h4 cardCaption form-label" for="input-serverurl" style="padding-top: .5em;">Server Password</span>
+                                        </div>
+                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
+                                        <div class="card-body text-center">
+                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
+                                                <input class="form-input formfeld" type="text" id="serverPassword" placeholder="New password" style="width: 100%">
+                                            </div>
+                                        </div>
+
+                                        <div class="pb-3"></div>
+                                        <div class="card-body text-center">
+                                            <button type="submit" class = "btn btn-lg btn-success formfeldbtn" style="height: 3em; font-size: 3em">Speichern</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="container s-rounded cardBackground" style="margin-top: 3em">
+                        <div class="text-center pb-2 mt-2"><span class="h2">Updatesettings ändern</span></div>
+
+                        <div class="col-12 column">
+                            <div class="s-rounded column col-12 pb-3">
+                                <div class="card bg-dark subCardBackground col-mx-auto form-group">
+                                    <form action="/saveUpdatePref" method="POST">
+                                        <div class="card-header text-center">
+                                            <span class="h4 cardCaption form-label" for="input-serverurl" style="padding-top: .5em;">Auto-Update</span>
+                                        </div>
+                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
+                                        <div class="card-body text-center">
+                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%; background-color: #1c1c1c1c; text-align: center">
+                                                <select class="form-select formfeld" style="background-color: #1c1c1c1c; width: 100%">
+                                                    <option class="formfeld" style="color: #1c1c1c1c" value="true">True</option>
+                                                    <option class="formfeld" style="background-color: #1c1c1c1c" value="false">False</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div style="padding-top: 3em"></div>
+                                        <div class="card-header text-center">
+                                            <span class="h4 cardCaption form-label" for="input-serverurl" style="padding-top: .5em;">Prüfintervall</span>
+                                        </div>
+
+                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
+
+                                        <div class="card-body text-center">
+                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
+                                                <input class="form-input formfeld" type="text" id="serverPort" placeholder="New check intervall (in hours)" style="width: 100%">
+                                            </div>
+                                        </div>
+                        
+                                        <div class="pb-3"></div>
+                                        <div class="card-body text-center">
+                                            <button type="submit" class = "btn btn-lg btn-success formfeldbtn" style="height: 3em; font-size: 3em">Speichern</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </content>
+            </div>
+        </div>
+    </div>
+    
+</body>
+
+</html>
