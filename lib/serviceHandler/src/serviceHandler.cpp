@@ -703,12 +703,12 @@ bool ServiceHandler::delService(const char* serviceName, bool selfOffered, bool 
         }
 
         const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
-        DynamicJsonDocument cacheDocument(capacity);
+        //DynamicJsonDocument cacheDocument(capacity);
+        StaticJsonDocument<capacity> cacheDocument;
 
         cacheDocument = FM->readJsonFile(offeredServicesPath);
 
         cacheDocument.remove(serviceName);
-        cacheDocument.~BasicJsonDocument();
         
         if(checkForService(serviceName))
         {
@@ -772,7 +772,8 @@ IPAddress ServiceHandler::getServiceIP(const char* serviceName, bool fallback)
     IPAddress returnIp;
     if(!fallback)
     {
-        DynamicJsonDocument cacheDoc(425);
+        //DynamicJsonDocument cacheDoc(425);
+        StaticJsonDocument<425> cacheDoc;
         cacheDoc = FM->readJsonFile(getExternalServiceFilename(serviceName, fallback).c_str());
         String ipCached = cacheDoc["ip"];
         if(returnIp.fromString(ipCached))
@@ -989,7 +990,8 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
                 logging.logIt("checkForService", "Internal Service defined! - check for defined Service", 1);
             #endif
             const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
-            DynamicJsonDocument cacheDocument(capacity);
+            //DynamicJsonDocument cacheDocument(capacity);
+            StaticJsonDocument<capacity> cacheDocument;
 
             cacheDocument = FM->readJsonFile(offeredServicesPath);
             /*  

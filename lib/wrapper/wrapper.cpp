@@ -89,6 +89,7 @@ void espOS::handleInfoSite()
 void espOS::handleLogSite()
 {
   ESP8266WebServer* webserver = _Network->getWebserver();
+  
     webserver->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     webserver->sendHeader("Pragma", "no-cache");
     webserver->sendHeader("Expires", "-1");
@@ -101,6 +102,7 @@ void espOS::handleLogSite()
 
     templateSite.replace("%content%", websitePrepared);
     templateSite.replace("%logsActive%", "active-subGroup");
+    
 
     webserver->send(200, "text/html", templateSite);
 }
