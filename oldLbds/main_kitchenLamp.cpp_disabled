@@ -1,0 +1,53 @@
+#include <Arduino.h>
+#include "wrapper.h"
+#include "dht11Temp.h"
+#include "dicSwitch.h"
+
+//ESPOS
+//espOS mainOS(D2, D7, D1);
+espOS* mainOS;
+
+
+//Module Object
+dht11Temp* _dht11;
+dicSwitch* _switch = new dicSwitch(D0, D2);
+
+//dependent dht11 to OS Objects
+Filemanager* _FM;
+MQTTHandler* _mqttHandler;
+
+
+void showHeap()
+{
+  Serial.print(F("Time: "));
+  Serial.println(millis());
+  Serial.print(F("Free Heap: "));
+  Serial.println(ESP.getFreeHeap());
+  Serial.print(F("Fragmentation: "));
+  Serial.println(ESP.getHeapFragmentation());
+  Serial.print(F("Free Cont Stack: "));
+  Serial.println(ESP.getFreeContStack());
+}
+
+void setup()
+{ 
+  //get dependent Objects for dht11 Module
+  //Init DHT11 Module
+  //_dht11 = new dht11Temp(_FM, _mqttHandler, D5);
+  mainOS = new espOS(-9, -9, -9);
+
+
+  //start espOS
+  mainOS->begin();
+}
+
+
+
+void loop()
+{
+  //run Services
+  mainOS->run();
+  _switch->run();
+  //run DHT11 Module
+  //_dht11->run();
+}

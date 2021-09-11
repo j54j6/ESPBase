@@ -121,12 +121,12 @@ class WiFiManager {
         bool setWiFiAutoReconnect(bool newValue);
         bool setWiFiHostname(const char* hostname);
         bool setWiFiConfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet, IPAddress dns1 = (uint32_t)0, IPAddress dns2 = (uint32_t)0);
-
+        bool setSoftAPConfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet);
 
         //General functionalities
         void enableWiFi(WiFiMode_t mode = WIFI_AP_STA);
         void disableWiFi();
-        void setWiFiMode(WiFiMode_t mode);
+        bool setWiFiMode(WiFiMode_t mode);
 
 
         //AP Stuff
@@ -150,9 +150,11 @@ class WiFiManager {
         void init()
         {
             //Disable WifiAutoConnect and onboard WifiConfig
+            /*
             WiFi.persistent(false);
             WiFi.setAutoConnect(false);
             WiFi.stopSmartConfig();
+            */
         }
 
         //inherited ErrorSlave

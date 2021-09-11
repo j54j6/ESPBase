@@ -419,7 +419,7 @@ const char* Filemanager::getFName()
 {
     if(!checkForInit())
     {
-        return false;
+        return {};
     }
 
     if(internOpenDir)
@@ -428,25 +428,25 @@ const char* Filemanager::getFName()
     }
     else
     {
-        return false;
+        return {};
     }
-    return false;
+    return {};
 }
 
 const char* Filemanager::getFName(Dir usedDir)
 {
     if(!checkForInit())
     {
-        return false;
+        return {};
     }
     return usedDir.fileName().c_str();
 }
 
-uint Filemanager::getFileSize()
+uint16 Filemanager::getFileSize()
 {
     if(!checkForInit())
     {
-        return false;
+        return -1;
     }
 
     if(internOpenDir)
@@ -455,12 +455,12 @@ uint Filemanager::getFileSize()
     }
     else
     {
-        return false;
+        return -1;
     }
-    return false;
+    return -1;
 }
 
-uint Filemanager::getFileSize(Dir usedDir)
+uint16 Filemanager::getFileSize(Dir usedDir)
 {
     if(!checkForInit())
     {
@@ -591,12 +591,12 @@ const char* Filemanager::name()
 {
     if(!checkForInit())
     {
-        return false;
+        return {};
     }
     
     if(!internFileOpen)
     {
-        return false;
+        return {};
     }
     return internalFileHandle.name();
 }
@@ -605,7 +605,7 @@ const char* Filemanager::name(File usedFile)
 {
     if(!checkForInit())
     {
-        return false;
+        return {};
     }
     
     return usedFile.name();
@@ -615,12 +615,12 @@ const char* Filemanager::fullName()
 {
     if(!checkForInit())
     {
-        return false;
+        return {};
     }
     
     if(!internFileOpen)
     {
-        return false;
+        return {};
     }
     return internalFileHandle.fullName();
 }
@@ -629,7 +629,7 @@ const char* Filemanager::fullName(File usedFile)
 {
     if(!checkForInit())
     {
-        return false;
+        return {};
     }
     return usedFile.fullName();
 }
@@ -691,6 +691,7 @@ bool Filemanager::writeInFile(const char* Filename, const char* pattern, const c
     uint32_t bytesWritten;
     if(strcmp(writeMode, "a") && !LittleFS.exists(Filename))
     {
+        
         File writeFile = LittleFS.open(Filename, "w");
         bytesWritten = writeFile.println(pattern);
         writeFile.close();
@@ -709,8 +710,36 @@ bool Filemanager::writeInFile(const char* Filename, const char* pattern, const c
     return true; 
 }
 
+bool Filemanager::writeInFileStr(const char* Filename, String* pattern, const char* writeMode)
+{
+    if(!checkForInit())
+    {
+        return false;
+    }
+    uint32_t bytesWritten;
+    if(strcmp(writeMode, "a") && !LittleFS.exists(Filename))
+    {
+        File writeFile = LittleFS.open(Filename, "w");
+        bytesWritten = writeFile.print(pattern->c_str());
+        writeFile.close();
+    }
+    else
+    {
+        File writeFile = LittleFS.open(Filename, writeMode);
+        bytesWritten = writeFile.print(pattern->c_str());
+        writeFile.close();
+    }
+    
+    if(bytesWritten == 0)
+    {
+        return false;
+    }
+    return true; 
+}
+
 bool Filemanager::writeJsonFile(const char* Filename,  const char* jsonPattern[][2], int amountOfData, const char* writeMode)
 {
+
     if(!checkForInit())
     {
         return false;
@@ -718,12 +747,18 @@ bool Filemanager::writeJsonFile(const char* Filename,  const char* jsonPattern[]
 
     if(amountOfData == 0)
     {
+        Serial.println("NO DATA PASSED - SKIP");
         return true;
     }
     const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
     DynamicJsonDocument jsonDocument(capacity);
+
+    for(int i = 0; i < amountOfData; i++)
+    {
+        jsonDocument[jsonPattern[i][0]] = jsonPattern[i][1];
+    }
+
     String jsonOutput;
-    
     serializeJsonPretty(jsonDocument, jsonOutput);
     File writeFile = LittleFS.open(Filename, writeMode);
     uint32_t bytesWritten = writeFile.println(jsonOutput);
@@ -798,16 +833,16 @@ String Filemanager::readFile(const char* Filename)
 {
     if(!checkForInit())
     {
-        return {};
+        return "noInit";
     }
     if(!LittleFS.exists(Filename))
     {
-        return {};
+        return "notExist";
     }
     File readFile = LittleFS.open(Filename, "r");
     if(!readFile)
     {
-        return {};
+        return "Can't read!";
     }
     String output = readFile.readString();
     readFile.close();
@@ -838,14 +873,14 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
 { 
     if(!checkForInit())
     {
-        Serial.println("notInit - return NULL");
+        Serial.println(F("notInit - return NULL"));
         return {};
     }
     const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
     DynamicJsonDocument jsonDocument(capacity);
     if(!LittleFS.exists(Filename))
     {
-        Serial.println("File doesn't exist!");
+        Serial.println(F("File doesn't exist!"));
         return {};
     }
 
@@ -853,7 +888,7 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
 
     if(!readFile)
     { 
-        Serial.println("Can't read File!");
+        Serial.println(F("Can't read File!"));
         return {};
     }
     String output = this->readFile(Filename);
@@ -861,11 +896,19 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
     DeserializationError error = deserializeJson(jsonDocument, output);
     if(error)
     {
-        Serial.println("Error while reading File!");
+        Serial.println(F("Error while reading File!"));
         return {};
     }
-    const char* returnVal = jsonDocument[pattern]; //pattern need quotes too! e.g pattern = "\"id\""
-    return returnVal;
+    if(jsonDocument.containsKey(pattern))
+    {
+        const char* returnVal = jsonDocument[pattern]; //pattern need quotes too! e.g pattern = "\"id\""
+        return returnVal;
+    }
+    else
+    {
+        return "";
+    }
+    
 }
 
 DynamicJsonDocument Filemanager::readJsonFile(const char* Filename)
@@ -939,7 +982,7 @@ void Filemanager::space(int number)
   }
   for(int i = 0; i < number;  i++)
   {
-    Serial.print("   ");
+    Serial.print(F("   "));
   }
 }
 
@@ -969,17 +1012,17 @@ void Filemanager::recursive(String path)
     space(insideDirs);
     if(dir.isFile())
     {
-      Serial.print("|- ");
+      Serial.print(F("|- "));
       Serial.print(dir.fileName());
-      Serial.print(" -> ");
+      Serial.print(F(" -> "));
       Serial.print(dir.fileSize());
-      Serial.println("Byte");
+      Serial.println(F("Byte"));
     }
     if(dir.isDirectory())
     {
       insideDirs++;
       String cPath = mainPath + "/" + dir.fileName();
-      Serial.print("|--| ");
+      Serial.print(F("|--| "));
       Serial.println(dir.fileName());
       recursive(cPath);
     }

@@ -143,11 +143,11 @@ void WiFiManager::setShieldState(bool newState)
 {
   #ifdef J54J6_SysLogger
       
-      String message = "Update ShieldState: ";
+      String message = F("Update ShieldState: ");
       message += shieldState;
-      message += " -> ";
+      message += F(" -> ");
       message += newState;
-      logging.logIt("setShieldState", message.c_str());
+      logging.logIt(F("setShieldState"), message.c_str());
   #endif
   shieldState = newState;
 }
@@ -156,11 +156,11 @@ void WiFiManager::setOverrideSettingsToPreventError(bool newValue)
 {
   #ifdef J54J6_SysLogger
       
-      String message = "Update OverrideSettingsToPreventError: ";
+      String message = F("Update OverrideSettingsToPreventError: ");
       message += overrideSettingsToPreventError;
-      message += " -> ";
+      message += F(" -> ");
       message += newValue;
-      logging.logIt("setOverrideSettingsToPreventError", message.c_str());
+      logging.logIt(F("setOverrideSettingsToPreventError"), message.c_str());
   #endif
   overrideSettingsToPreventError = newValue;
 }
@@ -169,11 +169,11 @@ void WiFiManager::setCheckDelay(int newValue)
 {
   #ifdef J54J6_SysLogger
       
-      String message = "Update CheckDelay: ";
+      String message = F("Update CheckDelay: ");
       message += checkDelay;
-      message += " -> ";
+      message += F(" -> ");
       message += newValue;
-      logging.logIt("setCheckDelay", message.c_str());
+      logging.logIt(F("setCheckDelay"), message.c_str());
   #endif
   checkDelay = newValue;
 }
@@ -182,18 +182,18 @@ void WiFiManager::setLockClass(bool newValue)
 {
   #ifdef J54J6_SysLogger
       
-      String message = "Update LockClass: ";
+      String message = F("Update LockClass: ");
       message += lockClass;
-      message += " -> ";
+      message += F(" -> ");
       message += newValue;
 
-      logging.logIt("setLockClass", message.c_str());
+      logging.logIt(F("setLockClass"), message.c_str());
   #endif
   if(newValue)
   {
-    classControl.newReport("WiFiManager Class locked!", 214, true, true);
+    classControl.newReport(F("WiFiManager Class locked!"), 214, true, true);
     #ifdef J54J6_SysLogger
-     logging.logIt("setLockClass", "Report lock to ErrorHandler!", 0);
+     logging.logIt(F("setLockClass"), F("Report lock to ErrorHandler!"), 0);
     #endif
   }
   lockClass = newValue;
@@ -205,11 +205,11 @@ bool WiFiManager::setWiFiAutoConnect(bool newValue)
   {
     #ifdef J54J6_SysLogger
       
-      String message = "Update WiFi->AutoConnect: ";
+      String message = F("Update WiFi->AutoConnect: ");
       message += getWiFiAutoConnect();
-      message += " -> ";
+      message += F(" -> ");
       message += newValue;
-      logging.logIt("setWiFiAutoConnect", message.c_str());
+      logging.logIt(F("setWiFiAutoConnect"), message.c_str());
     #endif
     return true;
   }
@@ -217,13 +217,13 @@ bool WiFiManager::setWiFiAutoConnect(bool newValue)
   {
     #ifdef J54J6_SysLogger
       
-      String message = "Can't Update WiFi->AutoConnect: ";
+      String message = F("Can't Update WiFi->AutoConnect: ");
       message += getWiFiAutoConnect();
-      message += " -> ";
+      message += F(" -> ");
       message += newValue;
-      logging.logIt("setWiFiAutoConnect", message.c_str(), 2);
+      logging.logIt(F("setWiFiAutoConnect"), message.c_str(), 2);
     #endif
-    classControl.newReport("Can't update Autoconnect!", 99, false, true);
+    classControl.newReport(("Can't update Autoconnect!"), 99, false, true);
     return false;
   }  
 }
@@ -234,11 +234,11 @@ bool WiFiManager::setWiFiAutoReconnect(bool newValue)
   {
     #ifdef J54J6_SysLogger
       
-      String message = "Update WiFi->AutoReconnect: ";
+      String message = F("Update WiFi->AutoReconnect: ");
       message += getWiFiAutoReconnect();
-      message += " -> ";
+      message += F(" -> ");
       message += newValue;
-      logging.logIt("setWiFiAutoReconnect", message.c_str());
+      logging.logIt(F("setWiFiAutoReconnect"), message.c_str());
     #endif
     return true;
   }
@@ -246,13 +246,13 @@ bool WiFiManager::setWiFiAutoReconnect(bool newValue)
   {
     #ifdef J54J6_SysLogger
       
-      String message = "Can't Update WiFi->AutoReconnect: ";
+      String message = F("Can't Update WiFi->AutoReconnect: ");
       message += getWiFiAutoReconnect();
-      message +=" -> ";
+      message += F(" -> ");
       message += newValue;
-      logging.logIt("setWiFiAutoReconnect", message.c_str(), 2);
+      logging.logIt(F("setWiFiAutoReconnect"), message.c_str(), 2);
     #endif
-    classControl.newReport("Can't update AutoReconnect!", 93, false, true);
+    classControl.newReport(F("Can't update AutoReconnect!"), 93, false, true);
     return false;
   }
 }
@@ -262,7 +262,7 @@ bool WiFiManager::setWiFiHostname(const char* hostname)
   if(hostname == WiFi.hostname().c_str())
   {
     #ifdef J54J6_SysLogger
-      logging.logIt("setWiFiHostname", "Hostname already set! - SKIP", 1);
+      logging.logIt(F("setWiFiHostname"), F("Hostname already set! - SKIP"), 1);
     #endif
     return true;
   }
@@ -271,11 +271,11 @@ bool WiFiManager::setWiFiHostname(const char* hostname)
   {
     #ifdef J54J6_SysLogger
       
-      String message = "Update WiFi->Hostname: ";
+      String message = F("Update WiFi->Hostname: ");
       message += WiFi.hostname();
-      message += " -> ";
+      message += F(" -> ");
       message += hostname;
-      logging.logIt("setWiFiHostname", message.c_str());
+      logging.logIt(F("setWiFiHostname"), message.c_str());
     #endif
     return true;
   }
@@ -283,13 +283,13 @@ bool WiFiManager::setWiFiHostname(const char* hostname)
   {
     #ifdef J54J6_SysLogger
       
-      String message = "Can't Update WiFi->Hostname: ";
+      String message = F("Can't Update WiFi->Hostname: ");
       message += WiFi.hostname();
-      message += " -> ";
+      message += F(" -> ");
       message += hostname;
-      logging.logIt("setWiFiHostname", message.c_str(), 2);
+      logging.logIt(F("setWiFiHostname"), message.c_str(), 2);
     #endif
-    classControl.newReport("Can't update Hostname!", 56, 1, false, true);
+    classControl.newReport(F("Can't update Hostname!"), 56, 1, false, true);
     return false;
   }
 }
@@ -300,7 +300,7 @@ bool WiFiManager::setWiFiConfig(IPAddress local_ip, IPAddress gateway, IPAddress
   {
     #ifdef J54J6_SysLogger
       
-      logging.logIt("setWiFiConfig", "WiFi Config successfully updated!", 0);
+      logging.logIt(F("setWiFiConfig"), F("WiFi Config successfully updated!"), 0);
     #endif
     return true;
   }
@@ -308,14 +308,34 @@ bool WiFiManager::setWiFiConfig(IPAddress local_ip, IPAddress gateway, IPAddress
   {
     #ifdef J54J6_SysLogger
       
-      logging.logIt("setWiFiConfig", "Can't update WiFi Config - Report!", 2);
+      logging.logIt(F("setWiFiConfig"), F("Can't update WiFi Config - Report!"), 2);
     #endif
-    classControl.newReport("Can't update WiFi Config - class return 'false'!", 432, true, true);
+    classControl.newReport(F("Can't update WiFi Config - class return 'false'!"), 432, true, true);
     setLockClass(true);
   }
   return false;
 }
-
+bool WiFiManager::setSoftAPConfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet)
+{
+  if(WiFi.softAPConfig(local_ip, gateway, subnet))
+  {
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt(F("setSoftAPConfig"), F("WiFi SoftAP Config successfully updated!"), 0);
+    #endif
+    return true;
+  }
+  else
+  {
+    #ifdef J54J6_SysLogger
+      
+      logging.logIt(F("setSoftAPConfig"), F("Can't  SoftAP update WiFi Config - Report!"), 2);
+    #endif
+    classControl.newReport(F("Can't update SoftAP  WiFi Config - class return 'false'!"), 432, true, true);
+    setLockClass(true);
+  }
+  return false;
+}
 /*
   General functionalities
 */
@@ -325,7 +345,7 @@ void WiFiManager::enableWiFi(WiFiMode_t mode)
   {
     #ifdef J54J6_SysLogger
       
-      logging.logIt("enableWiFi", "enable WiFi");
+      logging.logIt(F("enableWiFi"), F("enable WiFi"));
     #endif
     shieldState = true; //wifi enabled
     wifi_fpm_do_wakeup();
@@ -336,7 +356,7 @@ void WiFiManager::enableWiFi(WiFiMode_t mode)
   {
     #ifdef J54J6_SysLogger
       
-      logging.logIt("enableWiFi", "WiFi already enabled - SKIP", 1);
+      logging.logIt(F("enableWiFi"), F("WiFi already enabled - SKIP"), 1);
     #endif
   }
 }
@@ -347,7 +367,7 @@ void WiFiManager::disableWiFi()
   {
     #ifdef J54J6_SysLogger
       
-      logging.logIt("disableWiFi", "disable WiFi");
+      logging.logIt(F("disableWiFi"), F("disable WiFi"));
     #endif
     shieldState = false; //wifi disabled
     wifi_station_disconnect();
@@ -358,14 +378,14 @@ void WiFiManager::disableWiFi()
   {
     #ifdef J54J6_SysLogger
       
-      logging.logIt("disableWiFi", "WiFi already disabled - SKIP", 1);
+      logging.logIt(F("disableWiFi"), F("WiFi already disabled - SKIP"), 1);
     #endif
   }
 }
 
-void WiFiManager::setWiFiMode(WiFiMode_t mode)
+bool WiFiManager::setWiFiMode(WiFiMode_t mode)
 {
-  WiFi.mode(mode);
+  return WiFi.mode(mode);
 }
 
 
@@ -375,7 +395,7 @@ bool WiFiManager::startWifiAP(const char *ssid, const char *passwd, int hidden, 
   {
     #ifdef J54J6_SysLogger
       
-      logging.logIt("startWifiAP", "AP already enabled - SKIP", 1);
+      logging.logIt(F("startWifiAP"), F("AP already enabled - SKIP"), 1);
     #endif
     return true;
   }
@@ -386,7 +406,7 @@ bool WiFiManager::startWifiAP(const char *ssid, const char *passwd, int hidden, 
     {
       #ifdef J54J6_SysLogger
         
-        logging.logIt("startWifiAP", "Override setting - enable WiFi before starting WiFi AP!", 1);
+        logging.logIt(F("startWifiAP"), F("Override setting - enable WiFi before starting WiFi AP!"), 1);
       #endif
       enableWiFi();
     }
@@ -394,11 +414,11 @@ bool WiFiManager::startWifiAP(const char *ssid, const char *passwd, int hidden, 
     {
       #ifdef J54J6_SysLogger
         
-        logging.logIt("startWifiAP", "Can't start WiFi AP - WiFi is not enabled - Overriding is disabled!", 2);
-        logging.logIt("startWifiAP", "Report to ErrorHandler!", 2);
+        logging.logIt(F("startWifiAP"), F("Can't start WiFi AP - WiFi is not enabled - Overriding is disabled!"), 2);
+        logging.logIt(F("startWifiAP"), F("Report to ErrorHandler!"), 2);
       #endif
 
-      classControl.newReport("WiFi disabled - overriding disabled!", 653, true, true);
+      classControl.newReport(F("WiFi disabled - overriding disabled!"), 653, true, true);
       return false;
     } 
   }
@@ -407,7 +427,7 @@ bool WiFiManager::startWifiAP(const char *ssid, const char *passwd, int hidden, 
   {
     #ifdef J54J6_SysLogger
       
-      logging.logIt("startWifiAP", "AP successfully enabled!");
+      logging.logIt(F("startWifiAP"), F("AP successfully enabled!"));
     #endif
     apActive = true;
     return true;
@@ -415,7 +435,7 @@ bool WiFiManager::startWifiAP(const char *ssid, const char *passwd, int hidden, 
   else
   {
     #ifdef J54J6_SysLogger
-      logging.logIt("startWifiAP", "Can't start WiFi AP - softAP return 'false'", 2);
+      logging.logIt(F("startWifiAP"), F("Can't start WiFi AP - softAP return 'false'"), 2);
     #endif
     Serial.println(ssid);
     Serial.println(passwd);
@@ -423,10 +443,10 @@ bool WiFiManager::startWifiAP(const char *ssid, const char *passwd, int hidden, 
     Serial.println(hidden);
     #ifdef J54J6_SysLogger
         String message = "SSID: " + String(ssid) + " Passwd: " + String(passwd) + " Channel: " + String(channel) + " Hidden: " + String(hidden);
-        logging.logIt("startWifiAP", message, 2);
+        logging.logIt(F("startWifiAP"), message, 2);
     #endif
 
-    classControl.newReport("WiFi Class -> softAP return false", 1, true, true);
+    classControl.newReport(F("WiFi Class -> softAP return false"), 1, true, true);
     setLockClass(true); //lock Class to prevent further Errors in this Class - to prevent this "Error" - just keeo overrideSettingsToPreventError as true
     return false;
   }
@@ -438,7 +458,7 @@ bool WiFiManager::stopWifiAP(bool wifioff) //if wifiOff = true - softAP mode wil
   {
     #ifdef J54J6_SysLogger
       
-      logging.logIt("stopWifiAP", "AP already disabled - SKIP", 1);
+      logging.logIt(F("stopWifiAP"), F("AP already disabled - SKIP"), 1);
     #endif
   }
 
@@ -448,7 +468,7 @@ bool WiFiManager::stopWifiAP(bool wifioff) //if wifiOff = true - softAP mode wil
     apActive = false;
     #ifdef J54J6_SysLogger
       
-      logging.logIt("stopWifiAP", "AP successfully disabled");
+      logging.logIt(F("stopWifiAP"), F("AP successfully disabled"));
     #endif
     return true;
   }
@@ -458,14 +478,14 @@ bool WiFiManager::stopWifiAP(bool wifioff) //if wifiOff = true - softAP mode wil
     {
       #ifdef J54J6_SysLogger
         
-        logging.logIt("stopWifiAP", "Can't disable AP - Try to Fix Problem - invert wifiOff value", 1);
+        logging.logIt(F("stopWifiAP"), F("Can't disable AP - Try to Fix Problem - invert wifiOff value"), 1);
       #endif
 
       if(WiFi.softAPdisconnect(!wifioff))
       {
         #ifdef J54J6_SysLogger
           
-          logging.logIt("stopWifiAP", "AP successfully disabled - with inverted settings! - AutoFix used!");
+          logging.logIt(F("stopWifiAP"), F("AP successfully disabled - with inverted settings! - AutoFix used!"));
         #endif
         return true;
       }
@@ -473,17 +493,17 @@ bool WiFiManager::stopWifiAP(bool wifioff) //if wifiOff = true - softAP mode wil
       {
         #ifdef J54J6_SysLogger
           
-          logging.logIt("stopWifiAP", "Can't disable AP - Report to ErrorHandler", 1);
+          logging.logIt(F("stopWifiAP"), F("Can't disable AP - Report to ErrorHandler"), 1);
         #endif
-        classControl.newReport("Cann't disable AP - softAPDisc. returns false - with inverted settings too - AutoFix failed!", 3, true, true);
+        classControl.newReport(F("Cann't disable AP - softAPDisc. returns false - with inverted settings too - AutoFix failed!"), 3, true, true);
         return false;
       }
     }
     #ifdef J54J6_SysLogger
       
-      logging.logIt("stopWifiAP", "Can't disable AP - Report to ErrorHandler", 1);
+      logging.logIt(F("stopWifiAP"), F("Can't disable AP - Report to ErrorHandler"), 1);
     #endif
-    classControl.newReport("Can't disable AP - softAPDisc. returns false", 4, false, true);
+    classControl.newReport(F("Can't disable AP - softAPDisc. returns false"), 4, false, true);
     return false;
   }
   return false; //normaly this can't be reached - only for better syntax ^^
@@ -526,7 +546,7 @@ bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMo
 {
   #ifdef J54J6_SysLogger
     
-    logging.logIt("startWifiStation", "Start Wifi Station");
+    logging.logIt(F("startWifiStation"), F("Start Wifi Station"));
   #endif
 
   if(staActive)
@@ -534,7 +554,7 @@ bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMo
     if(!restart)
     {
       #ifdef J54J6_SysLogger
-        logging.logIt("startWifiStation", "Station already enabled - SKIP", 1);
+        logging.logIt(F("startWifiStation"), F("Station already enabled - SKIP"), 1);
       #endif
       return true;
     }
@@ -542,7 +562,7 @@ bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMo
     {
       #ifdef J54J6_SysLogger
         
-        logging.logIt("startWifiStation", "Station Already enabled - Restart!", 1);
+        logging.logIt(F("startWifiStation"), F("Station Already enabled - Restart!"), 1);
       #endif
       delay(50);
     }
@@ -554,7 +574,7 @@ bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMo
     {
       #ifdef J54J6_SysLogger
         
-        logging.logIt("startWifiStation", "Override setting - enable WiFi before starting WiFi Station!", 1);
+        logging.logIt(F("startWifiStation"), F("Override setting - enable WiFi before starting WiFi Station!"), 1);
       #endif
       enableWiFi();
     }
@@ -562,10 +582,10 @@ bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMo
     {
       #ifdef J54J6_SysLogger
         
-        logging.logIt("startWifiStation", "Can't start WiFi Station - WiFi is not enabled - Overriding is disabled!", 2);
-        logging.logIt("startWifiStation", "Report to ErrorHandler!", 2);
+        logging.logIt(F("startWifiStation"), F("Can't start WiFi Station - WiFi is not enabled - Overriding is disabled!"), 2);
+        logging.logIt(F("startWifiStation"), F("Report to ErrorHandler!"), 2);
       #endif
-      classControl.newReport("WiFi disabled - overriding disabled!", 312, false, true); 
+      classControl.newReport(F("WiFi disabled - overriding disabled!"), 312, false, true); 
       //lock Class to prevent further Errors in this Class - to prevent this "Error" - just keeo overrideSettingsToPreventError as true
       return false;
     }
@@ -574,22 +594,22 @@ bool WiFiManager::startWifiStation(const char* ssid, const char* passwd,  WiFiMo
   if(WiFi.mode(mode))
   {
     #ifdef J54J6_SysLogger
-      logging.logIt("startWifiStation", "Station successfully enabled - try to connect...");
+      logging.logIt(F("startWifiStation"), F("Station successfully enabled - try to connect..."));
     #endif
   }
   else
   {
     #ifdef J54J6_SysLogger
       
-      logging.logIt("startWifiStation", "Can't enable WiFi Station - Wifi.mode(sta) return 'false'", 2);
+      logging.logIt(F("startWifiStation"), F("Can't enable WiFi Station - Wifi.mode(sta) return 'false'"), 2);
     #endif
-    classControl.newReport("WiFi Class ->  Wifi.mode() return false", 176, true, true);
+    classControl.newReport(F("WiFi Class ->  Wifi.mode() return false"), 176, true, true);
     setLockClass(true); //lock Class to prevent further Errors in this Class - to prevent this "Error" - just keeo overrideSettingsToPreventError as true
     return false;
   }
 
   #ifdef J54J6_SysLogger
-    logging.logIt("startWifiStation", "WiFi Station successfully started");
+    logging.logIt(F("startWifiStation"), F("WiFi Station successfully started"));
   #endif
   staActive = true;
   WiFi.begin(ssid, passwd, channel, bssid, connect);
@@ -602,7 +622,7 @@ bool WiFiManager::stopWifiStation(bool wifioff)
   {
     #ifdef J54J6_SysLogger
     
-    logging.logIt("stopWifiStation", "WiFi Station not enabled - SKIP", 1);
+    logging.logIt(F("stopWifiStation"), F("WiFi Station not enabled - SKIP"), 1);
   #endif
   return true;
   }
@@ -613,7 +633,7 @@ bool WiFiManager::stopWifiStation(bool wifioff)
     staActive = false;
     #ifdef J54J6_SysLogger
       
-      logging.logIt("stopWifiStation", "Station successfully disabled");
+      logging.logIt(F("stopWifiStation"), F("Station successfully disabled"));
     #endif
     return true;
   }
@@ -623,14 +643,14 @@ bool WiFiManager::stopWifiStation(bool wifioff)
     {
       #ifdef J54J6_SysLogger
         
-        logging.logIt("stopWifiStation", "Can't disable Station - Try to Fix Problem - invert wifiOff value", 1);
+        logging.logIt(F("stopWifiStation"), F("Can't disable Station - Try to Fix Problem - invert wifiOff value"), 1);
       #endif
 
       if(WiFi.disconnect(!wifioff))
       {
         #ifdef J54J6_SysLogger
           
-          logging.logIt("stopWifiStation", "Station successfully disabled - with inverted settings! - AutoFix used!");
+          logging.logIt(F("stopWifiStation"), F("Station successfully disabled - with inverted settings! - AutoFix used!"));
         #endif
         return true;
       }
@@ -638,17 +658,17 @@ bool WiFiManager::stopWifiStation(bool wifioff)
       {
         #ifdef J54J6_SysLogger
           
-          logging.logIt("stopWifiStation", "Can't disable Station - Report to ErrorHandler", 1);
+          logging.logIt(F("stopWifiStation"), F("Can't disable Station - Report to ErrorHandler"), 1);
         #endif
-        classControl.newReport("Can't disable Station - AP.Disc. returns false - with inverted settings too - AutoFix failed!", 7,1, true, true);
+        classControl.newReport(F("Can't disable Station - AP.Disc. returns false - with inverted settings too - AutoFix failed!"), 7,1, true, true);
         return false;
       }
     }
     #ifdef J54J6_SysLogger
       
-      logging.logIt("stopWifiStation", "Can't disable Station - Report to ErrorHandler", 1);
+      logging.logIt(F("stopWifiStation"), F("Can't disable Station - Report to ErrorHandler"), 1);
     #endif
-    classControl.newReport("Can't disable Station - AP.Disc. returns false", 8, 1, true, true);
+    classControl.newReport(F("Can't disable Station - AP.Disc. returns false"), 8, 1, true, true);
     return false;
   }
   return false; //normaly this can't be reached - only for better syntax ^^
@@ -708,7 +728,7 @@ void WiFiManager::setOpticalMessage(wl_status_t currentState)
   {
     if(currentState == WL_NO_SHIELD)
     {
-      classControl.newReport("No WiFI Shield found!", 45, 6, true, true);
+      classControl.newReport(F("No WiFI Shield found!"), 45, 6, true, true);
       wifiLed->ledOff();
       return;
     }

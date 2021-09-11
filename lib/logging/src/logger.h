@@ -69,6 +69,9 @@
 #define functionnameSpace 20
 #define priorityValueSpace 6
 
+//permanentErrorLog
+
+
 
 
 class SysLogger {

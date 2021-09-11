@@ -39,65 +39,65 @@ String ServiceHandler::formatComMessage(bool request, bool generateId, String se
     long genId = millis() + random(20, 2145895698);
     lastId = genId;
 
-    String output = "{\"type\" : \"";
+    String output = F("{\"type\" : \"");
     if(request)
     {
-        output += "request";
+        output += F("request");
     }
     else
     {
-        output += "answer";
+        output += F("answer");
     }
-    output += "\",";
-    output += "\"serviceName\" : \"";
+    output += F("\",");
+    output += F("\"serviceName\" : \"");
     output += serviceName;
-    output += "\", ";
-    output += "\"mac\" : \"";
+    output += ("\", ");
+    output += ("\"mac\" : \"");
     output += MAC;
-    output += "\", ";
-    output += "\"ip\" : \"";
+    output += F("\", ");
+    output += F("\"ip\" : \"");
     output += ip;
-    output += "\", ";
-    output += "\"servicePort\" : \"";
+    output += F("\", ");
+    output += F("\"servicePort\" : \"");
     output += port;
     if(!generateId && id == "n.S")
     {
-        output += "\"";
-        output += "}";
+        output += F("\"");
+        output += F("}");
     }
     else
     {
         if(id == "n.S")
         {
-            output += "\",";
-            output += "\"id\" : \"";
+            output += F("\",");
+            output += F("\"id\" : \"");
             output += genId;
-            output += "\"}";
+            output += F("\"}");
         }
         else
         {
-            output += "\",";
-            output += "\"id\" : \"";
+            output += F("\",");
+            output += F("\"id\" : \"");
             output += id;
-            output += "\"}";
+            output += F("\"}");
         } 
     }
     #ifdef J54J6_SysLogger
-        logging.logIt("formatMessage", output.c_str(), 1);
+        logging.logIt(F("formatMessage"), output.c_str(), 1);
     #endif 
     #ifdef J54J6_SysLogger
         
-        logging.logIt("formatMessage", "", 1);
-        logging.logIt("formatMessage", "#####Debug#####", 1);
-        logging.logIt("formatMessage", "Request: " + int(request), 1);
-        logging.logIt("formatMessage", "GenerateID: " + int(generateId), 1);
-        logging.logIt("formatMessage", "ServiceName: " + serviceName, 1);
-        logging.logIt("formatMessage", "MAC: " + MAC, 1);
-        logging.logIt("formatMessage", "IP: " + ip, 1);
-        logging.logIt("formatMessage", "ServicePort: " + port, 1);
-        logging.logIt("formatMessage", "ID: " + id, 1);
-        logging.logIt("formatMessage", "#####Debug#####", 1);
-        logging.logIt("formatMessage", "", 1);
+        logging.logIt(F("formatMessage"), F(""), 1);
+        logging.logIt(F("formatMessage"), F("#####Debug#####"), 1);
+        logging.logIt(F("formatMessage"), "Request: " + int(request), 1);
+        logging.logIt(F("formatMessage"), "GenerateID: " + int(generateId), 1);
+        logging.logIt(F("formatMessage"), "ServiceName: " + serviceName, 1);
+        logging.logIt(F("formatMessage"), "MAC: " + MAC, 1);
+        logging.logIt(F("formatMessage"), "IP: " + ip, 1);
+        logging.logIt(F("formatMessage"), "ServicePort: " + port, 1);
+        logging.logIt(F("formatMessage"), "ID: " + id, 1);
+        logging.logIt(F("formatMessage"), F("#####Debug#####"), 1);
+        logging.logIt(F("formatMessage"), F(""), 1);
     #endif 
     return output;
 }
@@ -125,21 +125,21 @@ bool ServiceHandler::createInternalServicesBasicConfigFile()
     {
         #ifdef J54J6_SysLogger
             
-            logging.logIt("createConfigFile", "Config File doesn't exist - try to create", 1);
+            logging.logIt(F("createConfigFile"), F("Config File doesn't exist - try to create"), 1);
         #endif 
 
         if(FM->createFile(offeredServicesPath))
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("createConfigFile", "File created!");
+                logging.logIt(F("createConfigFile"), F("File created!"));
             #endif 
         }
         else
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("createConfigFile", "Can't create File! - return false", 2);
+                logging.logIt(F("createConfigFile"), F("Can't create File! - return false"), 2);
             #endif
             return false;
         }
@@ -148,7 +148,7 @@ bool ServiceHandler::createInternalServicesBasicConfigFile()
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("createConfigFile", "Config Fallback written - return true");
+                logging.logIt(F("createConfigFile"), F("Config Fallback written - return true"));
             #endif
             return true;
         }
@@ -156,7 +156,7 @@ bool ServiceHandler::createInternalServicesBasicConfigFile()
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("createConfigFile", "Can't write in File!");
+                logging.logIt(F("createConfigFile"), F("Can't write in File!"));
             #endif
             return false;
         }
@@ -166,7 +166,7 @@ bool ServiceHandler::createInternalServicesBasicConfigFile()
     {
         #ifdef J54J6_SysLogger
             
-            logging.logIt("createConfigFile", "File already exist - SKIP!");
+            logging.logIt(F("createConfigFile"), F("File already exist - SKIP!"));
         #endif
         return true;
     }
@@ -198,22 +198,22 @@ bool ServiceHandler::verifySelfOfferedService(const char* serviceName)
             if(strcmp(FM->readJsonFileValue(offeredServicesPath, serviceName), "") != 0)
             {
                 #ifdef J54J6_SysLogger
-                    logging.logIt("verifySelfOfferedService", "Service verified!", 2);
+                    logging.logIt(F("verifySelfOfferedService"), F("Service verified!"), 2);
                 #endif
                 return true;
             }
             #ifdef J54J6_SysLogger
-                logging.logIt("verifySelfOfferedService", "Service" + String(serviceName) + " has no Port!", 2);
+                logging.logIt(F("verifySelfOfferedService"), "Service" + String(serviceName) + " has no Port!", 2);
             #endif
             return false;
         }
         #ifdef J54J6_SysLogger
-            logging.logIt("verifySelfOfferedService", "Service" + String(serviceName) + " is not defined as self Offered!", 2);
+            logging.logIt(F("verifySelfOfferedService"), "Service" + String(serviceName) + " is not defined as self Offered!", 2);
         #endif
         return false;
     }
     #ifdef J54J6_SysLogger
-        logging.logIt("verifySelfOfferedService", "There are no selfOffered List file!", 2);
+        logging.logIt(F("verifySelfOfferedService"), F("There are no selfOffered List file!"), 2);
     #endif
     return false;
 }
@@ -221,11 +221,11 @@ bool ServiceHandler::verifySelfOfferedService(const char* serviceName)
 bool ServiceHandler::verifyExternalOfferedService(const char* serviceName, bool fallback)
 {
     #ifdef J54J6_SysLogger
-        logging.logIt("verifyExternalOfferedService", "Try to Verify Servicefile for Service: " + String(serviceName), 2);
+        logging.logIt(F("verifyExternalOfferedService"), "Try to Verify Servicefile for Service: " + String(serviceName), 2);
     #endif
-    Serial.println("+++++++++++++++++++++++++++FILE+++++++++++++++++++++++++++");
+    Serial.println(F("+++++++++++++++++++++++++++FILE+++++++++++++++++++++++++++"));
     Serial.println(FM->readFile(getExternalServiceFilename(serviceName, fallback).c_str()));
-    Serial.println("+++++++++++++++++++++++++END FILE+++++++++++++++++++++++++");
+    Serial.println(F("+++++++++++++++++++++++++END FILE+++++++++++++++++++++++++"));
     if(FM->fExist(getExternalServiceFilename(serviceName, fallback).c_str()))
     {
         if(FM->checkForKeyInJSONFile(getExternalServiceFilename(serviceName, fallback).c_str(), "ip") && FM->checkForKeyInJSONFile(getExternalServiceFilename(serviceName, fallback).c_str(), "port")) //file has config
@@ -244,22 +244,22 @@ bool ServiceHandler::verifyExternalOfferedService(const char* serviceName, bool 
             if(ipCorrect && portCorrect)
             {
                 #ifdef J54J6_SysLogger
-                    logging.logIt("verifySelfOfferedService", "Service verified!", 2);
+                    logging.logIt(F("verifySelfOfferedService"), F("Service verified!"), 2);
                 #endif
                 return true;
             }
             #ifdef J54J6_SysLogger
-                logging.logIt("verifySelfOfferedService", "One ore more Values are not Correct set! IP: " + String(int(ipCorrect) + " Port: " + int(portCorrect)) , 2);
+                logging.logIt(F("verifySelfOfferedService"), "One ore more Values are not Correct set! IP: " + String(int(ipCorrect) + " Port: " + int(portCorrect)) , 2);
             #endif
             return false;
         }
         #ifdef J54J6_SysLogger
-            logging.logIt("verifySelfOfferedService", "One or more keywords are missed!", 2);
+            logging.logIt(F("verifySelfOfferedService"), F("One or more keywords are missed!"), 2);
         #endif 
         return false;                
     }
     #ifdef J54J6_SysLogger
-        logging.logIt("verifySelfOfferedService", "There is no Configured Service called " + String(serviceName), 2);
+        logging.logIt(F("verifySelfOfferedService"), "There is no Configured Service called " + String(serviceName), 2);
     #endif
     return false;
 }
@@ -288,7 +288,7 @@ bool ServiceHandler::beginListen()
     {
         #ifdef J54J6_SysLogger
             
-            logging.logIt("beginListen", "NetworkIdent Service started");
+            logging.logIt(F("beginListen"), F("NetworkIdent Service started"));
         #endif
         return true;
     }
@@ -296,7 +296,7 @@ bool ServiceHandler::beginListen()
     {
         #ifdef J54J6_SysLogger
             
-            logging.logIt("beginListen", "Can't start NetworkIdent - udpControl return false!", 2);
+            logging.logIt(F("beginListen"), F("Can't start NetworkIdent - udpControl return false!"), 2);
         #endif
         return false;
     }
@@ -308,7 +308,7 @@ void ServiceHandler::stopListen()
     udpControl.stop();
     #ifdef J54J6_SysLogger
         
-        logging.logIt("stopListen", "UDP Listener stopped", 0);
+        logging.logIt(F("stopListen"), F("UDP Listener stopped"), 0);
     #endif
 }
 
@@ -318,7 +318,7 @@ void ServiceHandler::stopListen()
 
 bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* serviceName, const char* port, const char* ip, const char* mac)
 {
-    logging.logIt("AddService", "Try to Add new Service with following values: serviceName: " + String(serviceName) + ", port: " + String(port) + ", IP: " + String(ip) + ", MAC: " + String(mac), 2);
+    logging.logIt(F("AddService"), "Try to Add new Service with following values: serviceName: " + String(serviceName) + ", port: " + String(port) + ", IP: " + String(ip) + ", MAC: " + String(mac), 2);
     if(selfOffered)
     {
         /*
@@ -331,7 +331,7 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
             {
                 #ifdef J54J6_SysLogger
                     
-                    logging.logIt("addService", "Service already exist - SKIP", 0);
+                    logging.logIt(F("addService"), F("Service already exist - SKIP"), 0);
                 #endif 
                 return true;
             }
@@ -356,7 +356,7 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
             {
                 #ifdef J54J6_SysLogger
                     
-                    logging.logIt("addService", "An Error occured while adding the Service please check! -  Service can't be added", 2);
+                    logging.logIt(F("addService"), F("An Error occured while adding the Service please check! -  Service can't be added"), 2);
                 #endif
                 return false;
             }
@@ -365,7 +365,7 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("addService", "Can't check for Service - ServiceList File doesn't exist!", 1);
+                logging.logIt(F("addService"), F("Can't check for Service - ServiceList File doesn't exist!"), 1);
             #endif
             return false;
         }
@@ -390,7 +390,7 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
             {
                 #ifdef J54J6_SysLogger
                     
-                    logging.logIt("addService", "One or more parameter can't be saved - create or append has failed!", 2);
+                    logging.logIt(F("addService"), F("One or more parameter can't be saved - create or append has failed!"), 2);
                 #endif
                 return false;
             }
@@ -401,7 +401,7 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
                 {
                     #ifdef J54J6_SysLogger
                         
-                        logging.logIt("addService", "Service successfully added");
+                        logging.logIt(F("addService"), F("Service successfully added"));
                     #endif
                     return true;
                 }
@@ -409,7 +409,7 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
                 {
                     #ifdef J54J6_SysLogger
                         
-                        logging.logIt("addService", "File could not be created! - Can't fnd Service after add process! - return false", 2);
+                        logging.logIt(F("addService"), F("File could not be created! - Can't fnd Service after add process! - return false"), 2);
                     #endif
                     return false;
                 }  
@@ -419,7 +419,7 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("addService", "Can't add Service - one or more parameter not set!", 1);
+                logging.logIt(F("addService"), F("Can't add Service - one or more parameter not set!"), 1);
             #endif
             return false;
         }   
@@ -430,10 +430,10 @@ bool ServiceHandler::addService(bool selfOffered, bool fallback, const char* ser
 
 bool ServiceHandler::initAutoAdd(const char* serviceName)
 {
-    logging.logIt("initAutoAdd", "Start initAutoAdd", 1);
+    logging.logIt(F("initAutoAdd"), F("Start initAutoAdd"), 1);
     if(!FM->fExist(getExternalServiceFilename(serviceName).c_str()))
     {   
-        logging.logIt("initAutoAdd", "Search for new Service - init successful", 3);
+        logging.logIt(F("initAutoAdd"), F("Search for new Service - init successful"), 3);
         searchForService(serviceName);
         lastAutoAddRequest.createdAt = millis();
         lastAutoAddRequest.deleteAfter = timeoutAfterAutoAddWillEnd;
@@ -449,7 +449,7 @@ bool ServiceHandler::initAutoAdd(const char* serviceName)
     {
         if(!FM->fExist(getExternalServiceFilename(serviceName, true).c_str()))
         {   
-            logging.logIt("initAutoAdd", "Search for new Service - init successfull (Create Fallback)", 3);
+            logging.logIt(F("initAutoAdd"), F("Search for new Service - init successfull (Create Fallback)"), 3);
             searchForService(serviceName);
             lastAutoAddRequest.createdAt = millis();
             lastAutoAddRequest.deleteAfter = timeoutAfterAutoAddWillEnd;
@@ -463,40 +463,40 @@ bool ServiceHandler::initAutoAdd(const char* serviceName)
         }
         else
         {
-            logging.logIt("initAutoAdd", "Main and Backup CFG are already created - check if any config is broken and remove it!", 3);
+            logging.logIt(F("initAutoAdd"), F("Main and Backup CFG are already created - check if any config is broken and remove it!"), 3);
             //Check if main config is broken
             if(!verifyExternalOfferedService(serviceName, false))
             {
-                logging.logIt("initAutoAdd", "Main-Config is broken - remove! - try reinit", 3);
+                logging.logIt(F("initAutoAdd"), F("Main-Config is broken - remove! - try reinit"), 3);
                 FM->fDelete(getExternalServiceFilename(serviceName).c_str());
                 if(!FM->fExist(getExternalServiceFilename(serviceName).c_str()))
                 {
-                    logging.logIt("initAutoAdd", "Successfully removed!", 3);
+                    logging.logIt(F("initAutoAdd"), F("Successfully removed!"), 3);
                     return initAutoAdd(serviceName);
                 }
                 else
                 {
-                    logging.logIt("initAutoAdd", "Can't remove Main CFG File!", 4);
+                    logging.logIt(F("initAutoAdd"), F("Can't remove Main CFG File!"), 4);
                 }
             }
             else if(!verifyExternalOfferedService(serviceName, true))
             {
-                logging.logIt("initAutoAdd", "Backup-Config is broken - remove! - try reinit", 3);
+                logging.logIt(F("initAutoAdd"), F("Backup-Config is broken - remove! - try reinit"), 3);
                 FM->fDelete(getExternalServiceFilename(serviceName, true).c_str());
                 if(!FM->fExist(getExternalServiceFilename(serviceName, true).c_str()))
                 {
-                    logging.logIt("initAutoAdd", "Successfully removed!", 3);
+                    logging.logIt(F("initAutoAdd"), F("Successfully removed!"), 3);
                     lastAutoAddRequest.reset();
                     return initAutoAdd(serviceName);
                 }
                 else
                 {
-                    logging.logIt("initAutoAdd", "Can't remove Backup CFG File!", 4);
+                    logging.logIt(F("initAutoAdd"), F("Can't remove Backup CFG File!"), 4);
                 }
             }
             else
             {
-                logging.logIt("initAutoAdd", "Backup and Main Config is correct - User action required!", 4);
+                logging.logIt(F("initAutoAdd"), F("Backup and Main Config is correct - User action required!"), 4);
                 return false;
             }
             return false;
@@ -521,12 +521,12 @@ short ServiceHandler::runAutoAdd()
 
         if(!lastFetched.containsKey("id") || !lastFetched.containsKey("serviceName") || !lastFetched.containsKey("ip") || !lastFetched.containsKey("mac") || !lastFetched.containsKey("servicePort"))
         {
-            logging.logIt("runAutoAdd", "Drop packet! - one ore more keys are missing!", 1);
+            logging.logIt(F("runAutoAdd"), F("Drop packet! - one ore more keys are missing!"), 1);
             return 10; //no correct packet recieved
         }
         else
         {
-            logging.logIt("runAutoAdd", "Useable Packet received!", 1);
+            logging.logIt(F("runAutoAdd"), F("Useable Packet received!"), 1);
             //lastReceived Packet does contain all needed keys to create a new Service - check for id and serviceName
             String castedLastRequestID = String(lastAutoAddRequest.id);
             String castedLastReceivedID = lastFetched["id"];
@@ -537,7 +537,7 @@ short ServiceHandler::runAutoAdd()
 
             if(castedLastReceivedID != castedLastRequestID)
             {
-                logging.logIt("runAutoAdd", "ID's are not Matching - return", 1);
+                logging.logIt(F("runAutoAdd"), F("ID's are not Matching - return"), 1);
                 return 3; //id is not matching
             }
 
@@ -546,10 +546,10 @@ short ServiceHandler::runAutoAdd()
             String newServiceMAC = lastFetched["mac"];
             String newServiceName = lastAutoAddRequest.serviceName;
 
-            logging.logIt("runAutoAdd", "newServiceIP: " + String(newServiceIp), 1);
-            logging.logIt("runAutoAdd", "newServicePort: " + String(newServicePort), 1);
-            logging.logIt("runAutoAdd", "newServiceMAC: " + String(newServiceMAC), 1);
-            logging.logIt("runAutoAdd", "newServiceName: " +String(newServiceName), 1);
+            logging.logIt(F("runAutoAdd"), "newServiceIP: " + String(newServiceIp), 1);
+            logging.logIt(F("runAutoAdd"), "newServicePort: " + String(newServicePort), 1);
+            logging.logIt(F("runAutoAdd"), "newServiceMAC: " + String(newServiceMAC), 1);
+            logging.logIt(F("runAutoAdd"), "newServiceName: " +String(newServiceName), 1);
 
             //newServiceIp.replace(".", "");
             if(newServiceIp != "" && newServiceIp != " " && newServicePort != "" && newServicePort != " ") //mac can be senden but is not important //later for esp-now needed so also implemented
@@ -557,12 +557,12 @@ short ServiceHandler::runAutoAdd()
                 bool res;
                 if(!lastAutoAddRequest.isFallback)
                 {
-                    logging.logIt("runAutoAdd", "Try to Add new MainCFG", 1);
+                    logging.logIt(F("runAutoAdd"), F("Try to Add new MainCFG"), 1);
                     //add Service as main CFG
                     res = addService(false, false, lastAutoAddRequest.serviceName, newServicePort.c_str(), newServiceIp.c_str());
                     if(res)
                     {
-                        logging.logIt("runAutoAdd", "Free Heap: " + String(ESP.getFreeHeap()));
+                        logging.logIt(F("runAutoAdd"), "Free Heap: " + String(ESP.getFreeHeap()));
                         res = verifyService(lastAutoAddRequest.serviceName, false);
                     }
                 }
@@ -588,7 +588,7 @@ short ServiceHandler::runAutoAdd()
             }
             else
             {
-                logging.logIt("autoAddService", "Can't add Service - invalid Data: IP: " + String(newServiceIp) + ", Port: " + String(newServicePort) + ", MAC: " + String(newServiceMAC) + ", Name: " + String(newServiceName), 3);
+                logging.logIt(F("autoAddService"), "Can't add Service - invalid Data: IP: " + String(newServiceIp) + ", Port: " + String(newServicePort) + ", MAC: " + String(newServiceMAC) + ", Name: " + String(newServiceName), 3);
                 return 4;
             }
             
@@ -612,26 +612,26 @@ short ServiceHandler::autoAddService(const char* serviceName)
             return 4;
         }
     }
-    logging.logIt("autoAddService", "Start auto Add Service", 1);
+    logging.logIt(F("autoAddService"), F("Start auto Add Service"), 1);
     //set mode start autoAdd or run autoAdd
     if(!autoAddRunning && strcmp(serviceName, "n.S") != 0)
     {
-        logging.logIt("autoAddService", "Auto Add not running", 1);
+        logging.logIt(F("autoAddService"), F("Auto Add not running"), 1);
         //init autoAdd and send Request
         bool res = initAutoAdd(serviceName);
         
         if(!res)
         {
-            logging.logIt("autoAddService", "Can't add Service " + String(serviceName) + "Backup and Main CFG are defined!", 3);
+            logging.logIt(F("autoAddService"), "Can't add Service " + String(serviceName) + "Backup and Main CFG are defined!", 3);
         }
         else
         {
-            logging.logIt("autoAddService", "AutoAdd successfully started", 3);
+            logging.logIt(F("autoAddService"), F("AutoAdd successfully started"), 3);
         }
     }
     else
     {
-        logging.logIt("autoAddService", "AutoAdd is still running", 1);
+        logging.logIt(F("autoAddService"), F("AutoAdd is still running"), 1);
         short state = runAutoAdd();
 
         switch(state)
@@ -643,13 +643,13 @@ short ServiceHandler::autoAddService(const char* serviceName)
                 autoAddRunning = false;
                 autoAddTimeout = 0;
                 lastAutoAddRequest.reset();
-                logging.logIt("autoAddService", "Service " + String(serviceName) + "Successfully added!", 3);
+                logging.logIt(F("autoAddService"), "Service " + String(serviceName) + "Successfully added!", 3);
                 return 1;
                 break;
             case 2:
             case 4:
                 lockServiceName(lastAutoAddRequest.serviceName);
-                logging.logIt("autoAddService", "Error while adding Service " + String(lastAutoAddRequest.serviceName) + "!!!", 3);
+                logging.logIt(F("autoAddService"), "Error while adding Service " + String(lastAutoAddRequest.serviceName) + "!!!", 3);
                 return 2;
                 break;
             default:
@@ -671,7 +671,7 @@ void ServiceHandler::checkForAutoAddTimeout()
             lastAutoAddRequest.reset();
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("checkForAutoAddTimeout", "Timeout reached! - reset autoAdd", 3);
+                logging.logIt(F("checkForAutoAddTimeout"), F("Timeout reached! - reset autoAdd"), 3);
             #endif
         }
     }
@@ -688,7 +688,7 @@ bool ServiceHandler::delService(const char* serviceName, bool selfOffered, bool 
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("delService", "Can't delete Service, serviceList doesn't exist!", 1);
+                logging.logIt(F("delService"), F("Can't delete Service, serviceList doesn't exist!"), 1);
             #endif
             return false;
         }
@@ -697,7 +697,7 @@ bool ServiceHandler::delService(const char* serviceName, bool selfOffered, bool 
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("delService", "Can't delete Service, serviceList doesn't contains the specified Service! - SKIP", 1);
+                logging.logIt(F("delService"), F("Can't delete Service, serviceList doesn't contains the specified Service! - SKIP"), 1);
             #endif
             return true;
         }
@@ -714,13 +714,13 @@ bool ServiceHandler::delService(const char* serviceName, bool selfOffered, bool 
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("delService", "An Error occured while deleting the Service - please check!", 2);
+                logging.logIt(F("delService"), F("An Error occured while deleting the Service - please check!"), 2);
             #endif
             return false;
         }
         #ifdef J54J6_SysLogger
             
-            logging.logIt("delService", "Service successfully deleted!");
+            logging.logIt(F("delService"), F("Service successfully deleted!"));
         #endif
         return true;
     }
@@ -733,7 +733,7 @@ bool ServiceHandler::delService(const char* serviceName, bool selfOffered, bool 
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("delService", "Service removed");
+                logging.logIt(F("delService"), F("Service removed"));
             #endif
             return true;
         }
@@ -741,7 +741,7 @@ bool ServiceHandler::delService(const char* serviceName, bool selfOffered, bool 
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("delService", "Can't remove Service - function returns false", 2);
+                logging.logIt(F("delService"), F("Can't remove Service - function returns false"), 2);
             #endif
         }
     }
@@ -780,12 +780,12 @@ IPAddress ServiceHandler::getServiceIP(const char* serviceName, bool fallback)
         {
             #ifdef J54J6_SysLogger
                 
-                String message = "returned IP for Service \"";
+                String message = F("returned IP for Service \"");
                 message += serviceName;
                 message += "\" with IP \"";
                 message += returnIp.toString();
                 message += "\" - success";
-                logging.logIt("getServiceIP", message.c_str());
+                logging.logIt(F("getServiceIP"), message.c_str());
             #endif 
             return returnIp;
         }
@@ -793,7 +793,7 @@ IPAddress ServiceHandler::getServiceIP(const char* serviceName, bool fallback)
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("getServiceIP", "Can't read IP! - return errorIP", 2);
+                logging.logIt(F("getServiceIP"), F("Can't read IP! - return errorIP"), 2);
             #endif 
             return IPAddress(0,0,0,0);
         }
@@ -804,12 +804,12 @@ IPAddress ServiceHandler::getServiceIP(const char* serviceName, bool fallback)
         {
             #ifdef J54J6_SysLogger
                 
-                String message = "returned fallback IP for Service \"";
+                String message = F("returned fallback IP for Service \"");
                 message += serviceName;
-                message += "\" with IP \"";
+                message += F("\" with IP \"");
                 message += returnIp.toString();
-                message += "\" - success";
-                logging.logIt("getServiceIP", message.c_str());
+                message += F("\" - success");
+                logging.logIt(F("getServiceIP"), message.c_str());
             #endif 
             return returnIp;
         }
@@ -817,7 +817,7 @@ IPAddress ServiceHandler::getServiceIP(const char* serviceName, bool fallback)
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("getServiceIP", "Can't read fallback IP! for Serivce " + String(serviceName) + " - return errorIP", 2);
+                logging.logIt(F("getServiceIP"), "Can't read fallback IP! for Serivce " + String(serviceName) + " - return errorIP", 2);
             #endif 
             return IPAddress(0,0,0,0);
         }
@@ -834,12 +834,12 @@ String ServiceHandler::getServiceMAC(const char* serviceName, bool fallback)
         {
             #ifdef J54J6_SysLogger
                 
-                String message = "returned MAC for Service \"";
+                String message = F("returned MAC for Service \"");
                 message += serviceName;
-                message += "\" with MAC \"";
+                message += F("\" with MAC \"");
                 message += mac;
-                message += "\" - success";
-                logging.logIt("getServiceMAC", message.c_str());
+                message += F("\" - success");
+                logging.logIt(F("getServiceMAC"), message.c_str());
             #endif 
             return mac;
         }
@@ -847,7 +847,7 @@ String ServiceHandler::getServiceMAC(const char* serviceName, bool fallback)
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("getServiceMAC", "Can't read MAC! - return \"failed\"", 2);
+                logging.logIt(F("getServiceMAC"), F("Can't read MAC! - return \"failed\""), 2);
             #endif 
             return "failed";
         }
@@ -859,12 +859,12 @@ String ServiceHandler::getServiceMAC(const char* serviceName, bool fallback)
         {
             #ifdef J54J6_SysLogger
                 
-                String message = "returned MAC for Service \"";
+                String message = F("returned MAC for Service \"");
                 message += serviceName;
-                message += "\" with MAC \"";
+                message += F("\" with MAC \"");
                 message += mac;
-                message += "\" - success";
-                logging.logIt("getServiceMAC", message.c_str());
+                message += F("\" - success");
+                logging.logIt(F("getServiceMAC"), message.c_str());
             #endif 
             return mac;
         }
@@ -872,7 +872,7 @@ String ServiceHandler::getServiceMAC(const char* serviceName, bool fallback)
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("getServiceMAC", "Can't read MAC! - return \"failed\"", 2);
+                logging.logIt(F("getServiceMAC"), F("Can't read MAC! - return \"failed\""), 2);
             #endif 
             return "failed";
         }
@@ -895,7 +895,7 @@ int ServiceHandler::getServicePort(const char* serviceName, bool fallback, bool 
             {
                 #ifdef J54J6_SysLogger
                     
-                    logging.logIt("getServicePort", "Can't read ServicePort (selfOffered)! - return \"failed\"", 2);
+                    logging.logIt(F("getServicePort"), F("Can't read ServicePort (selfOffered)! - return \"failed\""), 2);
                 #endif
                 return -1;
 
@@ -906,7 +906,7 @@ int ServiceHandler::getServicePort(const char* serviceName, bool fallback, bool 
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("getServicePort", "Can't read ServicePort (selfOffered) - offeredServices File doesn't exist or Service doesn't exist! - return \"failed\"", 1);
+                logging.logIt(F("getServicePort"), F("Can't read ServicePort (selfOffered) - offeredServices File doesn't exist or Service doesn't exist! - return \"failed\""), 1);
             #endif
             return -1; //no selfoffered Service found or !
         }
@@ -920,12 +920,12 @@ int ServiceHandler::getServicePort(const char* serviceName, bool fallback, bool 
         {
             #ifdef J54J6_SysLogger
                 
-                String message = "returned Port for Service \"";
+                String message = F("returned Port for Service \"");
                 message += serviceName;
-                message += "\" with Port \"";
+                message += F("\" with Port \"");
                 message += port;
-                message += "\" - success";
-                logging.logIt("getServicePort", message.c_str());
+                message += F("\" - success");
+                logging.logIt(F("getServicePort"), message.c_str());
             #endif 
             return port.toInt();
         }
@@ -933,7 +933,7 @@ int ServiceHandler::getServicePort(const char* serviceName, bool fallback, bool 
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("getServicePort", "Can't read Port! - return -1", 2);
+                logging.logIt(F("getServicePort"), F("Can't read Port! - return -1"), 2);
             #endif 
             return -1;
         }
@@ -945,12 +945,12 @@ int ServiceHandler::getServicePort(const char* serviceName, bool fallback, bool 
         {
             #ifdef J54J6_SysLogger
                 
-                String message = "returned Port for Service \"";
+                String message = F("returned Port for Service \"");
                 message += serviceName;
-                message += "\" with Port \"";
+                message += F("\" with Port \"");
                 message += port;
-                message += "\" - success";
-                logging.logIt("getServicePort", message.c_str());
+                message += F("\" - success");
+                logging.logIt(F("getServicePort"), message.c_str());
             #endif 
             return port.toInt();
         }
@@ -958,7 +958,7 @@ int ServiceHandler::getServicePort(const char* serviceName, bool fallback, bool 
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("getServicePort", "Can't read Port! - return -1", 2);
+                logging.logIt(F("getServicePort"), F("Can't read Port! - return -1"), 2);
             #endif 
             return -1;
         }
@@ -975,19 +975,19 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
     */
     if(!onlyExternal)
     {
-        logging.logIt("checkForService", "Check for Service - called!", 1);
+        logging.logIt(F("checkForService"), F("Check for Service - called!"), 1);
         bool skip = false;
         if(!FM->fExist(offeredServicesPath))
         {
             #ifdef J54J6_SysLogger
-                logging.logIt("checkForService", "Can't check for internal Service - serviceFile doesn't exist! - no Internal", 1);
+                logging.logIt(F("checkForService"), F("Can't check for internal Service - serviceFile doesn't exist! - no Internal"), 1);
             #endif
             skip = true;
         }
         if(!skip)
         {
             #ifdef J54J6_SysLogger
-                logging.logIt("checkForService", "Internal Service defined! - check for defined Service", 1);
+                logging.logIt(F("checkForService"), F("Internal Service defined! - check for defined Service"), 1);
             #endif
             const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
             //DynamicJsonDocument cacheDocument(capacity);
@@ -1003,10 +1003,10 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
             {
                 #ifdef J54J6_SysLogger
                     
-                    String message = "Service \"";
+                    String message = F("Service \"");
                     message += serviceName;
-                    message += "\" exist! - result = 1";
-                    logging.logIt("checkForService", message.c_str());
+                    message += F("\" exist! - result = 1");
+                    logging.logIt(F("checkForService"), message.c_str());
                 #endif
                 result = 1;
             }
@@ -1014,10 +1014,10 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
             {
                 #ifdef J54J6_SysLogger
                     
-                    String message = "Can't find Service \"";
+                    String message = F("Can't find Service \"");
                     message += serviceName;
-                    message += "\" in internalOffered ServiceList";
-                    logging.logIt("checkForService", message.c_str());
+                    message += F("\" in internalOffered ServiceList");
+                    logging.logIt(F("checkForService"), message.c_str());
                 #endif
             }
         }
@@ -1036,7 +1036,7 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
             if(existMainCfg && existBackupCfg)
             {
                 #ifdef J54J6_SysLogger
-                    logging.logIt("checkForService", "Return 3", -1);
+                    logging.logIt(F("checkForService"), F("Return 3"), -1);
                 #endif
                 return 3;
                 break;
@@ -1044,7 +1044,7 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
             else if(existMainCfg && !existBackupCfg)
             {
                 #ifdef J54J6_SysLogger
-                    logging.logIt("checkForService", "Return 2", -1);
+                    logging.logIt(F("checkForService"), F("Return 2"), -1);
                 #endif
                 return 2;
                 break;
@@ -1053,7 +1053,7 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
             {
                 FM->move(getExternalServiceFilename(serviceName, true).c_str(), getExternalServiceFilename(serviceName, false).c_str());
                 #ifdef J54J6_SysLogger
-                    logging.logIt("checkForService", "Backup CFG but no main CFG - move Backup to main and return value of newCheck", 2);
+                    logging.logIt(F("checkForService"), F("Backup CFG but no main CFG - move Backup to main and return value of newCheck"), 2);
                 #endif
                 return checkForService(serviceName, onlyExternal);
                 break;
@@ -1061,7 +1061,7 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
             else
             {
                 #ifdef J54J6_SysLogger
-                    logging.logIt("checkForService", "Return 0", 2);
+                    logging.logIt(F("checkForService"), F("Return 0"), 2);
                 #endif
                 return 0;
                 break;
@@ -1070,7 +1070,7 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
             if(existMainCfg && existBackupCfg)
             {
                 #ifdef J54J6_SysLogger
-                    logging.logIt("checkForService", "Return 5", 2);
+                    logging.logIt(F("checkForService"), F("Return 5"), 2);
                 #endif
                 return 5;
                 break;
@@ -1078,7 +1078,7 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
             else if(existMainCfg && !existBackupCfg)
             {
                 #ifdef J54J6_SysLogger
-                    logging.logIt("checkForService", "Return 4", 2);
+                    logging.logIt(F("checkForService"), F("Return 4"), 2);
                 #endif
                 return 4;
                 break;
@@ -1087,7 +1087,7 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
             {
                 FM->move(getExternalServiceFilename(serviceName, true).c_str(), getExternalServiceFilename(serviceName, false).c_str());
                 #ifdef J54J6_SysLogger
-                    logging.logIt("checkForService", "Backup CFG but no main CFG - move Backup to main and return value of newCheck", 2);
+                    logging.logIt(F("checkForService"), F("Backup CFG but no main CFG - move Backup to main and return value of newCheck"), 2);
                 #endif
                 return checkForService(serviceName, onlyExternal);
                 break;
@@ -1095,7 +1095,7 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
             else
             {
                 #ifdef J54J6_SysLogger
-                    logging.logIt("checkForService", "Return 1", -1);
+                    logging.logIt(F("checkForService"), F("Return 1"), -1);
                 #endif
                 return 1;
                 break;
@@ -1103,20 +1103,20 @@ short ServiceHandler::checkForService(const char* serviceName, bool onlyExternal
         default:
             #ifdef J54J6_SysLogger
                 
-                String message = "Unexcepted Value -  \"";
+                String message = F("Unexcepted Value -  \"");
                 message += result;
-                message += "\" - excepted 0 or 1!: ";
-                logging.logIt("checkForService", message.c_str());
+                message += F("\" - excepted 0 or 1!: ");
+                logging.logIt(F("checkForService"), message.c_str());
             #endif
-            classControl->newReport("Unexcepted Value!", 893, 5, true);
+            classControl->newReport(F("Unexcepted Value!"), 893, 5, true);
     };
 
     #ifdef J54J6_SysLogger
-        String message = "Return State for Service \"";
+        String message = F("Return State for Service \"");
         message += serviceName;
-        message += "\": ";
+        message += F("\": ");
         message += result;
-        logging.logIt("checkForService", message.c_str());
+        logging.logIt(F("checkForService"), message.c_str());
     #endif
     return result;
 }
@@ -1136,7 +1136,7 @@ bool ServiceHandler::changeConfigValue(const char* serviceName, const char* toCh
         {
             #ifdef J54J6_SysLogger
                 
-                logging.logIt("changeConfigValue", "Can't change Value  File doesn't exist!", 2);
+                logging.logIt(F("changeConfigValue"), F("Can't change Value  File doesn't exist!"), 2);
             #endif
             return false;
         }
@@ -1159,7 +1159,7 @@ bool ServiceHandler::changeConfigValue(const char* serviceName, const char* toCh
             {
                 #ifdef J54J6_SysLogger
                     
-                    logging.logIt("changeConfigValue", "Can't change Value - Fallback file doesn't exist!", 2);
+                    logging.logIt(F("changeConfigValue"), F("Can't change Value - Fallback file doesn't exist!"), 2);
                 #endif
                 return false;
             }
@@ -1177,7 +1177,7 @@ bool ServiceHandler::changeConfigValue(const char* serviceName, const char* toCh
             {
                 #ifdef J54J6_SysLogger
                     
-                    logging.logIt("changeConfigValue", "Can't change Value - Main file doesn't exist!", 2);
+                    logging.logIt(F("changeConfigValue"), F("Can't change Value - Main file doesn't exist!"), 2);
                 #endif
                 return false;
             }
@@ -1239,10 +1239,10 @@ int ServiceHandler::checkForAction()
     {
         #ifdef J54J6_SysLogger
             
-            String message = "Can't parse last UDP Content to Json - Json returned: \n!";
+            String message = F("Can't parse last UDP Content to Json - Json returned: \n!");
             message += error.c_str();
-            message += "\n";
-            logging.logIt("loop", message.c_str(), 1);
+            message += F("\n");
+            logging.logIt(F("loop"), message.c_str(), 1);
         #endif
         return 4;
     }
@@ -1302,10 +1302,10 @@ int ServiceHandler::checkForAction()
             if(checkForService(udpLastReceivedDataDocument["serviceName"]) != 0) //Service exist
             {
                 #ifdef J54J6_SysLogger               
-                    String message = "Service ";
+                    String message = F("Service ");
                     message += serviceNameCached;
-                    message += " exist - return true";
-                    logging.logIt("loop", message.c_str(), 0);
+                    message += F(" exist - return true");
+                    logging.logIt(F("loop"), message.c_str(), 0);
                 #endif
                 
                 String fmsg;
@@ -1317,7 +1317,7 @@ int ServiceHandler::checkForAction()
                 {
                     #ifdef J54J6_SysLogger
                         
-                        logging.logIt("loop", "ID will be appended", -1);
+                        logging.logIt(F("loop"), F("ID will be appended"), -1);
                     #endif
                     short res = checkForService(udpLastReceivedDataDocument["serviceName"]);
                     if(res == 1 || res == 4 || res == 5) //send internal service
@@ -1326,7 +1326,7 @@ int ServiceHandler::checkForAction()
                         udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
                         #ifdef J54J6_SysLogger
                             
-                            logging.logIt("loop", "Sended Answer Data with internal Service cred.", -1);
+                            logging.logIt(F("loop"), F("Sended Answer Data with internal Service cred."), -1);
                         #endif
                     }
                     else if(res == 2 || res == 3 )//send external service 
@@ -1336,7 +1336,7 @@ int ServiceHandler::checkForAction()
                         udpControl.sendUdpMessage(fmsg.c_str(), udpControl.getLastUDPPacketLoop()->remoteIP, this->networkIdentPort);
                         #ifdef J54J6_SysLogger
                             
-                            logging.logIt("loop", "Sended Answer Data with external Service cred.", -1);
+                            logging.logIt(F("loop"), F("Sended Answer Data with external Service cred."), -1);
                         #endif                 
                     }
                     lastResolve->resetPack();
@@ -1346,7 +1346,7 @@ int ServiceHandler::checkForAction()
                 {
                     #ifdef J54J6_SysLogger
                         
-                        logging.logIt("loop", "ID will generated", -1);
+                        logging.logIt(F("loop"), F("ID will generated"), -1);
                     #endif
                     
                     if(checkForService(udpLastReceivedDataDocument["serviceName"]) == 1 || checkForService(udpLastReceivedDataDocument["serviceName"]) == 3)
@@ -1374,10 +1374,10 @@ int ServiceHandler::checkForAction()
             {
                 #ifdef J54J6_SysLogger
                     
-                    String message = "Service ";
+                    String message = F("Service ");
                     message += serviceNameCached;
-                    message += "doesn't exist - return nothing";
-                    logging.logIt("loop", message.c_str(), 1);
+                    message += F("doesn't exist - return nothing");
+                    logging.logIt(F("loop"), message.c_str(), 1);
                     return 2;
                 #endif 
             }   
@@ -1392,11 +1392,11 @@ int ServiceHandler::checkForAction()
             #ifdef J54J6_SysLogger
                 
                 const char* cachedType = udpLastReceivedDataDocument["type"];
-                String message = "Syntax of UDP Packet is wrong - packet-type: \n!";
-                message += "Type: ";
+                String message = F("Syntax of UDP Packet is wrong - packet-type: \n!");
+                message += F("Type: ");
                 message += cachedType;
-                message += "\n";
-                logging.logIt("loop", message.c_str(), 1);
+                message += F("\n");
+                logging.logIt(F("loop"), message.c_str(), 1);
             #endif
             return 5;
         }
@@ -1450,7 +1450,7 @@ void ServiceHandler::stopClass()
     {
         this->classDisabled = true;
         this->stopListen();
-        Serial.println("locked!");
+        Serial.println(F("locked!"));
         return;
     }
 }

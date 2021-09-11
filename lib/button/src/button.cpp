@@ -1,10 +1,9 @@
 #include <Arduino.h>
 #include "button.h" //button detect
 
-#define BUTTON_INPUT_PIN 12 //D6
 #define BUTTON_LONG_CLICK_TIME 500 //Long Press = 1s
 #define BUTTON_SHORT_CLICK_TIME 50 // Short Press = 0.2s
-#define BUTTON_MAX_CLICK_DELAY 800 //max. Delay between Clicks 
+#define BUTTON_MAX_CLICK_DELAY 50 //max. Delay between Clicks 
 
 short btnTotalPressTime = 0;
 unsigned long btnStartPressTime = 0;

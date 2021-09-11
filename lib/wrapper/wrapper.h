@@ -40,7 +40,7 @@ class espOS {
         espOS(int workLedPin = -1, int errorLedPin = -1, int wifiLedPin = -1)
         {
             _WorkLed = new LED(workLedPin); //D2
-            _WifiLed = new LED(wifiLedPin); //D1
+            _WifiLed = new LED(wifiLedPin, true); //D1
             _errorLed = new LED(errorLedPin); //D7
             _FM = new Filemanager(true);
             _Wifi = new WiFiManager(_WifiLed, _FM);

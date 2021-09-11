@@ -18,7 +18,7 @@ struct udpPacketResolve {
 
     void resetPack()
     {
-        Serial.println("Reset called!");
+        Serial.println(F("Reset called!"));
         this->paketSize = 0;
         this->remoteIP = IPAddress(0,0,0,0);
         this->udpContent = "NULL";

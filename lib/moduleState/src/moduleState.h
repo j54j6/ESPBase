@@ -543,30 +543,30 @@ class ClassModuleMaster {
             SysLogger tempLogger(FM, "ReportHandler");
             if(error)
             {
-                tempLogger.logIt("MasterReport", "##########-ERROR-##########", 5);
-                tempLogger.logIt("MasterReport", " ", 5);
+                tempLogger.logIt(F("MasterReport"), F("##########-ERROR-##########"), 5);
+                tempLogger.logIt(F("MasterReport"), F(" "), 5);
                 String message = "Reporting Class: " + String(_actualReport->getClassname());
-                tempLogger.logIt("MasterReport", message, 5);
+                tempLogger.logIt(F("MasterReport"), message, 5);
                 message = "Reason: : " + String(_actualReport->getErrorMessage());
                 tempLogger.logIt("MasterReport", message, 5);
                 message = "Error-Code: " + String(_actualReport->getErrorCode());
-                tempLogger.logIt("MasterReport", message, 5);
-                tempLogger.logIt("MasterReport", " ", 5);
-                tempLogger.logIt("MasterReport", "##########-ERROR-##########", 5);
+                tempLogger.logIt(F("MasterReport"), message, 5);
+                tempLogger.logIt(F("MasterReport"), F(" "), 5);
+                tempLogger.logIt(F("MasterReport"), F("##########-ERROR-##########"), 5);
                 setOpticalSignal(10000, true);
             }
             else
             {
-                tempLogger.logIt("MasterReport", "##########-WARN-##########", 4);
-                tempLogger.logIt("MasterReport", " ", 4);
+                tempLogger.logIt(F("MasterReport"), F("##########-WARN-##########"), 4);
+                tempLogger.logIt(F("MasterReport"), " ", 4);
                 String message = "Reporting Class: " + String(_actualReport->getClassname());
-                tempLogger.logIt("MasterReport", message, 4);
+                tempLogger.logIt(F("MasterReport"), message, 4);
                 message = "Reason: : " + String(_actualReport->getErrorMessage());
-                tempLogger.logIt("MasterReport", message, 4);
+                tempLogger.logIt(F("MasterReport"), message, 4);
                 message = "Error-Code: " + String(_actualReport->getErrorCode());
-                tempLogger.logIt("MasterReport", message, 4);
-                tempLogger.logIt("MasterReport", " ", 4);
-                tempLogger.logIt("MasterReport", "##########-WARN-##########", 4);
+                tempLogger.logIt(F("MasterReport"), message, 4);
+                tempLogger.logIt(F("MasterReport"), F(" "), 4);
+                tempLogger.logIt(F("MasterReport"), F("##########-WARN-##########"), 4);
                 #ifdef opticalOnWarn
                         setOpticalSignal(10000);
                 #endif
@@ -582,12 +582,12 @@ class ClassModuleMaster {
                 {
                     _workLed->blink(1000);
                     SysLogger tempLogger(FM, "ReportHandler");
-                    tempLogger.logIt("IntervallChecker", "######-Speed-######", 1);
-                    tempLogger.logIt("IntervallChecker", "ClassCall/s is fewer than defined!", 1);
-                    tempLogger.logIt("IntervallChecker", "Classname: " + String(_actualSlavePointer->className), 1);
-                    tempLogger.logIt("IntervallChecker", "Excepted Calls/s: " + String(_actualSlavePointer->_repeatChecker->getEstCallPerSecond()), 1);
-                    tempLogger.logIt("IntervallChecker", "Actual Calls/s: " + String(_actualSlavePointer->_repeatChecker->getCallPerSecond()), 1);
-                    tempLogger.logIt("IntervallChecker", "######-END-######", 1);
+                    tempLogger.logIt(F("IntervallChecker"), F("######-Speed-######"), 1);
+                    tempLogger.logIt(F("IntervallChecker"), F("ClassCall/s is fewer than defined!"), 1);
+                    tempLogger.logIt(F("IntervallChecker"), "Classname: " + String(_actualSlavePointer->className), 1);
+                    tempLogger.logIt(F("IntervallChecker"), "Excepted Calls/s: " + String(_actualSlavePointer->_repeatChecker->getEstCallPerSecond()), 1);
+                    tempLogger.logIt(F("IntervallChecker"), "Actual Calls/s: " + String(_actualSlavePointer->_repeatChecker->getCallPerSecond()), 1);
+                    tempLogger.logIt(F("IntervallChecker"), F("######-END-######"), 1);
                     _actualSlavePointer->_repeatChecker->setWarnIsReported(true);
                 }
                 

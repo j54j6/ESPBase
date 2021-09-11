@@ -19,6 +19,7 @@ class LED {
         const char* ledName = "not set";
         bool locked = false; //if locked - until unlock nothing can changed
         bool change; //only run 
+        bool inverted;
 
         unsigned long nextCall;
         unsigned long nextToggle = 0;
@@ -32,8 +33,8 @@ class LED {
 
         static bool ledEnabled; 
         LED();
-        LED(int led_Pin, const char* ledName);
-        LED(int led_Pin);
+        LED(int led_Pin, const char* ledName, bool invert = false);
+        LED(int led_Pin, bool invert = false);
         void getVars();
         void run();
         void ledOn(bool enableComplete = true);
