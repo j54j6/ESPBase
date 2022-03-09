@@ -2,49 +2,76 @@
 <html lang="de">
 
 <head>
-    <link rel="stylesheet" href="spec.css">
-    <link rel="stylesheet" href="spec-exp.css">
-    <link rel="stylesheet" href="spec-icons.css">
-    <link rel="stylesheet" href="own.css">
+    <link rel="stylesheet" href="%%specref%%">
+    <link rel="stylesheet" href="%%specref-exp%%">
+    <link rel="stylesheet" href="%%specref-icons%%">
+    <link rel="stylesheet" href="%%ownref%%">
 
     <meta charset="utf-8">
     <title>Nodework Portal</title>
-    
 
     <script>
         function clickAnimStart(id) {
-            console.log("Given ID: " + id);
             document.getElementById(id).classList.remove("bg-dark");
             document.getElementById(id).classList.add("bg-clicked");
-            console.log("called!");
         }
 
         function clickAnimStop(id) {
-            console.log("Given ID: " + id);
             document.getElementById(id).classList.remove("bg-clicked");
             document.getElementById(id).classList.add("bg-dark");
-
-            console.log("called!");
         }
 
         function setMqttStatus() {
-            console.log("setMQTTGet called");
             var xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", "getMQTTStatus", true); // false for synchronous request
+            xmlHttp.open("GET", "/getmqttstatus", false); // false for synchronous request
             xmlHttp.send(null);
             document.getElementById("mqttStatus").innerHTML = xmlHttp.responseText;
         }
 
         function setUpdateStatus() {
-            var xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", "", true); // false for synchronous request
-            xmlHttp.send(null);
-            document.getElementById("updateStatus").innerHTML = xmlHttp.responseText;
+            var TextElement = document.getElementById("updateStatus");
+            TextElement.classList.replace("textOkay", "textWarn");
+            TextElement.classList.replace("textError", "textWarn");
+
+            if (document.getElementById("updateStatus").innerHTML.indexOf("available") != -1) {
+                TextElement.classList.replace("textWarn", "textOkay");
+                document.getElementById("updateStatus").innerHTML = "Start Update...";
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open("GET", "/getUpdates", false); // false for synchronous request
+                xmlHttp.send(null);
+                document.getElementById("updateStatus").innerHTML = xmlHttp.responseText;
+            } else {
+                document.getElementById("updateStatus").innerHTML = "Checking for Udpates...";
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open("GET", "/getUpdateStatus", false); // false for synchronous request
+                xmlHttp.send(null);
+                var TextElement = document.getElementById("updateStatus");
+                if (xmlHttp.responseText == "FAILED") {
+                    TextElement.classList.replace("textWarn", "textError");
+                } else if (xmlHttp.responseText == "Okay") {
+                    TextElement.classList.replace("textWarn", "textOkay");
+                }
+                document.getElementById("updateStatus").innerHTML = xmlHttp.responseText;
+            }
+        }
+
+        function getWiFiParameter() {
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const state = urlParams.get('state');
+
+            if (state == "success") {
+                alert("Die eingegebenen Daten sind korrekt - der AP wird geschlossen");
+            } else if (state == "failed") {
+                alert("Es gab einen Fehler beim verbinden zum AP bitte prüfen Sie die eingegebenen Daten!");
+            } else if (state == "systemError") {
+                alert("System Fehler - bitte versuchen sie erneut sich zu Verbinden! - Falls dies nicht funktionieren sollte, starten Sie das Gerät neu!");
+            }
         }
     </script>
 </head>
 
-<body style="font-family: Roboto, sans-serif, Arial; background-color: #121212; color: white">
+<body style="font-family: Roboto, sans-serif, Arial; background-color: #121212; color: white" onload="getWiFiParameter()">
     <div class="off-canvas">
         <!-- off-screen toggle button -->
         <a class="off-canvas-toggle menuButton" href="#sidebar-id">
@@ -62,7 +89,7 @@
                 <div class="container">
                     <div class="columns">
                         <div class="column col-12 text-center">
-                            <a href="https://nodework.de"><img class="logo-menu" src="logo.png" alt="Logo"></a>
+                            <a href="https://nodework.de"><img class="logo-menu" src="%%logoref%%" alt="Logo"></a>
                         </div>
                         <div class="column col-12">
                             <div class="divider"></div>
@@ -74,26 +101,29 @@
                                       <i class="icon icon-2x icon-arrow-right px-2em pb-2"></i>
                                         <span class="menuTopCategory active-category"><b>System</b></span>
                                     </label>
-                                    <div class="accordion-body">
-                                        <div class="col-12 px-5em pb-2">
-                                            <a href="/info"><span class="menuSubCategory %infoActive%">Info</span></a>
-                                        </div>
-                                        <div class="col-8 px-5em pb-2">
-                                            <a href="/log"><span class="menuSubCategory %logsActive%">Logs</span></a>
-                                        </div>
-                                        <div class="col-12 px-5em pb-2">
-                                            <a href="/status"><span class="menuSubCategory %statusActive%" >Status</span></a>
-                                        </div>
-                                        <div class="col-12 px-5em pb-2">
-                                            <a href="/control"><span class="menuSubCategory %controlActive%">Control</span></a>
-                                        </div>
-                                        <div class="col-12 px-5em pb-2">
-                                            <a href="/wifisettings"><span class="menuSubCategory %wifiActive%">WiFi Settings</span></a>
-                                        </div>
-                                        <div class="col-12 px-5em pb-2">
-                                            <a href="/updatesettings"><span class="menuSubCategory %updateActive%">Update Settings</span></a>
-                                        </div>
+                                <div class="accordion-body">
+                                    <div class="col-12 px-5em pb-2">
+                                        <a href="/info"><span class="menuSubCategory %%infoActive%%">Info</span></a>
                                     </div>
+                                    <div class="col-8 px-5em pb-2">
+                                        <a href="/log"><span class="menuSubCategory %%logsActive%%">Logs</span></a>
+                                    </div>
+                                    <div class="col-12 px-5em pb-2">
+                                        <a href="/status"><span class="menuSubCategory %%statusActive%%" >Status</span></a>
+                                    </div>
+                                    <div class="col-12 px-5em pb-2">
+                                        <a href="/control"><span class="menuSubCategory %%controlActive%%">Control</span></a>
+                                    </div>
+                                    <div class="col-12 px-5em pb-2">
+                                        <a href="/wifisettings"><span class="menuSubCategory %%wifiActive%%">WiFi Settings</span></a>
+                                    </div>
+                                    <div class="col-12 px-5em pb-2">
+                                        <a href="/updatesettings"><span class="menuSubCategory %%updateActive%%">Update Settings</span></a>
+                                    </div>
+                                    <div class="col-12 px-5em pb-2">
+                                        <a href="/mqttsettings"><span class="menuSubCategory %%updateActive%%">MQTT Settings</span></a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="column col-10">
@@ -104,12 +134,7 @@
                                         <span class="menuTopCategory"><b>Modules</b></span>
                                     </label>
                                 <div class="accordion-body">
-                                    <div class="col-12 px-5em pb-4">
-                                        <a href="#"><span class="menuSubCategory">Registered modules</span></a>
-                                    </div>
-                                    <div class="col-8 px-5em pb-4">
-                                        <a href="#"><span class="menuSubCategory">template</span></a>
-                                    </div>
+                                    %%template%%
                                 </div>
                             </div>
                         </div>
@@ -118,13 +143,13 @@
             </div>
         </div>
 
-        <a class="off-canvas-overlay " href="#close"></a>
+        <a class="off-canvas-overlay" href="#close"></a>
 
         <!--User Menu\/-->
         <div class="off-canvas pb-3">
             <div class="container col-12">
                 <header class="header text-center">
-                    <a href="https://nodework.de"><img width="350px" src="logo.png" alt="Logo"></a>
+                    <a href="https://nodework.de"><img width="350px" src="%%logoref%%" alt="Logo"></a>
                     <div style="border-color: gray" class="divider"></div>
                 </header>
                 <content style="padding-top: 4em;">

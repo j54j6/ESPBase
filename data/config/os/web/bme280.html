@@ -2,15 +2,12 @@
 <html lang="de">
 
 <head>
+
     <link rel="stylesheet" href="%%specref%%">
     <link rel="stylesheet" href="%%specref-exp%%">
     <link rel="stylesheet" href="%%specref-icons%%">
     <link rel="stylesheet" href="%%ownref%%">
-    <!--
-    <link rel="stylesheet" href="https://spec.css.nodework.de/">
-    <link rel="stylesheet" href="https://spec-exp.css.nodework.de/">
-    <link rel="stylesheet" href="https://spec-icons.css.nodework.de/">
-    <link rel="stylesheet" href="https://own.css.nodework.de/"> -->
+
     <meta charset="utf-8">
     <title>Nodework Portal</title>
 
@@ -93,7 +90,7 @@
                 <div class="container">
                     <div class="columns">
                         <div class="column col-12 text-center">
-                            <a href="https://nodework.de"><img class="logo-menu" src="%%logoref%% alt="Logo"></a>
+                            <a href="https://nodework.de"><img class="logo-menu" src="%%logoref%%" alt="Logo"></a>
                         </div>
                         <div class="column col-12">
                             <div class="divider"></div>
@@ -125,7 +122,7 @@
                                         <a href="/updatesettings"><span class="menuSubCategory %%updateActive%%">Update Settings</span></a>
                                     </div>
                                     <div class="col-12 px-5em pb-2">
-                                        <a href="/mqttsettings"><span class="menuSubCategory %%mqttActive%%">MQTT Settings</span></a>
+                                        <a href="/mqttsettings"><span class="menuSubCategory %%updateActive%%">MQTT Settings</span></a>
                                     </div>
                                 </div>
                             </div>
@@ -157,62 +154,57 @@
                     <div style="border-color: gray" class="divider"></div>
                 </header>
                 <content style="padding-top: 4em;">
-                    <div class="container text-center pb-2">
+                    <div class="container text-center pb-2" onload="getWiFiParameter()">
                         <div class="text-center"></div>
-                        <span class="h1 text-center col-8">Update-Settings</span>
+                        <span class="h1 text-center col-8">Thermometer-Settings</span>
                     </div>
                     <!-- ROW one-->
                     <div class="container s-rounded cardBackground">
-                        <div class="text-center pb-2 mt-2"><span class="h2">Derzeitige Einstellungen</span></div>
+                        <div class="text-center pb-2 mt-2"><span class="h2">Werte</span></div>
                         <div class="col-12 column">
                             <div class="s-rounded column col-12 pb-3">
                                 <div class="card bg-dark subCardBackground col-mx-auto">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">Update-Server</span>
+                                        <span class="h4 cardCaption">Temperatur</span>
                                     </div>
                                     <div class="card-body text-center">
-                                        <span class="h5 %%ssidClass%%">%%updateServerUrl%%</span>
+                                        <span class="h5 %%ssidClass%%">%%temperature%%</span>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="col-12 column">
+                            <div class="s-rounded column col-12 pb-3">
                                 <div class="card bg-dark subCardBackground col-mx-auto">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">Update-Server Port</span>
+                                        <span class="h4 cardCaption">Humidity</span>
                                     </div>
                                     <div class="card-body text-center">
-                                        <span class="h5 %%ssidClass%%">%%updateServerPort%%</span>
+                                        <span class="h5 %%hostnameClass%%">%%humidity%%</span>
                                     </div>
                                 </div>
-
+                            </div>
+                        </div>
+                        <div class="col-12 column">
+                            <div class="s-rounded column col-12 pb-3">
                                 <div class="card bg-dark subCardBackground col-mx-auto">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">Auto Update</span>
+                                        <span class="h4 cardCaption">Pressure</span>
                                     </div>
                                     <div class="card-body text-center">
-                                        <span class="h5 %%ssidClass%%">%%autoUpdate%%</span>
+                                        <span class="h5 %%hostnameClass%%">%%pressure%%</span>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="col-12 column">
+                            <div class="s-rounded column col-12 pb-3">
                                 <div class="card bg-dark subCardBackground col-mx-auto">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">Update-Server Token</span>
+                                        <span class="h4 cardCaption">Altitude</span>
                                     </div>
                                     <div class="card-body text-center">
-                                        <span class="h5 %%updateServerTokenClass%%">%%updateServerToken%%</span>
-                                    </div>
-                                </div>
-                                <div class="card bg-dark subCardBackground col-mx-auto">
-                                    <div class="card-header text-center">
-                                        <span class="h4 cardCaption">Update-Server Password</span>
-                                    </div>
-                                    <div class="card-body text-center">
-                                        <span class="h5 %%updateServerPasswdClass%%">%%updateServerPasswd%%</span>
-                                    </div>
-                                </div>
-                                <div class="card bg-dark subCardBackground col-mx-auto">
-                                    <div class="card-header text-center">
-                                        <span class="h4 cardCaption">Check Intervall</span>
-                                    </div>
-                                    <div class="card-body text-center">
-                                        <span class="h5 %%updateServerPasswdClass%%">%%checkIntervall%%</span>
+                                        <span class="h5 %%hostnameClass%%">%%altitude%%</span>
                                     </div>
                                 </div>
                             </div>
@@ -220,110 +212,133 @@
                     </div>
                     <div class="pb-3"></div>
                     <div class="container s-rounded cardBackground">
-                        <div class="text-center pb-2 mt-2"><span class="h2">Server ändern</span></div>
+                        <div class="text-center pb-2 mt-2"><span class="h2">Einstellungen</span></div>
                         <div class="col-12 column">
                             <div class="s-rounded column col-12 pb-3">
-                                <div class="card bg-dark subCardBackground col-mx-auto form-group">
-                                    <form action="/saveServerCred" method="POST">
-                                        <div class="card-header text-center">
-                                            <span class="h4 cardCaption form-label" for="input-serverurl" style="padding-top: .5em;">Server Url</span>
-                                        </div>
-                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
-                                        <div class="card-body text-center">
-                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
-                                                <input class="form-input formfeld" type="text" name="serverUrl" id="serverUrl" placeholder="New Url" style="width: 100%">
-                                            </div>
-                                        </div>
-                                        <div style="padding-top: 3em"></div>
-                                        <div class="card-header text-center">
-                                            <span class="h4 cardCaption form-label" for="input-serverPort" style="padding-top: .5em;">Server Port</span>
-                                        </div>
-                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
-                                        <div class="card-body text-center">
-                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
-                                                <input class="form-input formfeld" type="text" name="serverPort" id="serverPort" placeholder="New Port" style="width: 100%">
-                                            </div>
-                                        </div>
-
-                                        <div style="padding-top: 3em"></div>
-
-                                        <div class="card-header text-center">
-                                            <span class="h4 cardCaption form-label" for="input-serverToken" style="padding-top: .5em;">Server Token</span>
-                                        </div>
-                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
-                                        <div class="card-body text-center">
-                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
-                                                <input class="form-input formfeld" type="text" name="serverToken" id="serverToken" placeholder="New token" style="width: 100%">
-                                            </div>
-                                        </div>
-
-                                        <div style="padding-top: 3em"></div>
-                                        <div class="card-header text-center">
-                                            <span class="h4 cardCaption form-label" for="input-serverPassword" style="padding-top: .5em;">Server Password</span>
-                                        </div>
-                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
-                                        <div class="card-body text-center">
-                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
-                                                <input class="form-input formfeld" type="text" name="serverPassword" id="serverPassword" placeholder="New password" style="width: 100%">
-                                            </div>
-                                        </div>
-                                        <div class="pb-3"></div>
-                                        <div class="card-body text-center">
-                                            <button type="submit" class="btn btn-lg btn-success formfeldbtn" style="height: 3em; font-size: 3em">Speichern</button>
-                                        </div>
-                                    </form>
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">MQTT Enabled</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %%ssidClass%%">%%mqttEnabled%%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 column">
+                            <div class="s-rounded column col-12 pb-3">
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">HTTP Enabled</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %%hostnameClass%%">%%httpEnabled%%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 column">
+                            <div class="s-rounded column col-12 pb-3">
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">MQTT Topic</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %%hostnameClass%%">%%mqttTopic%%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 column">
+                            <div class="s-rounded column col-12 pb-3">
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">MQTT Retain</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %%ssidClass%%">%%mqttRetained%%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 column">
+                            <div class="s-rounded column col-12 pb-3">
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">Sensor read Intervall</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %%hostnameClass%%">%%intervall%%</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="pb-3"></div>
-                    <div class="container s-rounded cardBackground" style="margin-top: 3em">
-                        <div class="text-center pb-2 mt-2"><span class="h2">Updatesettings ändern</span></div>
+                    <div class="container s-rounded cardBackground">
+                        <div class="text-center pb-2 mt-2"><span class="h2">Einstellungen</span></div>
                         <div class="col-12 column">
                             <div class="s-rounded column col-12 pb-3">
                                 <div class="card bg-dark subCardBackground col-mx-auto form-group">
-                                    <form action="/saveUpdatePref" method="POST">
+                                    <form action="/savebme280" method="POST">
                                         <div class="card-header text-center">
-                                            <span class="h4 cardCaption form-label" for="input-serverurl" style="padding-top: .5em;">Auto-Update</span>
+                                            <span class="h4 cardCaption form-label" for="input-ssid" style="padding-top: .5em;">MQTT Enabled</span>
                                         </div>
                                         <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
                                         <div class="card-body text-center">
-                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%; background-color: #1c1c1c1c; text-align: center">
-                                                <select class="form-select formfeld" name="autoUpdate" style="background-color: #1c1c1c1c; width: 100%">
-                                                    <option class="formfeld" value=""></option>
-                                                    <option class="formfeld" style="color: #1c1c1c1c" value="true">True</option>
-                                                    <option class="formfeld" style="background-color: #1c1c1c1c" value="false">False</option>
+                                            <div class="form-group">
+                                                <select id="mqttEnabled" name="mqttEnabled" class="formfeld form-select " style="background-color: #1c1c1c8c; padding-bottom: 0; margin-bottom: 0">
+                                                    <option class="formfeld-option"></option>
+                                                    <option class="formfeld-option" value="true">True</option>
+                                                    <option class="formfeld-option" value="false">False</option>
                                                 </select>
                                             </div>
                                         </div>
-                                        <div style="padding-top: 3em"></div>
                                         <div class="card-header text-center">
-                                            <span class="h4 cardCaption form-label" for="input-serverurl" style="padding-top: .5em;">Prüfintervall</span>
+                                            <span class="h4 cardCaption form-label" for="input-ssid" style="padding-top: .5em;">HTTP Enabled</span>
                                         </div>
                                         <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
                                         <div class="card-body text-center">
-                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
-                                                <input class="form-input formfeld" type="text" name="updateIntervall" id="updateIntervall" placeholder="New check intervall (in hours)" style="width: 100%">
+                                            <div class="form-group">
+                                                <select id="httpEnabled" name="httpEnabled" class="formfeld form-select " style="background-color: #1c1c1c8c; padding-bottom: 0; margin-bottom: 0">
+                                                    <option class="formfeld-option"></option>
+                                                    <option class="formfeld-option" value="true">True</option>
+                                                    <option class="formfeld-option" value="false">False</option>
+                                                </select>
                                             </div>
                                         </div>
-
+                                        <div class="card-header text-center">
+                                            <span class="h4 cardCaption form-label" for="input-passwd" style="padding-top: 1em;">MQTT Base topic</span>
+                                        </div>
+                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
+                                        <div class="card-body text-center" style="margin-left: 7.5%; margin-right: 7.5%">
+                                            <input class="form-input formfeld" type="text" id="mqttTopic" placeholder="New topic" name="mqttTopic" style="width: 100%">
+                                        </div>
+                                        <div class="pb-3"></div>
+                                        <div class="card-header text-center">
+                                            <span class="h4 cardCaption form-label" for="input-ssid" style="padding-top: .5em;">Retained</span>
+                                        </div>
+                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
+                                        <div class="card-body text-center">
+                                            <div class="form-group">
+                                                <select id="mqttRetainedInp" name="mqttRetainedInp" class="formfeld form-select " style="background-color: #1c1c1c8c; padding-bottom: 0; margin-bottom: 0">
+                                                    <option class="formfeld-option"></option>
+                                                    <option class="formfeld-option" value="true">True</option>
+                                                    <option class="formfeld-option" value="false">False</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="pb-3"></div>
+                                        <div class="card-header text-center">
+                                            <span class="h4 cardCaption form-label" for="input-hostname" style="padding-top: 1em;">Checkintervall</span>
+                                        </div>
+                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
+                                        <div class="card-body text-center" style="margin-left: 7.5%; margin-right: 7.5%">
+                                            <input class="form-input formfeld" type="text" id="checkIntervall" placeholder="New Intervall" name="checkIntervall" style="width: 100%">
+                                        </div>
                                         <div class="pb-3"></div>
                                         <div class="card-body text-center">
                                             <button type="submit" class="btn btn-lg btn-success formfeldbtn" style="height: 3em; font-size: 3em">Speichern</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container s-rounded cardBackground" style="margin-top: 3em">
-                        <div class="text-center pb-2 mt-2"><span class="h2">Jetzt auf Updates prüfen</span></div>
-                        <div class="col-12 column">
-                            <div class="s-rounded column col-12 pb-3">
-                                <div class="card bg-dark subCardBackground col-mx-auto form-group">
-                                    <form action="/checkForUpdates" method="POST">
-                                        <div class="card-body text-center">
-                                            <button type="submit" class="btn btn-lg btn-success formfeldbtn" style="height: 3em; font-size: 3em">Auf Updates prüfen</button>
                                         </div>
                                     </form>
                                 </div>

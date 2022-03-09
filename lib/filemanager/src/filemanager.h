@@ -81,6 +81,7 @@
             bool seek(File usedFile, uint8 offset, const char* mode);
             uint8 position();
             uint8 position(File usedFile);
+            uint8 size(const char* filename);
             uint8 size();
             uint8 size(File usedFile);
             const char* name();
@@ -102,8 +103,9 @@
             bool writeJsonFile(const char* Filename, DynamicJsonDocument jsonFile, const char* writeMode = "w");
             bool changeJsonValueFile(const char* Filename, const char* key, const char* newValue);
             String readFile(const char* Filename);
-            String* readFilePointed(const char* Filename);
+            //String* readFilePointed(const char* Filename);
             const char* readJsonFileValue(const char* Filename, const char* pattern);
+            String readJsonFileValueAsString(const char* Filename, const char* pattern);
             DynamicJsonDocument readJsonFile(const char* Filename);
             float getFreeSpace(short mode);
             void getSerialFileStructure(const char* path = "/");

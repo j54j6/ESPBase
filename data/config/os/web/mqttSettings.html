@@ -2,15 +2,17 @@
 <html lang="de">
 
 <head>
+
     <link rel="stylesheet" href="%%specref%%">
     <link rel="stylesheet" href="%%specref-exp%%">
     <link rel="stylesheet" href="%%specref-icons%%">
     <link rel="stylesheet" href="%%ownref%%">
-    <!--
-    <link rel="stylesheet" href="https://spec.css.nodework.de/">
+
+    <!--<link rel="stylesheet" href="https://spec.css.nodework.de/">
     <link rel="stylesheet" href="https://spec-exp.css.nodework.de/">
     <link rel="stylesheet" href="https://spec-icons.css.nodework.de/">
     <link rel="stylesheet" href="https://own.css.nodework.de/"> -->
+
     <meta charset="utf-8">
     <title>Nodework Portal</title>
 
@@ -159,7 +161,7 @@
                 <content style="padding-top: 4em;">
                     <div class="container text-center pb-2">
                         <div class="text-center"></div>
-                        <span class="h1 text-center col-8">Update-Settings</span>
+                        <span class="h1 text-center col-8">MQTT-Settings</span>
                     </div>
                     <!-- ROW one-->
                     <div class="container s-rounded cardBackground">
@@ -168,51 +170,83 @@
                             <div class="s-rounded column col-12 pb-3">
                                 <div class="card bg-dark subCardBackground col-mx-auto">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">Update-Server</span>
+                                        <span class="h4 cardCaption">Broker Address</span>
                                     </div>
                                     <div class="card-body text-center">
-                                        <span class="h5 %%ssidClass%%">%%updateServerUrl%%</span>
+                                        <span class="h5 %%ssidClass%%">%%mqttbrokerAddress%%</span>
                                     </div>
                                 </div>
                                 <div class="card bg-dark subCardBackground col-mx-auto">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">Update-Server Port</span>
+                                        <span class="h4 cardCaption">Broker Port</span>
                                     </div>
                                     <div class="card-body text-center">
-                                        <span class="h5 %%ssidClass%%">%%updateServerPort%%</span>
+                                        <span class="h5 %%ssidClass%%">%%mqttBrokerPort%%</span>
                                     </div>
                                 </div>
 
                                 <div class="card bg-dark subCardBackground col-mx-auto">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">Auto Update</span>
+                                        <span class="h4 cardCaption">Client ID</span>
                                     </div>
                                     <div class="card-body text-center">
-                                        <span class="h5 %%ssidClass%%">%%autoUpdate%%</span>
+                                        <span class="h5 %%ssidClass%%">%%mqttClientID%%</span>
                                     </div>
                                 </div>
                                 <div class="card bg-dark subCardBackground col-mx-auto">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">Update-Server Token</span>
+                                        <span class="h4 cardCaption">MQTT User</span>
                                     </div>
                                     <div class="card-body text-center">
-                                        <span class="h5 %%updateServerTokenClass%%">%%updateServerToken%%</span>
+                                        <span class="h5 %%updateServerTokenClass%%">%%mqttUsername%%</span>
                                     </div>
                                 </div>
                                 <div class="card bg-dark subCardBackground col-mx-auto">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">Update-Server Password</span>
+                                        <span class="h4 cardCaption">MQTT Password</span>
                                     </div>
                                     <div class="card-body text-center">
-                                        <span class="h5 %%updateServerPasswdClass%%">%%updateServerPasswd%%</span>
+                                        <span class="h5 %%updateServerPasswdClass%%">%%mqttPassword%%</span>
                                     </div>
                                 </div>
                                 <div class="card bg-dark subCardBackground col-mx-auto">
                                     <div class="card-header text-center">
-                                        <span class="h4 cardCaption">Check Intervall</span>
+                                        <span class="h4 cardCaption">Will Topic</span>
                                     </div>
                                     <div class="card-body text-center">
-                                        <span class="h5 %%updateServerPasswdClass%%">%%checkIntervall%%</span>
+                                        <span class="h5 %%updateServerPasswdClass%%">%%mqttWillTopic%%</span>
+                                    </div>
+                                </div>
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">Will Retain</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %%updateServerPasswdClass%%">%%mqttWillRetain%%</span>
+                                    </div>
+                                </div>
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">Will Message</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %%updateServerPasswdClass%%">%%mqttWillMessage%%</span>
+                                    </div>
+                                </div>
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">QOS</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %%updateServerPasswdClass%%">%%mqttQOS%%</span>
+                                    </div>
+                                </div>
+                                <div class="card bg-dark subCardBackground col-mx-auto">
+                                    <div class="card-header text-center">
+                                        <span class="h4 cardCaption">Clean Session</span>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <span class="h5 %%updateServerPasswdClass%%">%%mqttCleanSession%%</span>
                                     </div>
                                 </div>
                             </div>
@@ -220,110 +254,127 @@
                     </div>
                     <div class="pb-3"></div>
                     <div class="container s-rounded cardBackground">
-                        <div class="text-center pb-2 mt-2"><span class="h2">Server ändern</span></div>
+                        <div class="text-center pb-2 mt-2"><span class="h2">Einstellungen anpassen</span></div>
                         <div class="col-12 column">
                             <div class="s-rounded column col-12 pb-3">
                                 <div class="card bg-dark subCardBackground col-mx-auto form-group">
-                                    <form action="/saveServerCred" method="POST">
+                                    <form action="/saveMQTTSettings" method="POST">
                                         <div class="card-header text-center">
-                                            <span class="h4 cardCaption form-label" for="input-serverurl" style="padding-top: .5em;">Server Url</span>
+                                            <span class="h4 cardCaption form-label" for="input-serverurl" style="padding-top: .5em;">Broker Address</span>
                                         </div>
                                         <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
                                         <div class="card-body text-center">
                                             <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
-                                                <input class="form-input formfeld" type="text" name="serverUrl" id="serverUrl" placeholder="New Url" style="width: 100%">
+                                                <input class="form-input formfeld" type="text" name="brokerAddress" id="brokerAddress" placeholder="New broker address" style="width: 100%">
                                             </div>
                                         </div>
                                         <div style="padding-top: 3em"></div>
                                         <div class="card-header text-center">
-                                            <span class="h4 cardCaption form-label" for="input-serverPort" style="padding-top: .5em;">Server Port</span>
+                                            <span class="h4 cardCaption form-label" for="input-serverPort" style="padding-top: .5em;">Broker Port</span>
                                         </div>
                                         <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
                                         <div class="card-body text-center">
                                             <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
-                                                <input class="form-input formfeld" type="text" name="serverPort" id="serverPort" placeholder="New Port" style="width: 100%">
+                                                <input class="form-input formfeld" type="number" name="brokerPort" id="brokerPort" placeholder="New broker port" style="width: 100%">
                                             </div>
                                         </div>
-
+                                        <div style="padding-top: 3em"></div>
+                                        <div class="card-header text-center">
+                                            <span class="h4 cardCaption form-label" for="input-serverurl" style="padding-top: .5em;">Client ID</span>
+                                        </div>
+                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
+                                        <div class="card-body text-center">
+                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
+                                                <input class="form-input formfeld" type="text" name="clientID" id="clientID" placeholder="New client id" style="width: 100%">
+                                            </div>
+                                        </div>
+                                        <div style="padding-top: 3em"></div>
+                                        <div class="card-header text-center">
+                                            <span class="h4 cardCaption form-label" for="input-serverurl" style="padding-top: .5em;">MQTT User</span>
+                                        </div>
+                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
+                                        <div class="card-body text-center">
+                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
+                                                <input class="form-input formfeld" type="text" name="mqttUser" id="mqttUser" placeholder="New user" style="width: 100%">
+                                            </div>
+                                        </div>
                                         <div style="padding-top: 3em"></div>
 
                                         <div class="card-header text-center">
-                                            <span class="h4 cardCaption form-label" for="input-serverToken" style="padding-top: .5em;">Server Token</span>
+                                            <span class="h4 cardCaption form-label" for="input-serverToken" style="padding-top: .5em;">MQTT Password</span>
                                         </div>
                                         <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
                                         <div class="card-body text-center">
                                             <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
-                                                <input class="form-input formfeld" type="text" name="serverToken" id="serverToken" placeholder="New token" style="width: 100%">
+                                                <input class="form-input formfeld" type="password" name="mqttPassword" id="mqttPassword" placeholder="New password" style="width: 100%">
                                             </div>
                                         </div>
-
                                         <div style="padding-top: 3em"></div>
                                         <div class="card-header text-center">
-                                            <span class="h4 cardCaption form-label" for="input-serverPassword" style="padding-top: .5em;">Server Password</span>
+                                            <span class="h4 cardCaption form-label" for="input-serverPassword" style="padding-top: .5em;">Will topic</span>
                                         </div>
                                         <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
                                         <div class="card-body text-center">
                                             <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
-                                                <input class="form-input formfeld" type="text" name="serverPassword" id="serverPassword" placeholder="New password" style="width: 100%">
+                                                <input class="form-input formfeld" type="text" name="mqttWillTopic" id="mqttWillTopic" placeholder="New will topic" style="width: 100%">
                                             </div>
                                         </div>
                                         <div class="pb-3"></div>
-                                        <div class="card-body text-center">
-                                            <button type="submit" class="btn btn-lg btn-success formfeldbtn" style="height: 3em; font-size: 3em">Speichern</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pb-3"></div>
-                    <div class="container s-rounded cardBackground" style="margin-top: 3em">
-                        <div class="text-center pb-2 mt-2"><span class="h2">Updatesettings ändern</span></div>
-                        <div class="col-12 column">
-                            <div class="s-rounded column col-12 pb-3">
-                                <div class="card bg-dark subCardBackground col-mx-auto form-group">
-                                    <form action="/saveUpdatePref" method="POST">
                                         <div class="card-header text-center">
-                                            <span class="h4 cardCaption form-label" for="input-serverurl" style="padding-top: .5em;">Auto-Update</span>
+                                            <span class="h4 cardCaption form-label" for="input-serverPassword" style="padding-top: .5em;">Will Retain</span>
                                         </div>
                                         <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
                                         <div class="card-body text-center">
-                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%; background-color: #1c1c1c1c; text-align: center">
+                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
                                                 <select class="form-select formfeld" name="autoUpdate" style="background-color: #1c1c1c1c; width: 100%">
-                                                    <option class="formfeld" value=""></option>
-                                                    <option class="formfeld" style="color: #1c1c1c1c" value="true">True</option>
-                                                    <option class="formfeld" style="background-color: #1c1c1c1c" value="false">False</option>
+                                                    <option class="formfeld"></option>
+                                                    <option class="formfeld" value="true">True</option>
+                                                    <option class="formfeld" value="true">False</option>
                                                 </select>
                                             </div>
                                         </div>
-                                        <div style="padding-top: 3em"></div>
+                                        <div class="pb-3"></div>
                                         <div class="card-header text-center">
-                                            <span class="h4 cardCaption form-label" for="input-serverurl" style="padding-top: .5em;">Prüfintervall</span>
+                                            <span class="h4 cardCaption form-label" for="input-serverPassword" style="padding-top: .5em;">Will message</span>
                                         </div>
                                         <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
                                         <div class="card-body text-center">
                                             <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
-                                                <input class="form-input formfeld" type="text" name="updateIntervall" id="updateIntervall" placeholder="New check intervall (in hours)" style="width: 100%">
+                                                <input class="form-input formfeld" type="text" name="mqttWillMessage" id="mqttWillMessage" placeholder="New will message" style="width: 100%">
                                             </div>
                                         </div>
-
                                         <div class="pb-3"></div>
-                                        <div class="card-body text-center">
-                                            <button type="submit" class="btn btn-lg btn-success formfeldbtn" style="height: 3em; font-size: 3em">Speichern</button>
+                                        <div class="card-header text-center">
+                                            <span class="h4 cardCaption form-label" for="input-serverPassword" style="padding-top: .5em;">Will QOS</span>
                                         </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container s-rounded cardBackground" style="margin-top: 3em">
-                        <div class="text-center pb-2 mt-2"><span class="h2">Jetzt auf Updates prüfen</span></div>
-                        <div class="col-12 column">
-                            <div class="s-rounded column col-12 pb-3">
-                                <div class="card bg-dark subCardBackground col-mx-auto form-group">
-                                    <form action="/checkForUpdates" method="POST">
+                                        <div class="divider" style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%;"></div>
                                         <div class="card-body text-center">
-                                            <button type="submit" class="btn btn-lg btn-success formfeldbtn" style="height: 3em; font-size: 3em">Auf Updates prüfen</button>
+                                            <div class="form-group" style="margin-left: 7.5%; margin-right: 7.5%">
+                                                <select class="form-select formfeld" name="willQOS" id="willQOS" style=" background-color: #1c1c1c1c; width: 100% ">
+                                                    <option class="formfeld "></option>
+                                                    <option class="formfeld " value="0 ">0 (At most once)</option>
+                                                    <option class="formfeld " value="1 ">1 (At least once)</option>
+                                                    <option class="formfeld " value="2 ">2 (Exactly once)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="pb-3 "></div>
+                                        <div class="pb-3 "></div>
+                                        <div class="card-header text-center ">
+                                            <span class="h4 cardCaption form-label " for="input-serverPassword " style="padding-top: .5em; ">Clean Session</span>
+                                        </div>
+                                        <div class="divider " style="margin-top: 2em; padding-bottom: 0; width: 90%; margin-left: 5%; "></div>
+                                        <div class="card-body text-center ">
+                                            <div class="form-group " style="margin-left: 7.5%; margin-right: 7.5% ">
+                                                <select class="form-select formfeld " name="cleanSession" id="cleanSession" style="background-color: #1c1c1c1c; width: 100% ">
+                                                    <option class="formfeld "></option>
+                                                    <option class="formfeld " value="true ">True</option>
+                                                    <option class="formfeld " value="true ">False</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="card-body text-center ">
+                                            <button type="submit " class="btn btn-lg btn-success formfeldbtn " style="height: 3em; font-size: 3em ">Speichern</button>
                                         </div>
                                     </form>
                                 </div>

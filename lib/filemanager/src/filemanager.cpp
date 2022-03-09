@@ -577,6 +577,22 @@ uint8 Filemanager::size()
     return internalFileHandle.size();
 }
 
+uint8 Filemanager::size(const char* filename)
+{
+    if(!checkForInit())
+    {
+        return 0;
+    }
+
+    if(this->fExist(filename))
+    {
+        File getSizeOfFile = LittleFS.open(filename, "r");
+        
+        return getSizeOfFile.size();
+    }
+    return 0;
+}
+
 uint8 Filemanager::size(File usedFile)
 {
     if(!checkForInit())
@@ -849,6 +865,7 @@ String Filemanager::readFile(const char* Filename)
     return output;
 }
 
+/*
 String* Filemanager::readFilePointed(const char* Filename)
 {
     if(!checkForInit())
@@ -868,8 +885,51 @@ String* Filemanager::readFilePointed(const char* Filename)
     readFile.close();
     return &output;
 }
-
+*/
 const char* Filemanager::readJsonFileValue(const char* Filename, const char* pattern)
+{ 
+    if(!checkForInit())
+    {
+        Serial.println(F("notInit - return NULL"));
+        return {};
+    }
+    const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
+    DynamicJsonDocument jsonDocument(capacity);
+    if(!LittleFS.exists(Filename))
+    {
+        Serial.println("File " + String(Filename) + String(" doesn't exist!"));
+        return {};
+    }
+
+    File readFile = LittleFS.open(Filename, "r"); //Open File
+
+    if(!readFile)
+    { 
+        Serial.println(F("Can't read File!"));
+        return {};
+    }
+    String output = this->readFile(Filename);
+
+    DeserializationError error = deserializeJson(jsonDocument, output);
+    if(error)
+    {
+        Serial.println(F("Error while reading File!"));
+        return {};
+    }
+    if(jsonDocument.containsKey(pattern))
+    {
+        const char* returnVal = jsonDocument[pattern]; //pattern need quotes too! e.g pattern = "\"id\""
+        //Serial.println("Readed from FS: " + String(returnVal) + ", Key: " + String(pattern) + ", File: " + String(Filename));
+        return returnVal;
+    }
+    else
+    {
+        return "";
+    }
+    
+}
+
+String Filemanager::readJsonFileValueAsString(const char* Filename, const char* pattern)
 { 
     if(!checkForInit())
     {
@@ -901,7 +961,8 @@ const char* Filemanager::readJsonFileValue(const char* Filename, const char* pat
     }
     if(jsonDocument.containsKey(pattern))
     {
-        const char* returnVal = jsonDocument[pattern]; //pattern need quotes too! e.g pattern = "\"id\""
+        String returnVal = jsonDocument[pattern]; //pattern need quotes too! e.g pattern = "\"id\""
+        //Serial.println("Readed from FS: " + String(returnVal));
         return returnVal;
     }
     else
@@ -1108,7 +1169,7 @@ bool Filemanager::appendJsonKey(const char* filename, const char* newKey, const 
     {
         if(checkForKeyInJSONFile(filename, newKey))
         {
-            return true;
+            return changeJsonValueFile(filename, newKey, newVal);
         }
 
         const size_t capacity = JSON_OBJECT_SIZE(25) + 400;
@@ -1141,8 +1202,14 @@ bool Filemanager::appendJsonKey(const char* filename, const char* newKey, const 
     }
     else
     {
-        createFile(filename);
-        return appendJsonKey(filename, newKey, newVal);
+        if(createFile(filename))
+        {
+            return appendJsonKey(filename, newKey, newVal);
+        }
+        else
+        {
+            return false;
+        }
     }
 }
 
