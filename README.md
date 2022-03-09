@@ -1,8 +1,6 @@
 # ESPBase
 [![CodeFactor](https://www.codefactor.io/repository/github/j54j6/espbase/badge?s=7e40bd2d9cb851587b67c77431662160073df281)](https://www.codefactor.io/repository/github/j54j6/espbase)
 
-[![Build status](https://ci.appveyor.com/api/projects/status/frplrd0e9tny2gy7?svg=true)](https://ci.appveyor.com/project/j54j6/espbase)
-[![Coverage Status](https://coveralls.io/repos/github/j54j6/ESPBase/badge.svg?branch=master)](https://coveralls.io/github/j54j6/ESPBase?branch=master)
 
 
 IMPORTANT: To get this program working you need to pre flash the files saved in Data/* to your ESP with LittleFS Flasher != SPIFFS Flash !!!!
