@@ -3,12 +3,24 @@
 //extra Stuff
 bool MQTTHandler::configCheck()
 {
+    const char* configFallback[10][2] = {
+            {"updateServer", "update.nodework.de"},
+            {"uri", "/update"},
+            {"servertoken", "unidentified"},
+            {"serverpass", "unidentified!kgh49zuh89!3u903/U90kPOI9=U/89zIH"},
+            {"port", "80"},
+            {"updateSearch", "true"},
+            {"autoUpdate", "true"},
+            {"softwareVersion", "0.0.1"},
+            {"checkDelay", "86400"}
+        };
+
     bool needReInit = false;
     if(FM->fExist(configFile))
     {
         #ifdef J54J6_SysLogger
             
-            logging.logIt("configCheck", "configFile already exist - check for Parameter!");
+            logging.logIt(F("configCheck"), F("configFile already exist - check for Parameter!"));
         #endif
 
         if(!FM->checkForKeyInJSONFile(configFile, "updateServer") || 
@@ -23,7 +35,7 @@ bool MQTTHandler::configCheck()
         {
             needReInit = true;
             #ifdef J54J6_SysLogger
-                logging.logIt("configCheck", "Config File exist but file is not valid - one or more keys are missing");
+                logging.logIt(F("configCheck"), F("Config File exist but file is not valid - one or more keys are missing"));
             #endif
         }
         else
@@ -37,16 +49,16 @@ bool MQTTHandler::configCheck()
     {
         #ifdef J54J6_SysLogger
             
-            logging.logIt("configCheck", "configFile don't exist - try to create");
+            logging.logIt(F("configCheck"), F("configFile don't exist - try to create"));
         #endif
 
         if(!FM->createFile(configFile))
         {
             #ifdef J54J6_SysLogger
             
-            logging.logIt("configCheck", "Can't create File", 2);
+            logging.logIt(F("configCheck"), F("Can't create File"), 2);
             #endif
-            classControl.newReport("Can't create Config File!", 321, 5, true);
+            classControl.newReport(F("Can't create Config File!"), 321, 5, true);
             return false;
         }
         
@@ -54,13 +66,13 @@ bool MQTTHandler::configCheck()
         {
             #ifdef J54J6_SysLogger
             
-            logging.logIt("configCheck", "Can't write in File", 2);
+            logging.logIt(F("configCheck"), F("Can't write in File"), 2);
             #endif
-            classControl.newReport("Can't write in File", 322, 5, true);
+            classControl.newReport(F("Can't write in File"), 322, 5, true);
             return false;
         }
         #ifdef J54J6_SysLogger
-            logging.logIt("configCheck", "Config check successfull");
+            logging.logIt(F("configCheck"), F("Config check successfull"));
         #endif
         return true;
     }
@@ -72,7 +84,7 @@ void MQTTHandler::lockConnect(String usedIP, bool isError)
     lastUsedIP = usedIP;
     if(isError) //Can't connect to Broker
     {
-        logging.logIt("lockConnect", "locked Connect cause of Error!", 1);
+        logging.logIt(F("lockConnect"), F("locked Connect cause of Error!"), 1);
         if(connectTries >= tryToConnectXTimes)
         {
             connectLocked = true;
@@ -86,7 +98,7 @@ void MQTTHandler::lockConnect(String usedIP, bool isError)
     }
     else //ServiceAdd Delay enabled
     {
-        logging.logIt("lockConnect", "locked Connect cause of ServiceAdd Delay!", 1);
+        logging.logIt(F("lockConnect"), F("locked Connect cause of ServiceAdd Delay!"), 1);
         connectLocked = true;
         unlockAt = millis() + serviceSearchTimeout;
     }
@@ -119,12 +131,12 @@ void MQTTHandler::resetConnectLock()
 
 short MQTTHandler::connectSelfOffered()
 {
-    logging.logIt("connectSelfOffered", "Try to connect to self Offered Broker", 3);
+    logging.logIt(F("connectSelfOffered"), F("Try to connect to self Offered Broker"), 3);
     int port = -1;
     port = services->getServicePort("mqtt", false, true);
     if(port == -1 || port < 1 || port > 65535)
     {
-        logging.logIt("connectSelfOffered", "Can't connect to self offered Broker - config not useable!", 3);
+        logging.logIt(F("connectSelfOffered"), F("Can't connect to self offered Broker - config not useable!"), 3);
         return 2; //no useable 
     }
     else
@@ -132,14 +144,14 @@ short MQTTHandler::connectSelfOffered()
         this->mqttHandlerClient = this->mqttHandlerClient.setServer("127.0.0.1", port);
         if(this->mqttHandlerClient.connect(wifiManager->getDeviceMac().c_str()))
         {
-            logging.logIt("connectSelfOffered", "Successfully connected to self offered Broker!", 1);
+            logging.logIt(F("connectSelfOffered"), F("Successfully connected to self offered Broker!"), 1);
             return true;
         }
 
-        logging.logIt("connectSelfOffered", "Can't connect to self offered Broker!", 1);
+        logging.logIt(F("connectSelfOffered"), F("Can't connect to self offered Broker!"), 1);
         return false;
     }
-    logging.logIt("connectSelfOffered", "Unexcepted behaviour!", 4);
+    logging.logIt(F("connectSelfOffered"), F("Unexcepted behaviour!"), 4);
     return -1;
 }
 
@@ -149,13 +161,13 @@ short MQTTHandler::connectToExternalBroker(bool isFallback)
 
     if((serviceConnectMode == 0 || serviceConnectMode == 1) || (isFallback && (serviceConnectMode == 2 || serviceConnectMode == 4)))
     {
-        logging.logIt("connectToExternalBroker", "No useable Service found", 2);
+        logging.logIt(F("connectToExternalBroker"), F("No useable Service found"), 2);
         return 2; //There is no correct Service found (if isFallback) -> there is no fallback
     }
 
     if(!isFallback && (serviceConnectMode == 2 || serviceConnectMode == 3 || serviceConnectMode == 4 || serviceConnectMode == 5)) //connect to mainCFG
     {
-        logging.logIt("connectToExternalBroker", "Use external Main Config", 2);
+        logging.logIt(F("connectToExternalBroker"), F("Use external Main Config"), 2);
         IPAddress sIP = services->getServiceIP("mqtt");
         int port = services->getServicePort("mqtt", false, false);
         this->mqttHandlerClient = this->mqttHandlerClient.setServer(sIP, port);
@@ -163,7 +175,7 @@ short MQTTHandler::connectToExternalBroker(bool isFallback)
     }
     else if(isFallback && (serviceConnectMode == 3 || serviceConnectMode == 5))
     {
-        logging.logIt("connectToExternalBroker", "Use external Fallback Config", 2);
+        logging.logIt(F("connectToExternalBroker"), F("Use external Fallback Config"), 2);
         IPAddress sIP = services->getServiceIP("mqtt", true);
         int port = services->getServicePort("mqtt", true, false);
         this->mqttHandlerClient = this->mqttHandlerClient.setServer(sIP, port);
@@ -171,7 +183,7 @@ short MQTTHandler::connectToExternalBroker(bool isFallback)
     }
     else
     {
-        logging.logIt("connectToExternalBroker", "No useable Service(2) found", 2);
+        logging.logIt(F("connectToExternalBroker"), F("No useable Service(2) found"), 2);
         return 2;
     }
     
@@ -179,8 +191,8 @@ short MQTTHandler::connectToExternalBroker(bool isFallback)
 
 short MQTTHandler::connectToMQTTBroker()
 {
-    logging.logIt("connectToMQTTBroker", "Try to connect to Conf Broker", 2);
-    logging.logIt("connectToMQTTBroker", "checkForMQTT Service!", 1);
+    logging.logIt(F("connectToMQTTBroker"), F("Try to connect to Conf Broker"), 2);
+    logging.logIt(F("connectToMQTTBroker"), F("checkForMQTT Service!"), 1);
     short connectMode = services->checkForService("mqtt");
 
     switch(connectMode)
@@ -188,12 +200,12 @@ short MQTTHandler::connectToMQTTBroker()
         case 1: //only self offered - search if failing - ip = localhost
             if(connectSelfOffered() == 1)
             {
-                logging.logIt("connectToMQTTBroker", "Successfully connected to internal MQTT broker", 2);
+                logging.logIt(F("connectToMQTTBroker"), F("Successfully connected to internal MQTT broker"), 2);
                 return 1;
             }
             else
             {
-                logging.logIt("connectToMQTTBroker", "Can't connect to internal Broker - no other conf - start autoAdd", 2);
+                logging.logIt(F("connectToMQTTBroker"), F("Can't connect to internal Broker - no other conf - start autoAdd"), 2);
                 services->autoAddService("mqtt");
                 lockConnect("localhost"); //start auto add and lock connect to prevent new init
                 return 4;
@@ -203,12 +215,12 @@ short MQTTHandler::connectToMQTTBroker()
         case 2: //only 1 external Config found - no Internal -> search if failing
             if(connectToExternalBroker() == 1)
             {
-                logging.logIt("connectToMQTTBroker", "Successfully connected to Main External MQTT broker", 2);
+                logging.logIt(F("connectToMQTTBroker"), F("Successfully connected to Main External MQTT broker"), 2);
                 return 1;
             }
             else
             {
-                logging.logIt("connectToMQTTBroker", "Can't connect to Main CFG Broker - no other conf - start autoAdd", 2);
+                logging.logIt(F("connectToMQTTBroker"), F("Can't connect to Main CFG Broker - no other conf - start autoAdd"), 2);
                 services->autoAddService("mqtt");
                 lockConnect("mainConfig"); //start auto add and lock connect to prevent new init
                 return 4;
@@ -218,17 +230,17 @@ short MQTTHandler::connectToMQTTBroker()
         case 3: // 2 external found - check both - if error search in newtwork and remove backup
             if(connectToExternalBroker() == 1)
             {
-                logging.logIt("connectToMQTTBroker", "Successfully connected to Main External MQTT broker", 2);
+                logging.logIt(F("connectToMQTTBroker"), F("Successfully connected to Main External MQTT broker"), 2);
                 return 1;
             }
             else if(connectToExternalBroker(true) == 1)
             {
-                logging.logIt("connectToMQTTBroker", "Successfully connected to backup External MQTT broker", 2);
+                logging.logIt(F("connectToMQTTBroker"), F("Successfully connected to backup External MQTT broker"), 2);
                 return 1;
             }
             else
             {
-                logging.logIt("connectToMQTTBroker", "Can't connect to Main/Backup CFG Broker - no other conf - start autoAdd", 2);
+                logging.logIt(F("connectToMQTTBroker"), F("Can't connect to Main/Backup CFG Broker - no other conf - start autoAdd"), 2);
                 services->autoAddService("mqtt");
                 lockConnect("FallbackConfig"); //start auto add and lock connect to prevent new init
                 return 4;
@@ -237,17 +249,17 @@ short MQTTHandler::connectToMQTTBroker()
         case 4: //1 external and self offered found - try selfoffered first then external -> if fail -> search
             if(connectSelfOffered() == 1)
             {
-                logging.logIt("connectToMQTTBroker", "Successfully connected to internal MQTT broker", 2);
+                logging.logIt(F("connectToMQTTBroker"), F("Successfully connected to internal MQTT broker"), 2);
                 return 1;
             }
             else if(connectToExternalBroker() == 1)
             {
-                logging.logIt("connectToMQTTBroker", "Successfully connected to Main External MQTT broker", 2);
+                logging.logIt(F("connectToMQTTBroker"), F("Successfully connected to Main External MQTT broker"), 2);
                 return 1;
             }
             else
             {
-                logging.logIt("connectToMQTTBroker", "Can't connect to Internal or Main CFG Broker - no other conf - start autoAdd", 2);
+                logging.logIt(F("connectToMQTTBroker"), F("Can't connect to Internal or Main CFG Broker - no other conf - start autoAdd"), 2);
                 services->autoAddService("mqtt");
                 lockConnect("FallbackConfig"); //start auto add and lock connect to prevent new init
                 return 4;
@@ -256,24 +268,24 @@ short MQTTHandler::connectToMQTTBroker()
         case 5: // 2 external and self offered found - try selfofferd first then both external -> if fail remove backup and search
             if(connectSelfOffered() == 1)
             {
-                logging.logIt("connectToMQTTBroker", "Successfully connected to internal MQTT broker", 2);
+                logging.logIt(F("connectToMQTTBroker"), F("Successfully connected to internal MQTT broker"), 2);
                 return 1;
             }
             if(connectToExternalBroker() == 1)
             {
-                logging.logIt("connectToMQTTBroker", "Successfully connected to Main External MQTT broker", 2);
+                logging.logIt(F("connectToMQTTBroker"), F("Successfully connected to Main External MQTT broker"), 2);
                 return 1;
             }
             else if(connectToExternalBroker(true) == 1)
             {
-                logging.logIt("connectToMQTTBroker", "Successfully connected to backup External MQTT broker", 2);
+                logging.logIt(F("connectToMQTTBroker"), F("Successfully connected to backup External MQTT broker"), 2);
                 return 1;
             }
             else
             {
-                logging.logIt("connectToMQTTBroker", "Can't connect to Internal or Main/Backup CFG Broker - no other conf - start autoAdd", 2);
+                logging.logIt(F("connectToMQTTBroker"), F("Can't connect to Internal or Main/Backup CFG Broker - no other conf - start autoAdd"), 2);
                 services->autoAddService("mqtt");
-                lockConnect("FallbackConfig"); //start auto add and lock connect to prevent new init
+                lockConnect(F("FallbackConfig")); //start auto add and lock connect to prevent new init
                 return 4;
             }
             break;
@@ -308,12 +320,12 @@ bool MQTTHandler::setServer(IPAddress ip, uint16 port, bool save, bool asFallbac
         }
         else
         {
-            String message = "Error while saving the Serveraddress - Results: \n";
+            String message = F("Error while saving the Serveraddress - Results: \n");
             message += "IP: ";
             message += ipChanged;
             message += "\n Port: ";
             message += portChanged;
-            logging.logIt("setServer", message.c_str(), 2);
+            logging.logIt(F("setServer"), message.c_str(), 2);
 
             classControl.newReport(message, 232, 2, false, true);
             return false;
@@ -329,12 +341,12 @@ bool MQTTHandler::setServer(IPAddress ip, uint16 port, bool save, bool asFallbac
         }
         else
         {
-            String message = "Error while saving the Serveraddress - Results: \n";
+            String message = F("Error while saving the Serveraddress - Results: \n");
             message = "IP: ";
             message += ipChanged;
             message += "\n Port: ";
             message += portChanged;
-            logging.logIt("setServer - FallbackPart", message.c_str(), 2);
+            logging.logIt(F("setServer - FallbackPart"), message.c_str(), 2);
 
             classControl.newReport(message, 232, 2, false, true);
             return false;
@@ -392,7 +404,7 @@ bool MQTTHandler::setId(const char* id)
 {
     if(strcmp(id, "") == 0)
     {
-        logging.logIt("setID", "ID can't be NULL - return false", 1);
+        logging.logIt(F("setID"), F("ID can't be NULL - return false"), 1);
         return false;
     }
 
@@ -411,7 +423,7 @@ bool MQTTHandler::setUser(const char* user)
 {
     if(strcmp(user, "") == 0)
     {
-        logging.logIt("setUser", "user can't be NULL - return false", 1);
+        logging.logIt(F("setUser"), F("user can't be NULL - return false"), 1);
         return false;
     }
 
@@ -430,7 +442,7 @@ bool MQTTHandler::setPass(const char* pass)
 {
     if(strcmp(pass, "") == 0)
     {
-        logging.logIt("setPass", "Pass can't be NULL - return false", 1);
+        logging.logIt(F("setPass"), F("Pass can't be NULL - return false"), 1);
         return false;
     }
 
@@ -449,7 +461,7 @@ bool MQTTHandler::setWillTopic(const char* willTopic)
 {
     if(strcmp(willTopic, "") == 0)
     {
-        logging.logIt("willTopic", "willTopic can't be NULL - return false", 1);
+        logging.logIt(F("willTopic"), F("willTopic can't be NULL - return false"), 1);
         return false;
     }
 
@@ -495,7 +507,7 @@ bool MQTTHandler::setWillMessage(const char* willMessage)
 {
     if(strcmp(willMessage, "") == 0)
     {
-        logging.logIt("setWillMessage", "WillMessage can't be NULL - return false", 1);
+        logging.logIt(F("setWillMessage"), F("WillMessage can't be NULL - return false"), 1);
         return false;
     }
 
@@ -588,7 +600,7 @@ bool MQTTHandler::getCleanSession()
 
 bool MQTTHandler::connect(bool onlyUseExternal, bool searchService)
 {
-    logging.logIt("connect(auto)", "Init auto Connect", 2);
+    logging.logIt(F("connect(auto)"), F("Init auto Connect"), 2);
 
     //If connect was already called "serviceAddDelayActive" is enabled to prevent multiple requests - return until the timer is ended
     if(connectLocked) //the connectFunction is locked because of errors or serviceAdd is Active (second Value)
@@ -597,27 +609,27 @@ bool MQTTHandler::connect(bool onlyUseExternal, bool searchService)
     }
 
     //check for defined Service
-    logging.logIt("connect(auto)", "Check for defined mqtt Service", 1);
+    logging.logIt(F("connect(auto)"), F("Check for defined mqtt Service"), 1);
     short serviceDefined = services->checkForService("mqtt");
 
     if(serviceDefined != 0) //connect to mqtt Service defined
     {
-        logging.logIt("connect(auto)", "Service found! - try to connect - call conecctToMQTTBroker()", 1);
+        logging.logIt(F("connect(auto)"), F("Service found! - try to connect - call conecctToMQTTBroker()"), 1);
         short res = connectToMQTTBroker();
         if(res == 1)
         {
-            logging.logIt("connect(auto)", "Successfully connected to MQTT", 2);
+            logging.logIt(F("connect(auto)"), F("Successfully connected to MQTT"), 2);
             return true;
         }
         else
         {
-            logging.logIt("connect(auto)", "Can't connect to MQTT Broker", 1);
+            logging.logIt(F("connect(auto)"), F("Can't connect to MQTT Broker"), 1);
             return false;
         }
     }
     else if(serviceDefined == 0 && connectOrError) //if connectOrError is active - autoAddDelayTimer is over - if there is no Service it is failed!s
     {
-        logging.logIt("connect(auto)", "After ServiceAdd can't find MQTT Service!");
+        logging.logIt(F("connect(auto)"), F("After ServiceAdd can't find MQTT Service!"));
         connectTries++;
     }
     else
@@ -631,7 +643,7 @@ return false;
 
 bool MQTTHandler::connect(const char* id)
 {
-    logging.logIt("connect(id)", "try to connect with id only");
+    logging.logIt(F("connect(id)"), F("try to connect with id only"));
 
     if(strcmp(id, "") == 0)
     {
@@ -642,28 +654,28 @@ bool MQTTHandler::connect(const char* id)
 
 bool MQTTHandler::connect(const char* id, const char* user, const char* pass)
 {
-    logging.logIt("connect(id, user, pass)", "try to connect with id, user, pass");
+    logging.logIt(F("connect(id, user, pass)"), F("try to connect with id, user, pass"));
 
     return mqttHandlerClient.connect(id, user, pass);
 }
 
 bool MQTTHandler::connect(const char* id, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage)
 {
-    logging.logIt("connect(id, user, pass, will*)", "try to connect");
+    logging.logIt(F("connect(id, user, pass, will*)"), F("try to connect"));
 
     return mqttHandlerClient.connect(id, willTopic, willQos, willRetain, willMessage);
 }
 
 bool MQTTHandler::connect(const char* id, const char* user, const char* pass, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage)
 {
-    logging.logIt("connect(id, user, pass, will*)", "try to connect");
+    logging.logIt(F("connect(id, user, pass, will*)"), F("try to connect"));
 
     return mqttHandlerClient.connect(id, user, pass, willTopic, willQos, willRetain, willMessage);
 }
 
 bool MQTTHandler::connect(const char* id, const char* user, const char* pass, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage, boolean cleanSession)
 {
-    logging.logIt("connect full", "try to connect");
+    logging.logIt(F("connect full"), F("try to connect"));
 
     return mqttHandlerClient.connect(id, user, pass, willTopic, willQos, willRetain, willMessage, cleanSession);
 }
@@ -678,7 +690,7 @@ bool MQTTHandler::connect(const char* id, const char* user, const char* pass, co
 
 void MQTTHandler::disconnect()
 {
-    logging.logIt("disconnect", "Disconnecting from MQTT Broker!");
+    logging.logIt(F("disconnect"), F("Disconnecting from MQTT Broker!"));
     mqttHandlerClient.disconnect();
 }
 
@@ -689,7 +701,7 @@ void MQTTHandler::disconnect()
 
 bool MQTTHandler::publish(const char* topic, const char* payload, bool retained)
 {
-    logging.logIt("publish", "Publish Message");
+    logging.logIt(F("publish"), F("Publish Message"));
 
     return mqttHandlerClient.publish(topic, payload, retained);
 }
@@ -699,13 +711,13 @@ bool MQTTHandler::publish(const char* topic, const char* payload, bool retained)
 */
 bool MQTTHandler::subscribe(const char* topic)
 {
-    logging.logIt("subscribe", "Subscribe topic");
+    logging.logIt(F("subscribe"), F("Subscribe topic"));
     return mqttHandlerClient.subscribe(topic);
 }
 
 bool MQTTHandler::unsubscribe(const char* topic)
 {
-    logging.logIt("unsubscribe", "Unsubscribe topic");
+    logging.logIt(F("unsubscribe"), F("Unsubscribe topic"));
     return mqttHandlerClient.unsubscribe(topic);
 }
 
@@ -764,7 +776,7 @@ void MQTTHandler::run()
     {
         if(!mqttHandlerClient.loop())
         {
-            classControl.newReport("Error while running - mqttHandler return false!", 365, 5, true, true);
+            classControl.newReport(F("Error while running - mqttHandler return false!"), 365, 5, true, true);
         }
     }
     classControl.run();

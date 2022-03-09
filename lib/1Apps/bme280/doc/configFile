@@ -1,0 +1,8 @@
+{
+    "httpEnabled": "true",
+    "mqttEnabled": "true",
+    "useHTTPS": "false",
+    "mqttTopic": "<<topic>>", //divide to <<mqtttopic>>/temperature, /humidity, /altitude, /pressure, /all, /forceread
+    "checkIntervall": "<<intervall>>", //in seconds
+    "retain": "true"
+}

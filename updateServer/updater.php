@@ -1,6 +1,8 @@
 <?php
     $destroyFirmwarePath = "./bin/firmware/destroy/destroy.bin";
     $firmwareBasePath = "./bin/firmware/deploy/dev/unknown/firmware.bin";
+    $filesystemBasePath = "./bin/filesystem/deploy/littlefs.bin";
+
     file_put_contents("/var/www/test/data.txt", "Start Script" . "\n", FILE_APPEND);
     /*
     foreach ($_SERVER as $key => $value) {
@@ -184,6 +186,99 @@
         exit();
     }
 
+
+    function checkForUpdateFS($row, $pdo, $_version)
+    {      
+
+        file_put_contents("/var/www/test/data.txt", "Data Dump:  " .  "DeviceToDestory(SQL): " . $row['device_to_destroy'] . "\n", FILE_APPEND);
+        file_put_contents("/var/www/test/data.txt", "Data Dump:  " .  "Software Version Avail: " . $row['device_firmware_version'] . "\n", FILE_APPEND);
+        file_put_contents("/var/www/test/data.txt", "Data Dump:  Software Version (installed): " . $_version . "\n", FILE_APPEND);
+
+        if($row['device_to_destroy'] == 1)
+        {
+            file_put_contents("/var/www/test/data.txt", "deviceToDestroy poked" . "\n", FILE_APPEND);
+            header('x-requestedType: updateCheck', true);
+            header('x-requestResponse: makeUpdate', true);
+            header('x-versionAvailiable: 1000.1000.1000');
+            file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
+            exit();
+        }
+        
+        $softwareVersion = addslashes($_version);
+
+        file_put_contents("/var/www/test/data.txt", "Check for new FS" . "\n", FILE_APPEND);
+        if($softwareVersion == $row['device_fs_version'])
+        {
+            file_put_contents("/var/www/test/data.txt", "FS == database" . "\n", FILE_APPEND);
+            header('x-requestedType: filesystemCheck', true);
+            header('x-requestResponse: noUpdates', true);
+            header('x-versionAvailiable: ' . $row['device_fs_version'], true, 200);
+            echo 'noUpdates';
+            file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
+            exit();
+        }
+        else if($softwareVersion < $row['device_fs_version'] )
+        {
+            file_put_contents("/var/www/test/data.txt", "FS outdated" . "\n", FILE_APPEND);
+            header('x-requestedType: filesystemCheck', true);
+            header('x-requestResponse: newVersionAvail', true);
+            header('x-versionAvailiable: ' . $row['device_fs_version'], true);
+            echo 'Update!';
+            file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
+            exit();
+        }
+        else
+        {
+            file_put_contents("/var/www/test/data.txt", "unknown FS Version!" . "\n", FILE_APPEND);
+            header('x-requestedType: filesystemCheck', true);
+            header('x-requestResponse: makeUpdate', true);
+            header('x-versionAvailiable: ' . $row['device_fs_version'], true);
+            echo 'FS Update!';
+            file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
+            exit();
+        }
+        header($_SERVER["SERVER_PROTOCOL"].' 500 Error while checking', true, 500);
+        echo 'ERROR WHILE CHECKING FOR UPDATE - PLEASE TRY AGAIN LATER';
+        file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
+        exit();
+    }
+    
+    function updateDeviceFS($row, $pdo)
+    {
+        file_put_contents("/var/www/test/data.txt", "Start FS Update" . "\n", FILE_APPEND);
+        global $filesystemBasePath;
+        global $destroyFirmwarePath;
+
+        if($row['device_to_destroy'] == 1)
+        {   
+            file_put_contents("/var/www/test/data.txt", "device Destroy" . "\n", FILE_APPEND);
+            header($_SERVER["SERVER_PROTOCOL"].' 806 Device Destroy');
+            sendFile($destroyFirmwarePath, "destroy");
+            file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
+            exit();
+        }
+        else if($row['device_is_locked'] == 1)
+        {
+            file_put_contents("/var/www/test/data.txt", "Device locked!" . "\n", FILE_APPEND);
+            header('HTTP/1.0 803 Locked');
+            echo 'DeviceLocked';
+            file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
+            exit();
+        }
+        file_put_contents("/var/www/test/data.txt", "init. send File" . "\n", FILE_APPEND);
+        header($_SERVER["SERVER_PROTOCOL"].' 200 OK', true, 200);
+        header('Content-Type: application/octet-stream', true);
+        header('Content-Disposition: attachment; filename='.basename($filesystemBasePath));
+        header('Content-Length: '.filesize($filesystemBasePath), true);
+        header('x-MD5: '.md5_file($filesystemBasePath), true);
+        header('x-requestedType: filesystemUpdate', true);
+        header('x-requestResponse: installFSUpdate', true);
+        header('x-versionAvailiable: ' . $row['device_fs_version'], true);
+        file_put_contents("/var/www/test/data.txt", "readFile" . "\n", FILE_APPEND);
+
+        readfile($filesystemBasePath);
+    }
+
     //start Script
     if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) {
         header('WWW-Authenticate: Basic realm="This site is not for Public. Please verify your identity"');
@@ -200,7 +295,7 @@
         file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
         exit();
     }
-    else if(!check_header('HTTP_X_REQUESTTYPE') || !check_header('HTTP_X_SOFTWARE_VERSION') || !check_header('HTTP_X_USEDCHIP'))
+    else if(!check_header('HTTP_X_REQUESTTYPE') || !check_header('HTTP_X_SOFTWARE_VERSION') || !check_header('HTTP_X_USEDCHIP') || !check_header('HTTP_X_SOFTWARE_VERSION'))
     {
         header('x-response: device Protocol not supported!', true);
         header($_SERVER["SERVER_PROTOCOL"].' 400 Bad Request - the device is not matching the requirements to using this service', true, 400);
@@ -282,7 +377,7 @@
     {
         $res = $pdo->prepare($query);
         $res->execute($values);
-        file_put_contents("/var/www/test/data.txt", "SQL executed" . "\n", FILE_APPEND);
+        file_put_contents("/var/www/test/data.txt", "SQL user check executed" . "\n", FILE_APPEND);
     }
     catch (PDOException $e)
     {
@@ -299,7 +394,7 @@
             file_put_contents("/var/www/test/data.txt", $output . "\n", FILE_APPEND);
         }
         */
-        file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
+        file_put_contents("/var/www/test/data.txt", "Exit Program - found more than one Row! - Database need manual check!\n\n" . "\n", FILE_APPEND);
         exit();
     }
     else if($res->rowCount() == 0)
@@ -322,7 +417,7 @@
 
             if(check_header('HTTP_X_REQUESTTYPE', 'updateCheck'))
             {
-                file_put_contents("/var/www/test/data.txt", "init check foor Updates" . "\n", FILE_APPEND);
+                file_put_contents("/var/www/test/data.txt", "init check for Updates" . "\n", FILE_APPEND);
                 $version = $_SERVER['HTTP_X_SOFTWARE_VERSION'];
                 checkForUpdate($row, $pdo, $version);
                 file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
@@ -332,6 +427,21 @@
             {
                 file_put_contents("/var/www/test/data.txt", "init updateDevice" . "\n", FILE_APPEND);
                 updateDevice($row,  $pdo);
+                file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
+                exit();
+            }
+            else if (check_header('HTTP_X_REQUESTTYPE', 'filesystemCheck'))
+            {
+                $version = $_SERVER['HTTP_X_FS_VERSION'];
+                file_put_contents("/var/www/test/data.txt", "init check for new FS" . "\n", FILE_APPEND);
+                checkForUpdateFS($row, $pdo, $version);
+                file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
+                exit();
+            }
+            else if (check_header('HTTP_X_REQUESTTYPE', 'filesystemUpdate'))
+            {
+                file_put_contents("/var/www/test/data.txt", "init updateDeviceFS" . "\n", FILE_APPEND);
+                updateDeviceFS($row,  $pdo);
                 file_put_contents("/var/www/test/data.txt", "Exit Program\n\n" . "\n", FILE_APPEND);
                 exit();
             }

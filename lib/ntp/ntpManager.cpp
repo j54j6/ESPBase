@@ -6,11 +6,11 @@ NTPManager::NTPManager(Filemanager* FM, WiFiManager* wifi, bool setUpdateInterva
     this->wifi = wifi;
     if(!setUpdateIntervall)
     {
-        this->ntpClient = new NTPClient(ntpUdp, "pool.ntp.org", utcOffsetInSeconds);
+        this->ntpClient = new NTPClient(ntpUdp, "de.pool.ntp.org", utcOffsetInSeconds);
     }
     else
     {
-        this->ntpClient = new NTPClient(ntpUdp, "pool.ntp.org", utcOffsetInSeconds, updateIntervall);
+        this->ntpClient = new NTPClient(ntpUdp, "de.pool.ntp.org", utcOffsetInSeconds, updateIntervall);
     }
     
 }
@@ -21,8 +21,10 @@ bool NTPManager::begin()
     {
         ntpClient->begin();
         this->beginSuccess = true;
+        logging.logIt(F("begin"), F("Begin successfull"), 3);
         return true;
     }
+    logging.logIt(F("begin"), F("WiFi is not connected - can't Begin!"), 4);
     return false;
 }
 
@@ -30,9 +32,17 @@ bool NTPManager::updateTime()
 {
     if(!wifi->isConnected())
     {
-        logging.logIt("updateTime", "WiFi is not connected - can't update Time", 4);
+        logging.logIt(F("updateTime"), F("WiFi is not connected - can't update Time"), 4);
         return false;
     }
+    /*
+    if(ntpClient->forceUpdate())
+    {
+        logging.logIt("updateTime", "Successfully updated time!", 3);
+        return true;
+    }
+    return false;
+    */
     return ntpClient->forceUpdate();
 }
 
@@ -63,6 +73,10 @@ ulong NTPManager::getEpochTime()
 
 void NTPManager::run()
 {
+    if(!beginSuccess)
+    {
+        begin();
+    }
     this->ntpClient->update();
 }
 

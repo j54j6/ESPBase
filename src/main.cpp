@@ -1,37 +1,38 @@
 #include <Arduino.h>
 #include "wrapper.h"
-#include "dht11Temp.h"
 
-//ESPOS
-espOS mainOS(D2, D7, D1);
+#include "bme280/bme280.h"
 
 
-//Module Object
-dht11Temp* _dht11;
+//MAIN OS
+espOS* mainOS;
 
-//dependent dht11 to OS Objects
+//Needed Objects
+Network* _Network;
+MQTTHandlerV2* _MQTT;
 Filemanager* _FM;
-MQTTHandler* _mqttHandler;
 
+//TEMP Module
+BME280* temp;
 
-void setup()
-{ 
-  //get dependent Objects for dht11 Module
-  _FM = mainOS.getFilemanagerObj();
-  _mqttHandler = mainOS.getMqttHandler();
+void setup() { 
+  mainOS = new espOS();
 
-  //Init DHT11 Module
-  _dht11 = new dht11Temp(_FM, _mqttHandler, D5);
+//Get needed Objects
+ _Network = mainOS->getNetworkManagerObj();
+ _MQTT = mainOS->getMqttHandler();
+ _FM = mainOS->getFilemanagerObj();
 
+  temp = new BME280(_Network, _MQTT, _FM);
   //start espOS
-  mainOS.begin();
+  mainOS->begin();
+
+  temp->begin();
 }
 
-void loop()
-{
+void loop() {
   //run Services
-  mainOS.run();
+  mainOS->run();
 
-  //run DHT11 Module
-  _dht11->run();
+  temp->run();
 }

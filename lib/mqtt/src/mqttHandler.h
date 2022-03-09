@@ -86,7 +86,10 @@ class MQTTHandler {
 
         lastMqttCallback lastCallback;
 
-        const char* configFallback[10][2] = {
+
+        /*
+            Moved to configCheck()
+            const char* configFallback[10][2] = {
             {"updateServer", "update.nodework.de"},
             {"uri", "/update"},
             {"servertoken", "unidentified"},
@@ -97,6 +100,7 @@ class MQTTHandler {
             {"softwareVersion", "0.0.1"},
             {"checkDelay", "86400"}
         };
+        */
         int configFileLength = 0;
 
         const char* className = "MQTTHandler";

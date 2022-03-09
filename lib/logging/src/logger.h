@@ -14,7 +14,7 @@
     Outputtypes:
         - Serial log
         - File Log
-        - HTTP Stream (later)
+        - HTTP Stream (later implemented)
 */
 
 /*
@@ -69,6 +69,9 @@
 #define functionnameSpace 20
 #define priorityValueSpace 6
 
+//permanentErrorLog
+
+
 
 
 class SysLogger {
@@ -79,6 +82,9 @@ class SysLogger {
 
         String mqttPublishTopic;
         String macAddress;
+        int errorCounter = 0;
+
+        
     protected:
         //return PriorityValue as "humanReadable" text
         String getLogLevel(short value);
@@ -149,6 +155,7 @@ class SysLogger {
         void setLogLevel(short newLevel, short logType);
         void setLogging(bool logging, short logType);
         void setMqttClient(PubSubClient* mqttClient);
+        int getErrorCounter() { return this->errorCounter;};
         String messageToJSON(String function, String message, char prio);
 };
 #endif

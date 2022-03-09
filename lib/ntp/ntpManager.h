@@ -13,7 +13,7 @@
 class NTPManager {
     private:
         Filemanager* FM;
-        SysLogger logging;
+        SysLogger logging = SysLogger("NTP");
         WiFiUDP ntpUdp;
         NTPClient* ntpClient;
         WiFiManager* wifi;

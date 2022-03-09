@@ -54,7 +54,7 @@ bool ESPOS_Module_MQTTConfig::checkFiles()
 
         if(hasMode && hasPass && hasChannel)
         {
-            logging.logIt("checkFiles", "Config File already exist", 3);
+            logging.logIt(F("checkFiles"), F("Config File already exist"), 3);
             return true;
         }
     }
@@ -63,7 +63,7 @@ bool ESPOS_Module_MQTTConfig::checkFiles()
     {
         if(!_FM->createFile(configFile))
         {
-            logging.logIt("checkFiles", "Error while creating configFile", 4);
+            logging.logIt(F("checkFiles"), F("Error while creating configFile"), 4);
             return false;
         }
     }
@@ -71,46 +71,46 @@ bool ESPOS_Module_MQTTConfig::checkFiles()
     bool modeAdd = _FM->appendJsonKey(configFile, "confMode", "false");
     bool passAdd = _FM->appendJsonKey(configFile, "password", "");
     String path =  "espOS/devices/" + WiFi.macAddress();
-    path += "/settings";
+    path += F("/settings");
     bool pathAdd = _FM->appendJsonKey(configFile, "mqttChannel", path.c_str());
 
     if(modeAdd && passAdd && pathAdd)
     {
-        logging.logIt("checkFiles", "Successfully created config!", 3);
+        logging.logIt(F("checkFiles"), F("Successfully created config!"), 3);
         if(!IsDoubleCheck)
         {
             IsDoubleCheck = true;
             bool res =  begin();
             if(res)
             {
-                logging.logIt("checkFiles", "Config verified!", 3);
+                logging.logIt(F("checkFiles"), F("Config verified!"), 3);
                 return true;
             }
-            logging.logIt("checkFiles", "Can't verify config!", 4);
+            logging.logIt(F("checkFiles"), F("Can't verify config!"), 4);
             return false;
         }
         else
         {
-            logging.logIt("checkFiles", "Can't verify config!", 4);
+            logging.logIt(F("checkFiles"), F("Can't verify config!"), 4);
             return true;
         }
 
     }
     else
     {
-        logging.logIt("checkFiles", "Error while adding Config!", 4);
+        logging.logIt(F("checkFiles"), F("Error while adding Config!"), 4);
     }
     return false;
 }
 
 bool ESPOS_Module_MQTTConfig::begin()
 {
-    logging.logIt("begin", "Init MQTT COnfig Module", 2);
+    logging.logIt(F("begin"), F("Init MQTT COnfig Module"), 2);
     if(!checkFiles())
     {
         this->mqttConfigEnabled = false;
-        logging.logIt("begin", "Can't init. Config Module - MQTTConfig is disabled!", 4);
-        classControl.newReport("Can't start MQTT Config Module - Can't load Files", 404, 5, true);
+        logging.logIt(F("begin"), F("Can't init. Config Module - MQTTConfig is disabled!"), 4);
+        classControl.newReport(F("Can't start MQTT Config Module - Can't load Files"), 404, 5, true);
         return false;
     }
 
@@ -122,7 +122,7 @@ bool ESPOS_Module_MQTTConfig::begin()
     if(mqttConfigEnabled)
     {
         
-        logging.logIt("begin", "MQTT COnfig - active!", 2);
+        logging.logIt(F("begin"), F("MQTT COnfig - active!"), 2);
 
     }
     return true;
@@ -190,7 +190,7 @@ void ESPOS_Module_MQTTConfig::runGetCommands(lastMqttCallback* lastCallback)
     if(command == "readfile")
     {
         String value = lastCb["filename"];
-        logging.logIt("checkForGeneralConfigCommand", "Try to read File" + String(value), 2);
+        logging.logIt(F("checkForGeneralConfigCommand"), "Try to read File" + String(value), 2);
         MQTTConfReadFile(lastCallback, value);
     }
 }
@@ -204,12 +204,12 @@ void ESPOS_Module_MQTTConfig::runSetCommands(lastMqttCallback* lastCallback)
     {
         if(this->setConfMode(false))
         {
-            logging.logIt("checkForModuleConfCommand", "MQTTConfig successfully disabled!");
+            logging.logIt(F("checkForModuleConfCommand"), F("MQTTConfig successfully disabled!"));
         }
         else
         {
-            logging.logIt("checkForModuleConfCommand", "Can't disable MQTTConfig! - The device is not safe to use!", 6);
-            classControl.newReport("Error while disabling MQTTConfig mode!", 875, 1, true);
+            logging.logIt(F("checkForModuleConfCommand"), F("Can't disable MQTTConfig! - The device is not safe to use!"), 6);
+            classControl.newReport(F("Error while disabling MQTTConfig mode!"), 875, 1, true);
         }
     }
     if(command == "changeconfig")
@@ -224,21 +224,21 @@ void ESPOS_Module_MQTTConfig::runSetCommands(lastMqttCallback* lastCallback)
 
                 if(!_FM->fExist(filename.c_str()))
                 {
-                    logging.logIt("runSetCommands", "File not found!", 2);
+                    logging.logIt(F("runSetCommands"), F("File not found!"), 2);
                     _MQTT->publish(lastCallback->topic.c_str(), formatResponse("changeConfig", 0, "File not found").c_str());
                     return;
                 }
                 if(!_FM->checkForKeyInJSONFile(filename.c_str(), key.c_str()))
                 {
-                    logging.logIt("runSetCommands", "append new Key to File", 2);
+                    logging.logIt(F("runSetCommands"), F("append new Key to File"), 2);
                     if(_FM->appendJsonKey(filename.c_str(), key.c_str(), value.c_str()))
                     {
-                        logging.logIt("runSetCommands", "Key sucessfully appended", 2);
+                        logging.logIt(F("runSetCommands"), F("Key sucessfully appended"), 2);
                         _MQTT->publish(lastCallback->topic.c_str(), formatResponse("changeConfig", 1, "Ok").c_str());
                     }
                     else
                     {
-                        logging.logIt("runSetCommands", "Key could not be appended - See log", 2);
+                        logging.logIt(F("runSetCommands"), F("Key could not be appended - See log"), 2);
                         _MQTT->publish(lastCallback->topic.c_str(), formatResponse("changeConfig", 0, "Can't append key").c_str());
                     }
                 }
@@ -246,26 +246,26 @@ void ESPOS_Module_MQTTConfig::runSetCommands(lastMqttCallback* lastCallback)
                 {
                     if(_FM->changeJsonValueFile(filename.c_str(), key.c_str(), value.c_str()))
                     {
-                        logging.logIt("runSetCommands", "Key sucessfully changed", 2);
-                        _MQTT->publish(lastCallback->topic.c_str(), formatResponse("changeConfig", 1, "Ok").c_str());
+                        logging.logIt(F("runSetCommands"), F("Key sucessfully changed"), 2);
+                        _MQTT->publish(lastCallback->topic.c_str(), formatResponse(F("changeConfig"), 1, F("Ok")).c_str());
                     }
                     else
                     {
-                        logging.logIt("runSetCommands", "Can't change Key! - See log", 2);
-                        _MQTT->publish(lastCallback->topic.c_str(), formatResponse("changeConfig", 0, "Can't change key").c_str());
+                        logging.logIt(F("runSetCommands"), F("Can't change Key! - See log"), 2);
+                        _MQTT->publish(lastCallback->topic.c_str(), formatResponse(F("changeConfig"), 0, F("Can't change key")).c_str());
                     }
                 }
                 
             }
             else
             {
-                logging.logIt("checkForCommands", "One or more JSON Parameters are missing!", 4);
+                logging.logIt(F("checkForCommands"), F("One or more JSON Parameters are missing!"), 4);
                 return;
             }
         }
         else
         {
-            logging.logIt("checkForCommands", "Configmode disabled!", 3);
+            logging.logIt(F("checkForCommands"), F("Configmode disabled!"), 3);
             return;
         }
     }
@@ -283,18 +283,18 @@ void ESPOS_Module_MQTTConfig::checkForCommands(lastMqttCallback* lastCallback)
     */
     if(lastCallback->getTopic() == tempChannel)
     {
-        logging.logIt("checkForCommands", lastCallback->getPayload().c_str(), 2);
+        logging.logIt(F("checkForCommands"), lastCallback->getPayload().c_str(), 2);
         DeserializationError error = deserializeJson(lastCb, lastCallback->getPayload());
         
         const char tError = error.code();
         if(tError != 0) // not OK
         {
-            logging.logIt("checkForCommands", "Can't deserialize MQTT to JSON! - Error: " + String(error.code()) + String(", ") + String(error.c_str()), 4);
+            logging.logIt(F("checkForCommands"), "Can't deserialize MQTT to JSON! - Error: " + String(error.code()) + String(", ") + String(error.c_str()), 4);
             return;
         }
         if(!lastCb.containsKey("target") || !lastCb.containsKey("type") || !lastCb.containsKey("password") || !lastCb.containsKey("setting"))
         {
-            logging.logIt("checkForCommands", "One or more JSON Parameters are missing!", 4);
+            logging.logIt(F("checkForCommands"), F("One or more JSON Parameters are missing!"), 4);
             return;
         }
         String deviceTarget = lastCb["target"];
@@ -316,7 +316,7 @@ void ESPOS_Module_MQTTConfig::checkForCommands(lastMqttCallback* lastCallback)
             }
             else
             {
-                logging.logIt("checkForCommands", "Recieved unknown Command! - return");
+                logging.logIt(F("checkForCommands"), F("Recieved unknown Command! - return"));
                 return;
             }
 
@@ -339,14 +339,14 @@ void ESPOS_Module_MQTTConfig::run(bool startListen)
         const char* tempChannel = _FM->readJsonFileValue(configFile, "mqttChannel");
         if(!this->_MQTT->subscribe(tempChannel))
         {
-            logging.logIt("run", "Can't subscribe to Topic!", 4);
-            classControl.newReport("Can't Subscribe to ConfTopic!", 421, 2, true);
+            logging.logIt(F("run"), F("Can't subscribe to Topic!"), 4);
+            classControl.newReport(F("Can't Subscribe to ConfTopic!"), 421, 2, true);
             return;
         }
         else
         {
-            logging.logIt("run", "Subscribed to", 3);
-            logging.logIt("run", tempChannel, 3);
+            logging.logIt(F("run"), F("Subscribed to"), 3);
+            logging.logIt(F("run"), tempChannel, 3);
             //Serial.print("Free Heap: ");
             //Serial.println(ESP.getFreeHeap());
         }

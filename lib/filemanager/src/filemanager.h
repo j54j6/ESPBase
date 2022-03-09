@@ -65,8 +65,8 @@
             bool dNext(Dir usedDir);
             const char* getFName(); //return Filename of pointed Object
             const char* getFName(Dir usedDir);
-            uint getFileSize(); //return fileSize of pointed Object
-            uint getFileSize(Dir usedDir);
+            uint16 getFileSize(); //return fileSize of pointed Object
+            uint16 getFileSize(Dir usedDir);
             bool isFile(); //return true if pointed object is a File
             bool isFile(Dir usedDir);
             bool isDirectory(); //return true if pointed object is a Directory
@@ -81,6 +81,7 @@
             bool seek(File usedFile, uint8 offset, const char* mode);
             uint8 position();
             uint8 position(File usedFile);
+            uint8 size(const char* filename);
             uint8 size();
             uint8 size(File usedFile);
             const char* name();
@@ -97,11 +98,14 @@
              */
             bool createFile(const char* Filename);
             bool writeInFile(const char* Filename, const char* pattern, const char* writeMode = "w");
+            bool writeInFileStr(const char* Filename, String* pattern, const char* writeMode = "w");
             bool writeJsonFile(const char* Filename,  const char* jsonPattern[][2], int amountOfData, const char* writeMode ="w");
             bool writeJsonFile(const char* Filename, DynamicJsonDocument jsonFile, const char* writeMode = "w");
             bool changeJsonValueFile(const char* Filename, const char* key, const char* newValue);
             String readFile(const char* Filename);
+            //String* readFilePointed(const char* Filename);
             const char* readJsonFileValue(const char* Filename, const char* pattern);
+            String readJsonFileValueAsString(const char* Filename, const char* pattern);
             DynamicJsonDocument readJsonFile(const char* Filename);
             float getFreeSpace(short mode);
             void getSerialFileStructure(const char* path = "/");

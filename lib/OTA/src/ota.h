@@ -58,6 +58,9 @@
 #define defaultUpdateCheckDelay "86400"
 
 
+#define classCheckIntervall 100
+
+
 
 
 class OTA_Manager
@@ -77,7 +80,7 @@ class OTA_Manager
         bool autoUpdate = true;
         long lastUpdateCheck = 0;
         long checkIntervall = 0;
-        ulong nextUpdateCheck = 0;
+        unsigned long nextUpdateCheck = 0;
         bool automaticUpdateSearch = true;
         String softwareVersionInstalled = "0";
         String softwareVersionAvailiable = "0";
@@ -88,6 +91,9 @@ class OTA_Manager
             functionType:
                 1 -> updateCheck
                 2 -> update
+                3 -> undefined
+                4 -> filesystemCheck
+                5 -> filesystemUpdate
         */
         bool addHeader(HTTPClient* client, int functionType = 1);
 
@@ -142,6 +148,24 @@ class OTA_Manager
         bool getIsLastUpdateCheckFailed();
         bool getIsUpdateAvailiable();
         void run();
+
+
+
+        /*
+            Extra Stuff
+        */
+        /*
+            Not recommend to use! - you can download new Filesystem to your ESP but you'll lost all saved user Data e.g Services, WiFi-Credentials etc.
+        */
+        bool checkForNewFilesystemUpdate(String host, uint16_t port, String uri, String username, String password, bool onlyCheck = false);
+        /*
+            Downlaod new Filesystem but nothing will installed
+        */
+        bool getNewFilesystem(String host, uint16_t port, String uri, String username, String password);
+        /*
+            Install new Filesystem and use it - all Data are removed!
+        */
+        bool installNewFilesystem(Stream& in, uint32_t size, const String& md5, int command);
 
 };
 #endif

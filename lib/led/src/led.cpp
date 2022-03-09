@@ -18,7 +18,7 @@
  LED::LED(){}
 
 
- LED::LED(int led_Pin, const char* ledName) //This Constructor is for debugging purposes only ! - It works also fine but the name cannot used somewhere else
+ LED::LED(int led_Pin, const char* ledName, bool invert) //This Constructor is for debugging purposes only ! - It works also fine but the name cannot used somewhere else
  {
      ledEnabled = true;
      this->led_Pin = led_Pin;
@@ -26,16 +26,18 @@
      this->nextCall = millis();
      this->nextToggle = millis();
      this->ledName = ledName;
+     this->inverted = invert;
  }
 
  
- LED::LED(int led_Pin)
+ LED::LED(int led_Pin, bool invert)
  {
      ledEnabled = true;
      this->led_Pin = led_Pin;
      pinMode(led_Pin, OUTPUT);
      this->nextCall = millis();
      this->nextToggle = millis();
+     this->inverted = invert;
  }
  void LED::run()
  {
@@ -135,6 +137,17 @@ void LED::getVars()
 
  void LED::ledOn(bool enableComplete)
  {
+    int command;
+
+    if(this->inverted)
+    {
+        command = 0x0;
+    }
+    else
+    {
+        command = 0x1;
+    }
+
     if(locked || !ledEnabled)
     {
         return;
@@ -142,7 +155,7 @@ void LED::getVars()
     if(!enableComplete)
     {
      this->state = true;
-     digitalWrite(led_Pin, HIGH);
+     digitalWrite(led_Pin, command);
     }
     else
     {
@@ -152,11 +165,22 @@ void LED::getVars()
       this->alreadyBlinked = 0;
       this->intervall = 0;
       this->change = true;
-      digitalWrite(led_Pin, HIGH);
+      digitalWrite(led_Pin, command);
     } 
  }
  void LED::ledOff(bool disableComplete)
  {
+     int command;
+
+    if(this->inverted)
+    {
+        command = 0x1;
+    }
+    else
+    {
+        command = 0x0;
+    }
+
     if(locked)
     {
         return;
@@ -164,7 +188,7 @@ void LED::getVars()
     if(!disableComplete)
     {
      this->state = false;
-     digitalWrite(led_Pin, LOW);
+     digitalWrite(led_Pin, command);
     }
     else
     {
@@ -174,7 +198,7 @@ void LED::getVars()
       this->alreadyBlinked = 0;
       this->intervall = 0;
       this->change = true;
-      digitalWrite(led_Pin, LOW);
+      digitalWrite(led_Pin, command);
     } 
  }
 

@@ -13,7 +13,7 @@ PubSubClient* SysLogger::mqttClient = NULL;
 SysLogger::SysLogger(const char* className)
 {
     this->moduleClassName = className;
-    this->serialLogLevel = 1;
+    this->serialLogLevel = 3;
     this->fileLogLevel = 5;
     this->mqttLogLevel = 2;
     this->serialLogging = true;
@@ -25,7 +25,7 @@ SysLogger::SysLogger(const char* className)
 SysLogger::SysLogger(Filemanager* FM, const char* className)
 {
     this->moduleClassName = className;
-    this->serialLogLevel = 1;
+    this->serialLogLevel = 3;
     this->fileLogLevel = 5;
     this->mqttLogLevel = 2;
     this->serialLogging = true;
@@ -38,29 +38,27 @@ SysLogger::SysLogger(Filemanager* FM, const char* className)
 //protected
 String SysLogger::getLogLevel(short value)
 {
-    String res;
     switch(value) 
     {
         case 1:
-            res = "Trace";
+            return "Trace";
             break;
         case 2:
-            res = "Debug";
+            return "Debug";
             break;
         case 4:
-            res =  "Warn";
+            return  "Warn";
             break;
         case 5:
-            res = "Error";
+            return "Error";
             break;
         case 6:
-            res = "Fatal";
+            return "Fatal";
             break;
         default: //default is 3 = info
-            res = "Info";
+            return "Info";
             break;
     }
-    return res;
 }
 
 String SysLogger::getFormattedMessage(String functionName, String message, short priority)
@@ -149,6 +147,10 @@ void SysLogger::initMQTT()
 */
 void SysLogger::logIt(String function, String message, char priority)
 {
+    if(priority >= 5)
+    {
+        errorCounter++;
+    }
     if((priority >= serialLogLevel && serialLogLevel != 0) || serialLogLevel == 7)
     {
 

@@ -45,58 +45,124 @@ void espOS::disableLeds()
     _WorkLed->disable();
 }
 
+void espOS::showStorage() {
+          uint storage = ESP.getFlashChipRealSize();
+          uint freeSpace = ESP.getFreeHeap();
+          
+          freeSpace = freeSpace / 1000;
+          _initLogger->logIt(F("handleMainStateSite"), "Free Heap: " + String(freeSpace));
+          _initLogger->logIt(F("handleMainStateSite"), "ESP total: " + String(storage));
+          _initLogger->logIt(F("handleMainStateSite"), F("----"));
+}
+
+void espOS::handleInfoSite()
+{
+  ESP8266WebServer* webserver = _Network->getWebserver();
+    webserver->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    webserver->sendHeader(F("Pragma"), F("no-cache"));
+    webserver->sendHeader(F("Expires"), F("-1"));
+    webserver->setContentLength(CONTENT_LENGTH_UNKNOWN);
+    // HTML Content
+    //webserver->send(200, "image/png", FM->readFile("config/os/web/logo.PNG"));
+    String websitePrepared = _FM->readFile("config/os/web/info.html");
+    String templateSite = _FM->readFile("config/os/web/template.html");
+
+
+
+    templateSite.replace("%content%", websitePrepared);
+    templateSite.replace("%infoActive%", "active-subGroup");
+
+    templateSite.replace("%firmwareVersion%", String(_FM->readJsonFileValue("config/mainConfig.json", "softwareVersion")));
+    templateSite.replace("%hostname%", String(WiFi.hostname()));
+     templateSite.replace("%errorCounter%", String(_initLogger->getErrorCounter()));
+    templateSite.replace("%uptime%", String(millis()/1000/60) + String(" Minuten"));
+    templateSite.replace("%wifiSSID%", String(WiFi.SSID()));
+    templateSite.replace("%ipAdress%", String(WiFi.localIP().toString()));
+    templateSite.replace("%macAddress%", String(WiFi.macAddress()));
+    templateSite.replace("%subnetMask%", String(WiFi.subnetMask().toString()));
+    templateSite.replace("%channel%", String(WiFi.channel()));
+    templateSite.replace("%dnsAdress%", String(WiFi.dnsIP().toString()));
+
+    webserver->send(200, "text/html", templateSite);
+
+}
+
+void espOS::handleLogSite()
+{
+  ESP8266WebServer* webserver = _Network->getWebserver();
+  
+    webserver->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    webserver->sendHeader(F("Pragma"), F("no-cache"));
+    webserver->sendHeader(F("Expires"), F("-1"));
+    webserver->setContentLength(CONTENT_LENGTH_UNKNOWN);
+    // HTML Content
+    //webserver->send(200, "image/png", FM->readFile("config/os/web/logo.PNG"));
+    String websitePrepared = _FM->readFile("config/os/web/log.html");
+    String templateSite = _FM->readFile("config/os/web/template.html");
+
+
+    templateSite.replace("%content%", websitePrepared);
+    templateSite.replace("%logsActive%", "active-subGroup");
+    
+
+    webserver->send(200, "text/html", templateSite);
+}
 
 //Website Stuff
 void espOS::handleMainStateSite()
 {
     ESP8266WebServer* webserver = _Network->getWebserver();
-    webserver->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    webserver->sendHeader("Pragma", "no-cache");
-    webserver->sendHeader("Expires", "-1");
+    webserver->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    webserver->sendHeader(F("Pragma"), F("no-cache"));
+    webserver->sendHeader(F("Expires"), F("-1"));
     webserver->setContentLength(CONTENT_LENGTH_UNKNOWN);
     // HTML Content
     //webserver->send(200, "image/png", FM->readFile("config/os/web/logo.PNG"));
     String websitePrepared = _FM->readFile("config/os/web/status.html");
+    String templateSite = _FM->readFile("config/os/web/template.html");
 
+
+    templateSite.replace("%content%", websitePrepared);
+    templateSite.replace("%statusActive%", "active-subGroup");
     String connected;
     if(_Wifi->isConnected() == 1)
     {
-      websitePrepared.replace("%WiFiStatusClass%", "textOkay");
+      templateSite.replace("%WiFiStatusClass%", "textOkay");
       connected = "Connected";
     }
     else{
-      websitePrepared.replace("%WiFiStatusClass%", "textError");
+      templateSite.replace("%WiFiStatusClass%", "textError");
       connected = "Not Connected!";
     }
-    websitePrepared.replace("%WiFiStatus%", connected);
+    templateSite.replace("%WiFiStatus%", connected);
 
     if(_mqttHandler->isConnected())
     {
-      websitePrepared.replace("%MQTTStatusClass%", "textOkay");
-      websitePrepared.replace("%MQTTStatus%", "Connected");
+      templateSite.replace("%MQTTStatusClass%", "textOkay");
+      templateSite.replace("%MQTTStatus%", "Connected");
     }
     else
     {
-      websitePrepared.replace("%MQTTStatusClass%", "textError");
-      websitePrepared.replace("%MQTTStatus%", "Not Connected");
+      templateSite.replace("%MQTTStatusClass%", "textError");
+      templateSite.replace("%MQTTStatus%", "Not Connected");
     }
     
     if(_OTA->getIsLastUpdateCheckFailed())
     {
-      websitePrepared.replace("%UpdaterStatusClass%", "textError");
-      websitePrepared.replace("%updaterStatus%", "FAILED!");
+      templateSite.replace("%UpdaterStatusClass%", "textError");
+      templateSite.replace("%updaterStatus%", "FAILED!");
     }
     else
     {
       if(_OTA->getIsUpdateAvailiable())
       {
-          websitePrepared.replace("%UpdaterStatusClass%", "textWarn");
-          websitePrepared.replace("%updaterStatus%", "Update available");
+          templateSite.replace("%UpdaterStatusClass%", "textWarn");
+          templateSite.replace("%updaterStatus%", "Update available");
       }
       else
       { 
-        websitePrepared.replace("%UpdaterStatusClass%", "textOkay");
-        websitePrepared.replace("%updaterStatus%", "Okay");
+        templateSite.replace("%UpdaterStatusClass%", "textOkay");
+        templateSite.replace("%updaterStatus%", "Okay");
       }
       
     }
@@ -105,24 +171,85 @@ void espOS::handleMainStateSite()
     float RamInPercent = 81920 - ESP.getFreeHeap();
     RamInPercent = RamInPercent/81920;
     RamInPercent = RamInPercent * 100;
-    websitePrepared.replace("%BatteryUseageVolt%", String(_voltageDetector->getActualVoltage()));
-    websitePrepared.replace("%BatteryUseagePercent%", String(_voltageDetector->getPercent()));
-    websitePrepared.replace("%RamUseageKB%", String(RamUsage));
-    websitePrepared.replace("%RamUseagePercent%", String(RamInPercent));
+    templateSite.replace("%BatteryUseageVolt%", String(_voltageDetector->getActualVoltage()));
+    templateSite.replace("%BatteryUseagePercent%", String(_voltageDetector->getPercent()));
+    templateSite.replace("%RamUseageKB%", String(RamUsage));
+    templateSite.replace("%RamUseagePercent%", String(RamInPercent));
     
     uint storage = ESP.getFlashChipRealSize();
     uint freeSpace = storage - ESP.getFreeSketchSpace();
     freeSpace = freeSpace / 1000;
-    _initLogger->logIt("handleMainStateSite", "Free Space: " + String(freeSpace));
-    _initLogger->logIt("handleMainStateSite", "ESP total: " + String(storage));
+    _initLogger->logIt(F("handleMainStateSite"), "Free Space: " + String(freeSpace));
+    _initLogger->logIt(F("handleMainStateSite"), "ESP total: " + String(storage));
     float FreeSpacePercent = freeSpace * 1000;
     FreeSpacePercent = FreeSpacePercent / storage;
     FreeSpacePercent = FreeSpacePercent * 100;
     
-    websitePrepared.replace("%flashUseageMB%", String(freeSpace));
-    websitePrepared.replace("%flashUseagePercent%", String(FreeSpacePercent));
+    templateSite.replace("%flashUseageMB%", String(freeSpace));
+    templateSite.replace("%flashUseagePercent%", String(FreeSpacePercent));
 
-    webserver->send(200, "text/html", websitePrepared);
+    webserver->send(200, "text/html", templateSite);
+}
+
+
+void espOS::handleControlSite()
+{
+  ESP8266WebServer* webserver = _Network->getWebserver();
+    webserver->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    webserver->sendHeader(F("Pragma"), F("no-cache"));
+    webserver->sendHeader(F("Expires"), F("-1"));
+    webserver->setContentLength(CONTENT_LENGTH_UNKNOWN);
+    // HTML Content
+    //webserver->send(200, "image/png", FM->readFile("config/os/web/logo.PNG"));
+    String websitePrepared = _FM->readFile("config/os/web/control.html");
+    String templateSite = _FM->readFile("config/os/web/template.html");
+
+
+    templateSite.replace("%content%", websitePrepared);
+    templateSite.replace("%controlActive%", "active-subGroup");
+
+    webserver->send(200, "text/html", templateSite);
+}
+
+void espOS::handleWifiSite()
+{
+  ESP8266WebServer* webserver = _Network->getWebserver();
+    webserver->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    webserver->sendHeader(F("Pragma"), F("no-cache"));
+    webserver->sendHeader(F("Expires"), F("-1"));
+    webserver->setContentLength(CONTENT_LENGTH_UNKNOWN);
+    // HTML Content
+    //webserver->send(200, "image/png", FM->readFile("config/os/web/logo.PNG"));
+    String websitePrepared = _FM->readFile("config/os/web/wifiSettings.html");
+    String templateSite = _FM->readFile("config/os/web/template.html");
+
+
+    templateSite.replace("%content%", websitePrepared);
+    templateSite.replace("%wifiActive%", "active-subGroup");
+    templateSite.replace("%ssid%", WiFi.SSID());
+
+    webserver->send(200, "text/html", templateSite);
+}
+
+void espOS::handleUpdateSite()
+{
+  ESP8266WebServer* webserver = _Network->getWebserver();
+    webserver->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    webserver->sendHeader(F("Pragma"), F("no-cache"));
+    webserver->sendHeader(F("Expires"), F("-1"));
+    webserver->setContentLength(CONTENT_LENGTH_UNKNOWN);
+    // HTML Content
+    //webserver->send(200, "image/png", FM->readFile("config/os/web/logo.PNG"));
+    String websitePrepared = _FM->readFile("config/os/web/updateSettings.html");
+    String templateSite = _FM->readFile("config/os/web/template.html");
+
+    websitePrepared.replace("   ", "");
+    templateSite.replace("   ", "");
+    
+    templateSite.replace("%content%", websitePrepared);
+    templateSite.replace("%updateActive%", "active-subGroup");
+
+    webserver->send(200, "text/html", templateSite);
 }
 
 
@@ -138,7 +265,7 @@ void espOS::sendWebsiteLogo()
   File logo = _FM->fdOpen("config/os/web/logo.PNG", "r");
   if (webserver->streamFile(logo, "image/png") != logo.size()) 
   {
-    _initLogger->logIt("sendWebsiteLogo", "Error while Streaming CSS File!", 4);
+    _initLogger->logIt(F("sendWebsiteLogo"), F("Error while Streaming CSS File!"), 4);
   }
   logo.close();
 }
@@ -150,7 +277,7 @@ void espOS::sendSpecIcons()
   File specIcons = _FM->fdOpen("config/os/web/spec-icons.css", "r");
   if (webserver->streamFile(specIcons, "text/css") != specIcons.size()) 
   {
-    _initLogger->logIt("sendSpecIcons", "Error while Streaming CSS File!", 4);
+    _initLogger->logIt(F("sendSpecIcons"), F("Error while Streaming CSS File!"), 4);
   }
   specIcons.close();
 }
@@ -164,11 +291,26 @@ void espOS::sendspecexpcss()
   File specExp = _FM->fdOpen("config/os/web/spec-exp.css", "r");
   if (webserver->streamFile(specExp, "text/css") != specExp.size()) 
   {
-    _initLogger->logIt("sendspecexpcss", "Error while Streaming CSS File!", 4);
+    _initLogger->logIt(F("sendspecexpcss"), F("Error while Streaming CSS File!"), 4);
   }
  
   specExp.close();
+  //webserver->send(200, "text/css", FM->readFile("config/os/web/spec-exp.css"));
+}
 
+//Website CSS Stuff
+void espOS::sendownCSS()
+{
+  //Serial.println("spec exp called!");
+  ESP8266WebServer* webserver = _Network->getWebserver();
+
+  File specExp = _FM->fdOpen("config/os/web/own.css", "r");
+  if (webserver->streamFile(specExp, "text/css") != specExp.size()) 
+  {
+    _initLogger->logIt(F("sendownCSS"), F("Error while Streaming CSS File!"), 4);
+  }
+ 
+  specExp.close();
   //webserver->send(200, "text/css", FM->readFile("config/os/web/spec-exp.css"));
 }
 
@@ -180,7 +322,7 @@ void espOS::sendSpecCss()
   File specFile = _FM->fdOpen("config/os/web/spec.css", "r");
   if (webserver->streamFile(specFile, "text/css") != specFile.size()) 
   {
-    _initLogger->logIt("sendSpecCss", "Error while Streaming CSS File!", 4);
+    _initLogger->logIt(F("sendSpecCss"), F("Error while Streaming CSS File!"), 4);
   }
  
   specFile.close();
@@ -235,7 +377,7 @@ void espOS::mqttOSCommands()
     }
     if(_mqttHandler->getCallback()->topic == "home/control" && _mqttHandler->getCallback()->payload == "enableConfMode")
     {
-      _initLogger->logIt("mqttOSCommands", "MQTT ConfMode enabled");
+      _initLogger->logIt(F("mqttOSCommands"), F("MQTT ConfMode enabled"));
       _mqttConfigurator->setConfMode(true);
     }
   }
@@ -247,7 +389,7 @@ void espOS::mqttOSCommands()
     {
       if(step > 1 && !_mqttHandler->isConnected())
       {
-        _initLogger->logIt("mqttOSCommands", "MQTT Broker - Connection Lost - reconnect!", 4);
+        _initLogger->logIt(F("mqttOSCommands"), F("MQTT Broker - Connection Lost - reconnect!"), 4);
         step = 0;
       }
 
@@ -271,7 +413,7 @@ void espOS::mqttOSCommands()
         case 1:
           if(_mqttHandler->isConnected())
           {
-            _initLogger->logIt("mqttOSCommands", "Connected with Broker!");
+            _initLogger->logIt(F("mqttOSCommands"), F("Connected with Broker!"));
             step++;
             //lastCall = millis();
             _mqttHandler->subscribe("home/test");
@@ -282,12 +424,12 @@ void espOS::mqttOSCommands()
         case 2:
           if(_mqttHandler->publish("home/test", "ESP works!"))
           {
-            _initLogger->logIt("mqttOSCommands", "Startmessage successfully published!");
+            _initLogger->logIt(F("mqttOSCommands"), F("Startmessage successfully published!"));
             step++;
           }
           else
           {
-            _initLogger->logIt("mqttOSCommands", "Error while publishing MQTT Start Message", 4);
+            _initLogger->logIt(F("mqttOSCommands"), F("Error while publishing MQTT Start Message"), 4);
           }
           break;
       }
@@ -303,6 +445,7 @@ void espOS::begin()
     _FM->mount();
     _initLogger->setMqttClient(_mqttHandler->getPubSubClient());
     _FM->getSerialFileStructure();
+    _Ntp->begin();
     _serviceHandler->beginListen();
     _Network->begin();
     _mqttHandler->init();
@@ -316,11 +459,18 @@ void espOS::begin()
 
     //Add State Main Website
     _Network->stopWebserver();
-    _Network->addService("/", std::bind(&espOS::handleMainStateSite, this));
+    _Network->addService("/", std::bind(&espOS::handleInfoSite, this));
+    _Network->addService("/status", std::bind(&espOS::handleMainStateSite, this));
+    _Network->addService("/info", std::bind(&espOS::handleInfoSite, this));
+    _Network->addService("/log", std::bind(&espOS::handleLogSite, this));
+    _Network->addService("/control", std::bind(&espOS::handleControlSite, this));
+    _Network->addService("/wifisettings", std::bind(&espOS::handleWifiSite, this));
+    _Network->addService("/updatesettings", std::bind(&espOS::handleUpdateSite, this));
     _Network->addService("/spec-exp.css", std::bind(&espOS::sendspecexpcss, this));
     _Network->addService("/spec.css", std::bind(&espOS::sendSpecCss, this));
     _Network->addService("/spec-icons.css", std::bind(&espOS::sendSpecIcons, this));
-    _Network->addService("/logo.PNG", std::bind(&espOS::sendWebsiteLogo, this));
+    _Network->addService("/own.css", std::bind(&espOS::sendownCSS, this));
+    _Network->addService("/logo.png", std::bind(&espOS::sendWebsiteLogo, this));
     _Network->addService("/logo", std::bind(&espOS::sendWebsiteLogo, this));
     _Network->startWebserver(80);
 }
@@ -330,13 +480,17 @@ void espOS::run() {
     this->_WorkLed->run();
     this->_errorLed->run();
     this->_Network->run();
-    this->_Ntp->run();
-    this->_OTA->run();
     this->_Wifi->run();
     this->_serviceHandler->loop();
     this->_Watcher->run();
     this->_mqttHandler->run();
     this->_voltageDetector->run();
     this->_mqttConfigurator->run();
+
+    if(_Wifi->isConnected())
+    {
+      this->_Ntp->run();
+      this->_OTA->run();
+    }
     mqttOSCommands();
 }
