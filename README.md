@@ -21,7 +21,7 @@ postponed work:
     
 Current work:
 
-    -> Add Webinterface to ESPOS
+    -> Create Modules for ESPOS
 
 bucket list:
 
@@ -39,13 +39,15 @@ bucket list:
     General: Power saving
     General: smart Deep Sleep
 
-    General: Modular Website Interface to set up Device and hook up functionality
+    
     General: Assistant compatibility
     General: Mod store for this system (e.g for LED control or thermometer)
     Button: detect push sequences (eg. long - short -long - short)
 
 what's working:
-
+    General:
+        Modular Website Interface to set up Device and hook up functionality
+        
     Filemanager
         create and read Json Strings or Objects
         create Config FIles and edit them
@@ -67,17 +69,18 @@ what's working:
         setup time for long and short click and max delay
 
     Network:
-        MQTT Support (Broker and Client)
+        MQTT Support (Client)
         wifi control (connect/disconnect/disable)
         config creation
         AP start
         Captive Portal (register and saving to LittleFS (using Filemanager))
-        MQTT
         Webserver + custom service add
         ServiceSearch (NetworkIdent by j54j6) - later as JServiceManager with SSDP, UPnP and all common discovery protocols
         udp Communication
         Network: captive Portal for easy SignUp
         Network: MDNS Support
         Network: DNS Support
+        Send Data to other devices (like MQTT Address)
+        Administration Panel (OTA and Monitoring - Administration Server currently not posted on GitHub Pulbic)
     
 
